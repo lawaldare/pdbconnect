@@ -1,7 +1,8 @@
 import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
+import type { MVSNodeParams } from 'molstar/lib/extensions/mvs/tree/mvs/mvs-tree';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { ATOM_INTERACTION_COLORS, CHAIN_ANNOTATED_COLOR, DEFAULT_ENTITY_COLOR, RESIDUE_ANNOTATED_COLOR, RESIDUE_HIGHLIGHT_COLOR, WATER_COLOR } from './colors';
+import { DEFAULT_ENTITY_COLOR, WATER_COLOR } from './colors';
 import type { IDataProvider } from './data-provider';
 import {
   applyElementColors,
@@ -9,18 +10,25 @@ import {
   applyStandardComponents,
   applyStandardRepresentations,
   atomicRepresentations,
+  customTooltipText,
+  groupBy,
   max,
-  normalizeInsertionCode,
   StandardRepresentationType,
-  unique,
   wholeResidues,
 } from './helpers';
-import { type SnapshotSpec, type SnapshotSpecParams } from './mvs-snapshot-types';
+import type { SnapshotSpec, SnapshotSpecParams } from './mvs-snapshot-types';
 
-/** Radius factor for focusing ligands and modified residues (radius = (bounding sphere radius) * factor + extent) */
-const FOCUS_RADIUS_FACTOR = 1;
-/** Radius extent for focusing ligands and modified residues (radius = (bounding sphere radius) * factor + extent) */
-const FOCUS_RADIUS_EXTENT = 2.5;
+/** Focus parameter for object of various sizes (radius = (bounding sphere radius) * factor + extent) */
+const FOCUS_PARAMS = {
+  /** Focus parameters for larger objects, e.g. polymer chains or domains */
+  POLYMER: {},
+  /** Focus parameters for smaller objects, e.g. individual residues or ligands */
+  RESIDUE: {
+    radius_factor: 1,
+    radius_extent: 2.5,
+  },
+} as const satisfies Record<string, MVSNodeParams<'focus'>>;
+
 /** Tube radius for atom interactions */
 const INTERACTION_TUBE_RADIUS = 0.075;
 /** Tube dash length for atom interactions */
@@ -173,13 +181,13 @@ export class MVSSnapshotProvider {
       applyElementColors(repr, entitySelector);
     }
     if (params.focus) {
-      ctx.structure.component({ selector: entitySelector }).focus();
+      ctx.structure.component({ selector: entitySelector }).focus(FOCUS_PARAMS.POLYMER);
     }
 
     // const entityType = decideEntityType(entities[params.entityId]);
     // const entityComponents = applyStandardComponentsForChain(base.structure, params.labelAsymId, params.instanceId, entityType, { modifiedResidues });
     // for (const comp of Object.values(entityComponents)) {
-    //     comp.focus();
+    //     comp.focus(FOCUS_PARAMS.POLYMER);
     // }
     // const entityRepresentations = applyStandardRepresentations(entityComponents, { opacityFactor: 1, sizeFactor: 1.05, custom: CustomDataForEmissivePulse, refPrefix: 'highlighted' });
     // for (const repr of Object.values(entityRepresentations)) {
@@ -234,9 +242,7 @@ export class MVSSnapshotProvider {
     });
 
     if (params.focus) {
-      ctx.structure
-        .component({ selector: { label_asym_id: params.labelAsymId, instance_id: params.instanceId } })
-        .focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
+      ctx.structure.component({ selector: { label_asym_id: params.labelAsymId, instance_id: params.instanceId } }).focus(FOCUS_PARAMS.RESIDUE);
     }
 
     const description: string[] = [];
@@ -260,8 +266,12 @@ export class MVSSnapshotProvider {
       ctx.representations.polymerCartoon?.color({ selector, color });
       ctx.representations.nonstandardSticks?.color({ selector, color });
       const domainComponent = ctx.structure.component({ selector });
-      if (domain.name !== undefined) domainComponent.tooltip({ text: `Domain: ${domain.name}` });
-      if (params.focus && params.domains.length > 0) domainComponent.focus();
+      if (domain.name !== undefined) {
+        domainComponent.tooltip({ text: customTooltipText(`<b>Domain: ${domain.name}</b>`) });
+      }
+      if (params.focus && params.domains.length > 0) {
+        domainComponent.focus(FOCUS_PARAMS.POLYMER);
+      }
       allDomainsSelector.push(...selector);
     }
     if (ctx.representations.nonstandardSticks) {
@@ -281,7 +291,9 @@ export class MVSSnapshotProvider {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
     for (const mod of params.modifications) {
-      ctx.structure.component({ selector: { label_comp_id: mod.labelCompId } }).tooltip({ text: `<hr><b>Modified residue ${mod.labelCompId}:</b><br>${mod.name}` });
+      ctx.structure
+        .component({ selector: { label_comp_id: mod.labelCompId } })
+        .tooltip({ text: customTooltipText(`<b>Modified residue ${mod.labelCompId}:</b><br>${mod.name}`) });
     }
 
     if (params.selected) {
@@ -299,7 +311,7 @@ export class MVSSnapshotProvider {
         applyElementColors(repr);
       }
       if (params.focus) {
-        ctx.structure.component({ selector: params.selected }).focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
+        ctx.structure.component({ selector: params.selected }).focus(FOCUS_PARAMS.RESIDUE);
       }
     }
 
@@ -319,6 +331,8 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Model Quality tab */
   private async loadPdbconnectQuality(params: SnapshotSpecParams['pdbconnect_quality']) {
+    // TODO: @adam Fix tooltips for Specific issue
+    // TODO: @adam Nice-format and sort issue names in tooltips
     const ctx = await this._loadPdbconnectBase({
       entry: params.entry,
       assemblyId: params.assemblyId,
@@ -380,7 +394,7 @@ export class MVSSnapshotProvider {
         format: 'cif',
         schema: 'all_atomic',
         category_name: 'validation',
-        text_format: '<b>Validation issues:</b> {tooltip}',
+        text_format: customTooltipText('<b>Validation issues:</b> {tooltip}'),
       });
       if (params.validationType.kind === 'issue_count') {
         description.push(
@@ -397,7 +411,7 @@ export class MVSSnapshotProvider {
       for (const repr of Object.values(ctx.representations)) {
         repr.color({ color: '#808080' });
       }
-      ctx.structure.component().tooltip({ text: '<b>Validation issues:</b> Data not available' });
+      ctx.structure.component().tooltip({ text: customTooltipText('<b>Validation issues:</b> Data not available') });
       description.push(`PDBe Structure Quality Report not available for this entry.`);
       description.push(`Displaying ${assemblyText}.`);
     }
@@ -421,7 +435,7 @@ export class MVSSnapshotProvider {
         selector: { auth_asym_id: params.authAsymId, auth_seq_id: params.authSeqId, pdbx_PDB_ins_code: params.authInsCode, instance_id: params.instanceId },
         custom: { molstar_show_non_covalent_interactions: params.atomInteractions === 'builtin' },
       })
-      .focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
+      .focus(FOCUS_PARAMS.RESIDUE);
 
     if (params.atomInteractions !== 'builtin' && params.atomInteractions !== 'none') {
       const primitives = ctx.structure.primitives();
@@ -459,53 +473,53 @@ export class MVSSnapshotProvider {
   private async loadPdbconnectTextAnnotation(params: SnapshotSpecParams['pdbconnect_text_annotation']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
+    const annotsInChain = params.annotations.filter((a) => a.pdbChain === params.labelAsymId);
+    const annotsByLabelSeqId = groupBy(annotsInChain, (a) => a.pdbResidue);
     const chainSelector: ComponentExpressionT = { label_asym_id: params.labelAsymId, instance_id: params.instanceId };
-    const residueSelector: ComponentExpressionT = { ...chainSelector, label_seq_id: params.labelSeqId };
 
-    const chainHighlightColor = CHAIN_ANNOTATED_COLOR;
-    ctx.representations.polymerCartoon?.color({ selector: chainSelector, color: chainHighlightColor });
-    ctx.representations.nonstandardSticks?.color({ selector: chainSelector, color: chainHighlightColor });
+    // Color selected chain
+    if (params.chainColor) {
+      ctx.representations.polymerCartoon?.color({ selector: chainSelector, color: params.chainColor as ColorT });
+      ctx.representations.nonstandardSticks?.color({ selector: chainSelector, color: params.chainColor as ColorT });
+    }
 
-    const annots = await this.dataProvider.llmAnnotations(params.entry);
-    const chainAnnots = annots[params.entityId][params.labelAsymId];
-    const annotResiduesSelector: ComponentExpressionT[] = Object.keys(chainAnnots).map((labelSeqId) => ({ ...chainSelector, label_seq_id: Number(labelSeqId) }));
-    ctx.representations.polymerCartoon?.color({ selector: annotResiduesSelector, color: RESIDUE_ANNOTATED_COLOR });
-    ctx.representations.nonstandardSticks?.color({ selector: annotResiduesSelector, color: RESIDUE_ANNOTATED_COLOR });
-    for (const labelSeqId in chainAnnots) {
-      const nAnnots = chainAnnots[labelSeqId].length;
-      const bestScore = max(chainAnnots[labelSeqId].map((a) => a.aiScore));
-      const flooredBestScore = Math.floor(bestScore * 100) / 100;
+    // Add annotation markers (balls)
+    if (params.annotationMarkerColor) {
+      const annotMarkerAtomsSelector: ComponentExpressionT[] = Object.keys(annotsByLabelSeqId).map((labelSeqId) => ({
+        ...chainSelector,
+        label_seq_id: Number(labelSeqId),
+        label_atom_id: 'CA',
+      }));
       ctx.structure
-        .component({ selector: { ...chainSelector, label_seq_id: Number(labelSeqId) } })
-        .tooltip({ text: `<hr>${nAnnots} annotation${nAnnots === 1 ? '' : 's'}, ${nAnnots === 1 ? '' : 'best '} AI score ${flooredBestScore.toFixed(2)}` });
+        .component({ selector: annotMarkerAtomsSelector })
+        .representation({ type: 'spacefill', size_factor: 0.6 })
+        .opacity({ opacity: 0.8 })
+        .color({ color: params.annotationMarkerColor as ColorT });
     }
 
-    if (params.labelSeqId !== undefined) {
-      ctx.representations.polymerCartoon?.color({ selector: residueSelector, color: RESIDUE_HIGHLIGHT_COLOR });
-      ctx.representations.nonstandardSticks?.color({ selector: residueSelector, color: RESIDUE_HIGHLIGHT_COLOR });
-      const residueSticks = ctx.structure
-        .component({ selector: residueSelector })
-        .representation({ type: 'ball_and_stick', size_factor: 1.05 })
-        .color({ color: RESIDUE_HIGHLIGHT_COLOR });
-      applyElementColors(residueSticks);
-      ctx.structure.component({ selector: residueSelector, custom: { molstar_show_non_covalent_interactions: true } });
+    // Add tooltips
+    for (const labelSeqId in annotsByLabelSeqId) {
+      const nAnnots = annotsByLabelSeqId[labelSeqId].length;
+      const bestScore = max(annotsByLabelSeqId[labelSeqId].map((a) => a.aiScore));
+      const flooredBestScore = Math.floor(bestScore * 100) / 100;
+      ctx.structure.component({ selector: { ...chainSelector, label_seq_id: Number(labelSeqId) } }).tooltip({
+        text: customTooltipText(
+          `<b>${nAnnots} annotation${nAnnots === 1 ? '' : 's'}</b>`,
+          `${nAnnots === 1 ? '' : 'Best '} AI score: ${flooredBestScore.toFixed(2)}`
+        ),
+      });
     }
 
-    for (const repr of atomicRepresentations(ctx.representations)) {
-      applyElementColors(repr);
+    // Focus selected chain
+    if (params.focus) {
+      ctx.structure.component({ selector: chainSelector }).focus(FOCUS_PARAMS.RESIDUE);
     }
-    ctx.structure.component({ selector: residueSelector }).focus({ radius_factor: FOCUS_RADIUS_FACTOR, radius_extent: FOCUS_RADIUS_EXTENT });
-    // TODO: @adam volumes
 
     const description: string[] = [];
     const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    if (params.labelSeqId !== undefined) {
-      description.push(`## Text annotations in chain ${params.labelAsymId} residue ${params.labelSeqId}`);
-      description.push(`Showing chain ${params.labelAsymId} (label_asym_id) residue ${params.labelSeqId} (label_seq_id) in ${assemblyText}.`);
-    } else {
-      description.push(`## Text annotations in chain ${params.labelAsymId}`);
-      description.push(`Showing chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`);
-    }
+
+    description.push(`## Text annotations in chain ${params.labelAsymId}`);
+    description.push(`Showing chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`);
     return {
       ...ctx,
       description,

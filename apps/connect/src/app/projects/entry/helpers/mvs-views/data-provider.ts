@@ -174,10 +174,9 @@ export class ApiDataProvider implements IDataProvider {
     for (const provider of json?.[pdbId]?.data ?? []) {
       for (const residue of provider.residueList) {
         for (const annot of residue.additionalData) {
-          const entityId = annot.entityId;
           const labelAsymId = annot.pdbChain;
           const labelSeqId = annot.pdbResidue;
-          const residueAnnotations = (((out[entityId] ??= {})[labelAsymId] ??= {})[labelSeqId] ??= []);
+          const residueAnnotations = ((out[labelAsymId] ??= {})[labelSeqId] ??= []);
           residueAnnotations.push(annot);
         }
       }
@@ -515,12 +514,12 @@ export interface LlmAnnotationItem {
   // doi: "10.1107/S2059798316001248",
   // primaryCitation: "Y",
   // openAccess: "N",
-  entityId: number;
+  // entityId: number;
   /** label_seq_id */
   pdbResidue: number;
   /** auth_seq_id */
   authorResidueNumber: number;
-  /** label_asym_id (comes from Validation XML field `said`, confirmed with Melanie) */
+  /** label_asym_id (comes from Validation XML field `said`, confirmed with Melanie, see 6qb3) */
   pdbChain: string;
   uniprotAccession: string;
   uniprotResidue: number;
@@ -548,10 +547,8 @@ interface LlmSummaryApiData {
 }
 
 export interface LlmAnnotations {
-  [entityId: string]: {
-    [labelAsymId: string]: {
-      [labelSeqId: number]: LlmAnnotationItem[];
-    };
+  [labelAsymId: string]: {
+    [labelSeqId: number]: LlmAnnotationItem[];
   };
 }
 

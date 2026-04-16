@@ -1,6 +1,6 @@
 import { SmartSequenceAnnotation } from '@pdbe-lib/smart-seq-viewer';
 import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
-import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, OUTLIER_TYPE_LABELS } from '../entry-constant';
+import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, OUTLIER_TYPE_LABELS, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../entry-constant';
 import { ResidueListed } from '../data-models/residue-listing.model';
 import { AlternativeNumbering } from '@pdbe-lib/smart-seq-viewer';
 import { ProcessedDomain } from '../store/data-processing/models/processed-entities.model';
@@ -178,7 +178,7 @@ export function getCircleAnnotationsForSeqViewer(groupedLLMAnnotations: LLMAnnot
     identifier: 'pdbe-llm-annotation',
     scaleType: 'ordinal',
     scaleDomain: ['has annotation'],
-    scaleRange: ['#4E81C3'],
+    scaleRange: [TEXT_ANNOTATION_HIGHLIGHT_COLOR],
     rendering: 'CircleAbove',
     data: llmAnnotationDataForSeqViewer,
   };

@@ -1,35 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, ViewChild, AfterViewInit } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { EntrySelectors } from '../../store/entry.selectors';
-import { Store } from '@ngrx/store';
-import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
-import {
-  getCleanMoleculeName,
-  getCleanSelectionName,
-  getMacromoleculeChainDropdownOptions,
-  getMacromoleculeSequenceDetails,
-} from '../../helpers/processed-data-to-controls';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { ComponentType } from '@angular/cdk/overlay';
-import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-import { CitationDetail } from '../../data-models/publication.model';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, interval, map, of, take, timeout, timer } from 'rxjs';
-import { AgGridAngular } from 'ag-grid-angular';
-import { LLMAnnotation } from '../../data-models/llm-model';
-import { colDefs, gridOptions } from './ag-grid';
+import { Store } from '@ngrx/store';
+import { AG_Grid_Theme_Class, MaterialModule, UtilService } from '@pdbc/core';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { AgGridAngular } from 'ag-grid-angular';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
+import { LLMAnnotation } from '../../data-models/llm-model';
+import { CitationDetail } from '../../data-models/publication.model';
+import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
+import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { MVSHandler } from '../../helpers/mvs-utils';
+import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import {
   convertOutliersToSmartSequenceAnnotation,
   createAuthAlternateNumbering,
@@ -37,16 +29,24 @@ import {
   getNonObserved,
   removeDuplicatesByKey,
 } from '../../helpers/procesing-for-smart-seq-viewer';
-import { EntryActions } from '../../store/entry.actions';
-import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
-import { SequenceDetail } from '../../store/data-processing/models/other-models';
-import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
-import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
-import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
+import {
+  getCleanMoleculeName,
+  getCleanSelectionName,
+  getMacromoleculeChainDropdownOptions,
+  getMacromoleculeSequenceDetails,
+} from '../../helpers/processed-data-to-controls';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
-import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
+import { getUniProtMappingsForMacromolecule } from '../../store/data-processing/macromolecule-processing';
+import { ProcessedMacromolecule } from '../../store/data-processing/models/processed-entities.model';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntryActions } from '../../store/entry.actions';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
+import { colDefs, gridOptions } from './ag-grid';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -67,7 +67,7 @@ import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
-export class LLMTabComponent implements OnInit {
+export class LLMTabComponent implements OnInit, AfterViewInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly dialog = inject(MatDialog);
@@ -80,6 +80,10 @@ export class LLMTabComponent implements OnInit {
 
   public symmetryDropdownSelected?: string;
   public symmetryDropdownOptions: DownloadOption[] = [];
+  private getSelectedInstanceId() {
+    if (this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All') return this.symmetryDropdownSelected;
+    else return undefined;
+  }
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -92,7 +96,7 @@ export class LLMTabComponent implements OnInit {
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
   public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
-  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
 
@@ -240,38 +244,18 @@ export class LLMTabComponent implements OnInit {
 
   public inPrefAssembly = signal(true);
   public inPrefAssemblyForChain = signal(true);
+  private getPreferredAssemblyId(): string | undefined {
+    return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
+  }
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summaryData();
-    const entryId = this.entryId();
-    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
-
-    if (!summary || !entryId) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const assemblyId = inPrefAssemblyForChain ? preferredAssemblyId : undefined;
-
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      subscribeEvents: true,
-      granularity: 'residue',
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'uniform',
-          colorParams: { value: 0xfefefe },
-        },
-      },
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-    };
-
-    return configForMolstar;
-  });
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
+  public readonly configForMolstar = computed(() => ({
+    // TODO: @adam Factor out common settings for all tabs
+    ...Molstar370DefaultParams,
+    subscribeEvents: true,
+    granularity: 'residue',
+    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
+    sequencePanel: true,
+  }));
 
   private molstarReady = signal(false);
   public _molstarComponent?: MolstarComponent;
@@ -284,7 +268,6 @@ export class LLMTabComponent implements OnInit {
   }
 
   public currentModelId$ = new BehaviorSubject<string>('1');
-  private modelIdObserver?: MutationObserver;
 
   public molstarFirstRenderFinished = computed(() => {
     if (!this.molstarReady()) return false;
@@ -313,8 +296,6 @@ export class LLMTabComponent implements OnInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
-  public selectionData?: QueryParamForHelpers[];
-
   public readonly visInteractivity = inject(VisualisationInteractivityService);
 
   private resetAnnotationListByCurrentChain(resetGroupedList: boolean) {
@@ -325,7 +306,7 @@ export class LLMTabComponent implements OnInit {
   }
 
   @HostListener('document:llm-reset-list', ['$event'])
-  public resetAnnotationList() {
+  public resetAnnotationList(event: Event) {
     this.resetAnnotationListByCurrentChain(false);
   }
 
@@ -348,12 +329,6 @@ export class LLMTabComponent implements OnInit {
       }
     });
 
-    // once molstar has rendered, initializes mutation observer for NMR model Id
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
-      if (finished) {
-        this.modelIdObserver = await initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer());
-      }
-    });
     // every time NMR model Id updates, data for smart seq viewer is refreshed
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       await this.updateBackgroundAnnotation();
@@ -392,6 +367,21 @@ export class LLMTabComponent implements OnInit {
         }
       });
   }
+
+  ngAfterViewInit(): void {
+    this.molstarFirstRenderFinished$
+      .pipe(
+        filter((ready) => ready),
+        take(1)
+      )
+      .subscribe(() => {
+        // run after molstar rendered
+        const mvsHandler = MVSHandler(this._molstarComponent);
+        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      });
+  }
+
+  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
@@ -432,44 +422,10 @@ export class LLMTabComponent implements OnInit {
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
-  private async updateConfigAssemblyAndSyncMolstar(macromolecule: ProcessedMacromolecule) {
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
-
-    // check if ligand instance is in pref assembly based on idx of ligand instance
-    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
+  private async updateInPrefAssemblyForChain(macromolecule: ProcessedMacromolecule) {
     const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const isSelectionPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
-    const changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
-
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
     this.inPrefAssemblyForChain.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-
-      const newCfg = await firstValueFrom(
-        this.configForMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      const cfg3 = await firstValueFrom(
-        this._molstarComponent!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
   }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
@@ -477,8 +433,8 @@ export class LLMTabComponent implements OnInit {
     await this.updateSymmetryDropdownOptions(macromolecule);
     this.resetAnnotationListByCurrentChain(true);
 
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+    // check whether chain is in pref assembly
+    await this.updateInPrefAssemblyForChain(macromolecule);
 
     // check whether any chain not in pref assembly for this macromolecule
     const allChainsInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
@@ -578,8 +534,8 @@ export class LLMTabComponent implements OnInit {
     await this.updateSymmetryDropdownOptions(macromolecule);
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(macromolecule);
+    // check whether chain is in pref assembly
+    await this.updateInPrefAssemblyForChain(macromolecule);
 
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
     this.sequenceDetails.set(sequenceDetails);
@@ -622,40 +578,40 @@ export class LLMTabComponent implements OnInit {
   }
 
   private async renderInMolstar(macromolecule: ProcessedMacromolecule) {
+    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(macromolecule));
+  }
+
+  private getMvsSnapshotSpec(macromolecule: ProcessedMacromolecule): SnapshotSpec | undefined {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
+
+    const llmAnnotations = this.llmAnnotations();
+
+    const assemblyId = this.inPrefAssemblyForChain() ? this.getPreferredAssemblyId() : undefined; // undefined = deposited model
+    const instanceId = this.getSelectedInstanceId();
+
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const labelAsymId = molstarSelection[0].auth_asym_id; //  TODO: @adam USE LABEL_ASYM_ID!!!, fix annotation processing, see 6qb3 chain B[auth X], 7p19
+    if (!labelAsymId) return undefined;
 
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
+    // TODO: @adam Decide coloring -> Chain colored by validation (or gray), non-selected chains white with lower opacity?
+    // TODO: @adam Store PDBe design colors as constants https://www.figma.com/design/oT5W7Ff1I2kj6tbsgs3iS6/PDBe-Design-System---Component-library?node-id=1-234&p=f&t=1yRGegyEwICmLdo5-0
 
-    // Access Molstar instance
-    const entityColor = macromolecule.molstarColorHex;
-
-    // because we don't loop over molstarSelections we assume no
-    // annotations map to carbohydrates in this tab (proteins only atm)
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-    this.selectionData = [
-      {
-        ...molstarSelection[0],
-        color: entityColor,
+    return {
+      name: 'Text annotations',
+      kind: 'pdbconnect_text_annotation',
+      params: {
+        entry: entryId,
+        assemblyId: assemblyId,
+        labelAsymId: labelAsymId,
+        annotations: llmAnnotations ?? [],
+        chainColor: macromolecule.molstarColorHex,
+        annotationMarkerColor: TEXT_ANNOTATION_HIGHLIGHT_COLOR,
+        instanceId: instanceId,
         focus: true,
-        instance_id,
+        volumeStreaming: true,
       },
-    ];
-    this.visInteractivity.currentSelectionData.set(this.selectionData);
-
-    const durationMs = this._molstarComponent ? 1200 : 0;
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    await zoomOutStructureInMolstar(instance, durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await drawSelectionInMolstar(instance, this.selectionData);
-    });
+    };
   }
 
   public openDialog(type: string) {

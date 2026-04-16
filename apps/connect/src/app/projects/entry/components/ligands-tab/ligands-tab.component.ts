@@ -188,7 +188,6 @@ export class LigandsTabComponent implements AfterViewInit {
     hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
     sequencePanel: true,
   }));
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   private currentChainId = signal<string | undefined>(undefined);
   private currentResidueId = signal<string | undefined>(undefined);
@@ -264,7 +263,6 @@ export class LigandsTabComponent implements AfterViewInit {
     // check if ligand instance is in pref assembly based on idx of ligand instance
     const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const isSelectionPrefAssembly = ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
     this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
   }
 

@@ -406,7 +406,11 @@ export const ENTRY_PAGES_LINKS = [
   },
 ];
 
+/** Color for highlighting domains on Domains tab */
 export const DEFAULT_DOMAIN_HIGHLIGHT_COLOR = '#B5CB93'; // Higher-contrast version of '#D0DEBB' from left panel UI
+
+/** Color for marking annotations on Text Annotations tab */
+export const TEXT_ANNOTATION_HIGHLIGHT_COLOR = '#4F81C3';
 
 export const labelGroups = {
   Popular: ['mmCIF file (Updated)', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)', 'Validation data (mmCIF)'],

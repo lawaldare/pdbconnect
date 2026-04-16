@@ -263,7 +263,6 @@ export class DomainsTabComponent implements AfterViewInit {
     hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
     sequencePanel: true,
   }));
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   public sequenceDetails = signal<SequenceDetail[]>([]);
 
@@ -349,7 +348,6 @@ export class DomainsTabComponent implements AfterViewInit {
     const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
     // check whether all segments in preferred assembly
     const allSegmentsInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
-
     this.inPrefAssemblyForChain.set(allSegmentsInPrefAssembly);
   }
 

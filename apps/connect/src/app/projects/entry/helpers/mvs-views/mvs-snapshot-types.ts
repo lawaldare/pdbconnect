@@ -1,5 +1,5 @@
 import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { ValidationApiData } from './data-provider';
+import { LlmAnnotationItem, ValidationApiData } from './data-provider';
 
 export type SnapshotSpecParams = {
   /** PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
@@ -144,14 +144,18 @@ export type SnapshotSpecParams = {
     entry: string;
     /** Assembly ID (or `undefined` for deposited model) */
     assemblyId: string | undefined;
-    /** Entity identifier (label_entity_id) */
-    entityId: string;
     /** Chain identifier (label_asym_id) */
     labelAsymId: string;
-    /** Residue number (label_seq_id) for highlighted residue, `undefined` for showing the whole chain */
-    labelSeqId: number | undefined;
+    /** Residue annotations */
+    annotations: LlmAnnotationItem[];
+    /** Color for the selected chain */
+    chainColor: string | undefined;
+    /** Color for marking annotated residues (balls), `undefined` to not show balls */
+    annotationMarkerColor: string | undefined;
     /** Symmetry instance identifier (e.g. 'ASM-1'), `undefined` for showing all instances */
     instanceId: string | undefined;
+    /** Apply camera focus on selected chain */
+    focus: boolean;
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
   };

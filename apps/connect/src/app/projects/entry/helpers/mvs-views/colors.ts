@@ -27,15 +27,6 @@ export const WATER_COLOR = '#ff0d0d';
 /** Color for entities if not specified otherwise */
 export const DEFAULT_ENTITY_COLOR = '#808080';
 
-export const VALIDATION_COLORS = {
-  NOT_APPLICABLE: '#808080', // not applicable
-  0: '#ffffff', // 0 issues (PDBconnect currently uses #d4d5d4)
-  1: '#e5e501', // 1 issues
-  2: '#da6e03', // 2 issues
-  3: '#b2182b', // 3 or more issues
-  HAS_ISSUE: '#b2182b',
-} as const;
-
 export const ATOM_INTERACTION_COLORS: Record<string, ColorT> = {
   AMIDERING: 'red',
   CARBONPI: 'magenta',
@@ -60,7 +51,7 @@ export const ATOM_INTERACTION_COLORS: Record<string, ColorT> = {
 export const CHAIN_ANNOTATED_COLOR = '#d0debb';
 
 /** For all annotated residues in Text Annotation view */
-export const RESIDUE_ANNOTATED_COLOR = '#4E81C3';
+export const RESIDUE_ANNOTATED_COLOR = '#4f81c3';
 
 /** For highlighted residue in Text Annotation view */
 export const RESIDUE_HIGHLIGHT_COLOR = '#ff8800';
