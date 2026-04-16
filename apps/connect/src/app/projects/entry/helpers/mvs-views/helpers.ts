@@ -2,6 +2,7 @@ import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 
 export type StandardComponentType = 'polymer' | 'branched' | 'branchedLinkage' | 'ligand' | 'ion' | 'nonstandard' | 'water';
+
 export type StandardRepresentationType =
   | 'polymerCartoon'
   | 'branchedCarbohydrate'
@@ -217,25 +218,6 @@ export function applyOpacity(repr: Builder.Representation, opacity: number | und
   else return repr;
 }
 
-/** Set of entity types as reported by the `molecules` API, corresponding to macromolecules */
-export const MacromoleculeTypes = new Set([
-  'polypeptide(D)', // e.g. 7pcj
-  'polypeptide(L)', // e.g. 7pcj
-  'polydeoxyribonucleotide', // e.g. 7v6v
-  'polyribonucleotide', // e.g. 1y26
-  'polydeoxyribonucleotide/polyribonucleotide hybrid', // e.g. 5vze
-  'peptide nucleic acid', // e.g. 2kvj
-  'cyclic-pseudo-peptide', // not found in mmCIFs, but listed in controlled vocabulary for _entity_poly.type
-  'other', // maybe not found in mmCIFs, but listed in controlled vocabulary for _entity_poly.type
-  'carbohydrate polymer', // found in API
-]);
-
-/** Deal with special cases where ' ' or '' means undefined */
-export function normalizeInsertionCode(insCode: string | undefined): string | undefined {
-  if (insCode?.trim()) return insCode;
-  else return undefined;
-}
-
 /** Return list of unique/distinct values from `values` in the order of their first occurrence.
  * If `key` is provided, use it to judge equality. */
 export function unique<T>(values: T[]): T[];
@@ -293,4 +275,9 @@ export function wholeResidues(selection: ComponentExpressionT[]): ComponentExpre
 
 export function customTooltipText(...lines: string[]) {
   return '<div class="mvs-custom-tooltip-box">' + lines.join('<br>') + '</div>';
+}
+
+export function assemblyText(entryId: string, assemblyId: string | undefined) {
+  const ass = assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${assemblyId}`;
+  return `${ass} of PDB entry ${entryId}`;
 }

@@ -2,17 +2,16 @@ import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { MVSNodeParams } from 'molstar/lib/extensions/mvs/tree/mvs/mvs-tree';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { DEFAULT_ENTITY_COLOR, WATER_COLOR } from './colors';
 import {
   applyElementColors,
   applyEntityColors,
   applyStandardComponents,
   applyStandardRepresentations,
+  assemblyText,
   atomicRepresentations,
   customTooltipText,
   groupBy,
   max,
-  StandardRepresentationType,
   wholeResidues,
 } from './helpers';
 import type { SnapshotSpec, SnapshotSpecParams } from './mvs-snapshot-types';
@@ -33,12 +32,22 @@ const INTERACTION_TUBE_RADIUS = 0.075;
 /** Tube dash length for atom interactions */
 const INTERACTION_TUBE_DASH_LENGTH = 0.1;
 
+/** Color for water entity */
+const WATER_COLOR = '#ff0d0d';
+/** Color for entities if not specified otherwise */
+const DEFAULT_ENTITY_COLOR = '#808080';
+
 export interface MVSSnapshotProviderConfig {
   /** URL template for PDB structural data, '{pdb}' will be replaced by actual PDB ID. */
   PdbStructureUrlTemplate: string;
   /** Format for PDB structural data. */
   PdbStructureFormat: 'bcif' | 'mmcif' | 'pdb';
 }
+
+export const DefaultMVSSnapshotProviderConfig: MVSSnapshotProviderConfig = {
+  PdbStructureUrlTemplate: 'https://www.ebi.ac.uk/pdbe/entry-files/{pdb}.bcif',
+  PdbStructureFormat: 'bcif',
+};
 
 export class MVSSnapshotProvider {
   constructor(
@@ -49,17 +58,14 @@ export class MVSSnapshotProvider {
 
   async getSnapshot(spec: SnapshotSpec, options?: { transitionDurationMs?: number }): Promise<MVSData> {
     const ctx = await this.loadSnapshotSpec(spec);
-    const description = ctx.description;
-    description.push('---');
-    description.push(`- **View kind:** ${spec.kind}`);
-    description.push(`- **View params:** ${JSON.stringify(spec.params, undefined, 1)}`);
+    const description = ctx.description.join('\n\n');
     const snapshot = ctx.root.getSnapshot({
       title: spec.name,
-      description: description.join('\n\n'),
+      description: description,
       linger_duration_ms: 10_000,
       transition_duration_ms: options?.transitionDurationMs,
     });
-    return this.MVSDataLib.createMultistate([snapshot], { title: spec.name, description: description.join('\n\n') });
+    return this.MVSDataLib.createMultistate([snapshot], { title: spec.name, description: description });
   }
 
   private async loadSnapshotSpec(spec: SnapshotSpec) {
@@ -88,18 +94,16 @@ export class MVSSnapshotProvider {
   }
 
   private _loadRoot(): { root: Builder.Root } {
-    return {
-      root: this.MVSDataLib.createBuilder(),
-    };
+    const root = this.MVSDataLib.createBuilder();
+    return { root };
   }
 
   private _loadModel(params: { entry: string }) {
-    const base = this._loadRoot();
-    const model = base.root.download({ url: this.config.PdbStructureUrlTemplate.replace('{pdb}', params.entry) }).parse({ format: this.config.PdbStructureFormat });
-    return {
-      ...base,
-      model,
-    };
+    const ctx = this._loadRoot();
+
+    const model = ctx.root.download({ url: this.config.PdbStructureUrlTemplate.replace('{pdb}', params.entry) }).parse({ format: this.config.PdbStructureFormat });
+
+    return { ...ctx, model };
   }
 
   /** Create base for all PDBconnect views */
@@ -126,34 +130,27 @@ export class MVSSnapshotProvider {
     // TODO Molstar: ball_and_stick size theme physical?
     // TODO compute PCA to orient camera?
 
-    return {
-      ...ctx,
-      structure,
-      components,
-      representations,
-    };
+    return { ...ctx, structure, components, representations };
   }
 
   /** Create MVS view for PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
   private async loadPdbconnectComplex(params: SnapshotSpecParams['pdbconnect_complex']) {
     const ctx = await this._loadPdbconnectBase(params);
+
+    // Apply entity colors
     if (params.entityColors) {
       for (const repr of Object.values(ctx.representations)) {
         applyEntityColors(repr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
       }
     }
+    // Apply element colors to atomic representations
     for (const repr of atomicRepresentations(ctx.representations)) {
       applyElementColors(repr);
     }
 
-    const description: string[] = [];
+    const description: string[] = [`## Complex ${params.assemblyId}`, `This is ${assemblyText(params.entry, params.assemblyId)}.`];
 
-    description.push(`## Complex ${params.assemblyId}`);
-    description.push(`This is complex (assembly) ${params.assemblyId}.`);
-    return {
-      ...ctx,
-      description,
-    };
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Summary tab > Macromolecules (macromolecule selected), Macromolecules tab */
@@ -167,46 +164,32 @@ export class MVSSnapshotProvider {
       instance_id: params.instanceId,
     };
 
+    // Apply color to the selected entity
     for (const repr of Object.values(ctx.representations)) {
       repr.color({ selector: entitySelector, color: (params.color as ColorT | undefined) ?? DEFAULT_ENTITY_COLOR });
     }
+    // Apply element colors to atomic representations within the selected entity
     for (const repr of atomicRepresentations(ctx.representations)) {
       applyElementColors(repr, entitySelector);
     }
+    // Focus the selected entity
     if (params.focus) {
       ctx.structure.component({ selector: entitySelector }).focus(FOCUS_PARAMS.POLYMER);
     }
 
-    // const entityType = decideEntityType(entities[params.entityId]);
-    // const entityComponents = applyStandardComponentsForChain(base.structure, params.labelAsymId, params.instanceId, entityType, { modifiedResidues });
-    // for (const comp of Object.values(entityComponents)) {
-    //     comp.focus(FOCUS_PARAMS.POLYMER);
-    // }
-    // const entityRepresentations = applyStandardRepresentations(entityComponents, { opacityFactor: 1, sizeFactor: 1.05, custom: CustomDataForEmissivePulse, refPrefix: 'highlighted' });
-    // for (const repr of Object.values(entityRepresentations)) {
-    //     repr.color({ color: entityColors[params.entityId] });
-    // }
-    // for (const repr of atomicRepresentations(entityRepresentations)) {
-    //     applyElementColors(repr);
-    // }
-    // base.root.animation({})
-    //     .interpolate(makeEmissivePulse('highlighted_polymerCartoon'))
-    //     .interpolate(makeEmissivePulse('highlighted_nonstandardSticks'));
+    const description: string[] = [
+      `## Macromolecule ${params.entityId}`,
+      `This is macromolecule ${params.entityId} in ${assemblyText(params.entry, params.assemblyId)}.`,
+    ];
 
-    const description: string[] = [];
-    description.push(`## Macromolecule ${params.entityId}`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(`This is macromolecule ${params.entityId} in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Summary tab > Ligands (nothing selected) */
   private async loadPdbconnectAllLigands(params: SnapshotSpecParams['pdbconnect_all_ligands']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
+    // Add and color spacefill representation for ligands
     for (const entityId of params.ligandEntityIds) {
       const entityColor = (params.entityColors?.[entityId] as ColorT | undefined) ?? DEFAULT_ENTITY_COLOR;
       ctx.structure
@@ -215,14 +198,9 @@ export class MVSSnapshotProvider {
         .color({ color: entityColor });
     }
 
-    const description: string[] = [];
-    description.push(`## All ligands`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(`Overview of all ligands in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
+    const description: string[] = [`## All ligands`, `This is overview of all ligands in ${assemblyText(params.entry, params.assemblyId)}.`];
+
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Summary tab > Ligands (ligand selected) */
@@ -234,25 +212,23 @@ export class MVSSnapshotProvider {
       entityColors: params.entityColors,
     });
 
+    // Focus the selected ligand
     if (params.focus) {
       ctx.structure.component({ selector: { label_asym_id: params.labelAsymId, instance_id: params.instanceId } }).focus(FOCUS_PARAMS.RESIDUE);
     }
 
-    const description: string[] = [];
-    description.push(`## Ligand entity ${params.entityId}`);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
-    description.push(`This is ligand entity ${params.entityId} in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
+    const description: string[] = [
+      `## Ligand entity ${params.entityId}`,
+      `This is ligand entity ${params.entityId} in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText(params.entry, params.assemblyId)}.`,
+    ];
+
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Summary tab > Domains (domain selected), Domains tab */
   private async loadPdbconnectDomains(params: SnapshotSpecParams['pdbconnect_domains']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
-    const allDomainsSelector: ComponentExpressionT[] = [];
     for (const domain of params.domains) {
       const selector = domain.selector;
       const color = domain.color as ColorT;
@@ -265,24 +241,27 @@ export class MVSSnapshotProvider {
       if (params.focus && params.domains.length > 0) {
         domainComponent.focus(FOCUS_PARAMS.POLYMER);
       }
-      allDomainsSelector.push(...selector);
     }
+
+    // Apply element colors to modified residues within domains
     if (ctx.representations.nonstandardSticks) {
+      const allDomainsSelector: ComponentExpressionT[] = [];
+      for (const domain of params.domains) {
+        allDomainsSelector.push(...domain.selector);
+      }
       applyElementColors(ctx.representations.nonstandardSticks, allDomainsSelector);
     }
 
-    const description: string[] = [];
-    description.push(`## Domains`);
-    return {
-      ...ctx,
-      description,
-    };
+    const description: string[] = [`## Domains`, `This is view of ${params.domains.length} selected domains in ${assemblyText(params.entry, params.assemblyId)}.`];
+
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Summary tab > Modifications (whether modification selected or not) */
   private async loadPdbconnectModifications(params: SnapshotSpecParams['pdbconnect_modifications']) {
     const ctx = await this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
 
+    // Add tooltips
     for (const mod of params.modifications) {
       ctx.structure
         .component({ selector: { label_comp_id: mod.labelCompId } })
@@ -290,36 +269,37 @@ export class MVSSnapshotProvider {
     }
 
     if (params.selected) {
-      for (const [reprName, repr] of Object.entries(ctx.representations)) {
-        if (params.entityColors) {
+      // SPECIFIC MODIFIED RESIDUE SELECTED
+      // Apply entity colors
+      if (params.entityColors) {
+        for (const repr of Object.values(ctx.representations)) {
           applyEntityColors(repr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
         }
-        if ((reprName as StandardRepresentationType) === 'nonstandardSticks') {
-          for (const mod of params.modifications) {
-            repr.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
-          }
-        }
       }
+      // Apply colors to modified residues
+      for (const mod of params.modifications) {
+        ctx.representations.nonstandardSticks?.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
+      }
+      // Apply element colors to atomic representations
       for (const repr of atomicRepresentations(ctx.representations)) {
         applyElementColors(repr);
       }
+      // Focus selected modified residue
       if (params.focus) {
         ctx.structure.component({ selector: params.selected }).focus(FOCUS_PARAMS.RESIDUE);
       }
-    }
-
-    if (!params.selected && ctx.components.nonstandard) {
-      const modresSpacefill = ctx.components.nonstandard.representation({ type: 'spacefill' });
+    } else {
+      // NO SPECIFIC MODIFIED RESIDUE SELECTED
+      // Add and color spacefill representation for modified residues
+      const modresSpacefill = ctx.components.nonstandard?.representation({ type: 'spacefill' });
       for (const mod of params.modifications) {
-        modresSpacefill.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
+        modresSpacefill?.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
       }
     }
 
-    const description: string[] = [`## Modified residues`];
-    return {
-      ...ctx,
-      description,
-    };
+    const description: string[] = [`## Modified residues`, `This is view of modified residues in ${assemblyText(params.entry, params.assemblyId)}.`];
+
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Model Quality tab */
@@ -332,13 +312,12 @@ export class MVSSnapshotProvider {
       modelIndex: params.modelId - 1,
       volumeStreaming: params.volumeStreaming,
     });
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
 
-    const description: string[] = [];
-    description.push(`## Validation`);
+    let description: string[];
 
     if (params.validationData !== undefined) {
-      // Validation available
+      // VALIDATION AVAILABLE
+      // Construct annotation CIF
       const annotationCif = [
         'data_validation',
         'loop_',
@@ -367,6 +346,7 @@ export class MVSSnapshotProvider {
       }
       const annotationUri = 'data:text/plain, ' + annotationCif.join(' ');
 
+      // Color residues by annotation CIF
       for (const repr of Object.values(ctx.representations)) {
         repr.color({ color: params.validationColors[0] as ColorT }); // base color for residues without issues (not listed in the report)
       }
@@ -382,6 +362,7 @@ export class MVSSnapshotProvider {
           missing_color: params.validationColors[params.validationColors.length - 1] as ColorT, // for values higher than number of colors and for value 'y' (specific issue present)
         },
       });
+      // Add tooltips
       ctx.structure.tooltipFromUri({
         uri: annotationUri,
         format: 'cif',
@@ -389,29 +370,29 @@ export class MVSSnapshotProvider {
         category_name: 'validation',
         text_format: customTooltipText('<b>Validation issues:</b> {tooltip}'),
       });
-      if (params.validationType.kind === 'issue_count') {
-        description.push(
-          `**PDBe Structure Quality Report:** Residues are coloured by the number of geometry validation issue types. White - no issues, yellow - one issue type, orange - two issue types, red - three or more issue types.`
-        );
-      } else {
-        description.push(
-          `**PDBe Structure Quality Report:** Residues are coloured by presence of "${params.validationType.issue}" validation issues. White - no issue, red - has issues.`
-        );
-      }
-      description.push(`Displaying ${assemblyText}.`);
+
+      description = [
+        `## Validation`,
+        `This is view of PDBe Structure Quality Report in ${assemblyText(params.entry, params.assemblyId)}.`,
+        params.validationType.kind === 'issue_count'
+          ? `Residues are coloured by the number of geometry validation issue types. White - no issues, yellow - one issue type, orange - two issue types, red - three or more issue types.`
+          : `Residues are coloured by presence of "${params.validationType.issue}" validation issues. White - no issue, red - has issues.`,
+      ];
     } else {
-      // Validation not available
+      // VALIDATION NOT AVAILABLE
       for (const repr of Object.values(ctx.representations)) {
         repr.color({ color: '#808080' });
       }
       ctx.structure.component().tooltip({ text: customTooltipText('<b>Validation issues:</b> Data not available') });
-      description.push(`PDBe Structure Quality Report not available for this entry.`);
-      description.push(`Displaying ${assemblyText}.`);
+
+      description = [
+        `## Validation`,
+        `This is view of PDBe Structure Quality Report in ${assemblyText(params.entry, params.assemblyId)}.`,
+        `PDBe Structure Quality Report not available for this entry`,
+      ];
     }
-    return {
-      ...ctx,
-      description,
-    };
+
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Ligands and Environments tab */
@@ -452,14 +433,14 @@ export class MVSSnapshotProvider {
     }
     // TODO: @adam we don't have data for non-preferred-assembly ligands (e.g. 1og5 chain B) - decide what to do (current PDBconnect falls back to builtin, but that's confusing IMHO)
 
-    const description: string[] = [];
-    description.push(`## Residue environment for auth ${params.authAsymId} ${params.authSeqId}${params.authInsCode} `);
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex(assembly) ${params.assemblyId} `;
-    description.push(`This is residue auth ${params.authSeqId}${params.authInsCode} in chain auth ${params.authAsymId} in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
+    const description: string[] = [
+      `## Ligand environment`,
+      `This is ligand environment view for residue auth ${params.authSeqId}${params.authInsCode} in chain auth ${params.authAsymId} in ${assemblyText(
+        params.entry,
+        params.assemblyId
+      )}.`,
+    ];
+    return { ...ctx, description };
   }
 
   /** Create MVS view for PDBconnect Text Annotations tab (residue selected) */
@@ -508,14 +489,11 @@ export class MVSSnapshotProvider {
       ctx.structure.component({ selector: chainSelector }).focus(FOCUS_PARAMS.RESIDUE);
     }
 
-    const description: string[] = [];
-    const assemblyText = params.assemblyId === undefined ? 'the deposited model' : `complex (assembly) ${params.assemblyId}`;
+    const description: string[] = [
+      `## Text annotations`,
+      `This is overview of text annotations in chain ${params.labelAsymId} (label_asym_id) in ${assemblyText(params.entry, params.assemblyId)}.`,
+    ];
 
-    description.push(`## Text annotations in chain ${params.labelAsymId}`);
-    description.push(`Showing chain ${params.labelAsymId} (label_asym_id) in ${assemblyText}.`);
-    return {
-      ...ctx,
-      description,
-    };
+    return { ...ctx, description };
   }
 }
