@@ -1,7 +1,5 @@
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { ANNOTATION_COLORS, cycleIterator, ENTITY_COLORS, LIGAND_COLORS, MODRES_COLORS, WATER_COLOR } from './colors';
-import type { AssemblyRecord, DomainRecord, EntityRecord, ResidueRecord } from './data-provider';
 
 export type StandardComponentType = 'polymer' | 'branched' | 'branchedLinkage' | 'ligand' | 'ion' | 'nonstandard' | 'water';
 export type StandardRepresentationType =
@@ -219,61 +217,6 @@ export function applyOpacity(repr: Builder.Representation, opacity: number | und
   else return repr;
 }
 
-export function getEntityColors(entities: { [entityId: string]: EntityRecord }): { [entityId: string]: ColorT } {
-  const polymerColorIterator = cycleIterator(ENTITY_COLORS);
-  const ligandColorIterator = cycleIterator(LIGAND_COLORS);
-
-  const out: { [entityId: string]: ColorT } = {};
-
-  for (const entityId of Object.keys(entities)) {
-    const entity = entities[entityId];
-    const color = entity.type === 'water' ? WATER_COLOR : entityIsLigand(entity) ? ligandColorIterator.next().value! : polymerColorIterator.next().value!;
-    out[entityId] = color;
-    // TODO assign fixed colors to single-element ligands? (like in PDBImages)
-  }
-  return out;
-}
-
-export function getDomainColors(domains: { [source: string]: { [family: string]: { [entity: string]: DomainRecord[] } } }) {
-  const colorIterator = cycleIterator(ANNOTATION_COLORS);
-  const out: { [domainId: string]: ColorT } = {};
-  for (const [src, srcDomains] of Object.entries(domains)) {
-    for (const [fam, famDomains] of Object.entries(srcDomains)) {
-      for (const [entity, entityDomains] of Object.entries(famDomains)) {
-        for (const domain of entityDomains) {
-          out[domain.id] = colorIterator.next().value!;
-        }
-      }
-    }
-  }
-  return out;
-}
-
-export function getDomainFamilyColors(domains: { [source: string]: { [family: string]: { [entity: string]: DomainRecord[] } } }) {
-  // Ignoring the possibility of families from different sources having the same ID (e.g. CATH and CATH-B)
-  const colorIterator = cycleIterator(ANNOTATION_COLORS);
-  const out: { [familyId: string]: ColorT } = {};
-  for (const [src, srcDomains] of Object.entries(domains)) {
-    for (const familyId in srcDomains) {
-      out[familyId] = colorIterator.next().value!;
-    }
-  }
-  return out;
-}
-
-export function getModresColors(modifiedResidues: ResidueRecord[]) {
-  const colorIterator = cycleIterator(MODRES_COLORS);
-  const out: { [compId: string]: ColorT } = {};
-  for (const modres of uniqueModresCompIds(modifiedResidues)) {
-    out[modres] = colorIterator.next().value! as ColorT;
-  }
-  return out;
-}
-
-export function uniqueModresCompIds(modifiedResidues: ResidueRecord[]) {
-  return Array.from(new Set(modifiedResidues.map((r) => r.compoundId))).sort();
-}
-
 /** Set of entity types as reported by the `molecules` API, corresponding to macromolecules */
 export const MacromoleculeTypes = new Set([
   'polypeptide(D)', // e.g. 7pcj
@@ -286,19 +229,6 @@ export const MacromoleculeTypes = new Set([
   'other', // maybe not found in mmCIFs, but listed in controlled vocabulary for _entity_poly.type
   'carbohydrate polymer', // found in API
 ]);
-
-export function entityIsMacromolecule(entity: EntityRecord): boolean {
-  return MacromoleculeTypes.has(entity.type);
-}
-export function entityIsLigand(entity: EntityRecord): boolean {
-  return entity.type === 'bound' && entity.compIds.length === 1;
-}
-
-export function getPreferredAssembly(assemblies: AssemblyRecord[]): AssemblyRecord {
-  const preferred = assemblies.find((ass) => ass.preferred);
-  if (preferred === undefined) throw new Error('Could not find preferred assembly.');
-  return preferred;
-}
 
 /** Deal with special cases where ' ' or '' means undefined */
 export function normalizeInsertionCode(insCode: string | undefined): string | undefined {
@@ -338,8 +268,8 @@ export function max<T, V>(array: T[], key: (elem: T) => V = ((x: T) => x) as any
   return argMax;
 }
 
-export function groupBy<T>(items: T[], key: (item: T) => string | number): Record<string, T[]> {
-  const out: Record<string, T[]> = {};
+export function groupBy<T>(items: T[], key: (item: T) => string | number): { [key: string]: T[] } {
+  const out: { [key: string]: T[] } = {};
   for (const item of items) {
     (out[key(item)] ??= []).push(item);
   }

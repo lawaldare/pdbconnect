@@ -5,7 +5,6 @@ import { environment } from '../../../../environments/environment';
 import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
-import { ApiDataProvider, PdbeApiClient } from './mvs-views/data-provider';
 import { MVSSnapshotProvider } from './mvs-views/mvs-snapshot-provider';
 import type { SnapshotSpec } from './mvs-views/mvs-snapshot-types';
 
@@ -36,10 +35,10 @@ export function MVSHandler(molstarComponent: MolstarComponent | undefined) {
 
 function createMVSSnapshotProvider(PDBeMolstarPlugin_: typeof PDBeMolstarPlugin) {
   const baseUrl = environment.baseUrl;
-  return new MVSSnapshotProvider(PDBeMolstarPlugin_.extensions.MVS.MVSData, new ApiDataProvider(new PdbeApiClient(`${baseUrl}pdbe/api/v2`)), {
+  return new MVSSnapshotProvider(PDBeMolstarPlugin_.extensions.MVS.MVSData, {
     PdbStructureFormat: 'bcif',
     PdbStructureUrlTemplate: `${baseUrl}pdbe/entry-files/{pdb}.bcif`,
-  }); // TODO: use existing API service
+  });
 }
 
 export function makeEntityColors(macromolecules: ProcessedMacromolecule[] | undefined, ligands: ProcessedLigandOrMod[] | undefined) {

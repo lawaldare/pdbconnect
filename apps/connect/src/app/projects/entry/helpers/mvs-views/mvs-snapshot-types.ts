@@ -1,5 +1,4 @@
 import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { LlmAnnotationItem, ValidationApiData } from './data-provider';
 
 export type SnapshotSpecParams = {
   /** PDBconnect Summary tab > Preferred complex (default view), Complexes tab */
@@ -181,3 +180,40 @@ export type SnapshotSpec<TKind extends SnapshotKind = SnapshotKind> = TKind exte
 /** Validation view type ('issue_count' for number of outlier types, or specific outlier type (this list might not be complete)) */
 export const ValidationTypes = ['issue_count', 'bond_angles', 'clashes', 'sidechain_outliers', 'symm_clashes', 'planes', 'RSRZ'] as const;
 export type ValidationType = (typeof ValidationTypes)[number];
+
+/** Response of `validation/residuewise_outlier_summary/entry/${pdbId}` */
+export interface ValidationApiData {
+  [pdbId: string]: {
+    molecules: Array<{
+      entity_id: number;
+      chains: Array<{
+        chain_id: string;
+        struct_asym_id: string;
+        models: Array<{
+          model_id: number;
+          residues: Array<{
+            residue_number: number;
+            author_residue_number: number | string; // this hurts but yes, sometimes it's a string (e.g. 8eiu entity 6 chain F [auth A])
+            author_insertion_code: string | null;
+            alt_code: string;
+            outlier_types: string[];
+          }>;
+        }>;
+      }>;
+    }>;
+  };
+}
+
+export interface LlmAnnotationItem {
+  // Omitting unused fields
+  /** label_seq_id */
+  pdbResidue: number;
+  /** auth_seq_id */
+  authorResidueNumber: number;
+  /** label_asym_id (comes from Validation XML field `said`, confirmed with Melanie, see 6qb3, 7p19) */
+  pdbChain: string;
+  uniprotAccession: string;
+  uniprotResidue: number;
+  sentence: string;
+  aiScore: number;
+}

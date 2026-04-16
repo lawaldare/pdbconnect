@@ -3,7 +3,6 @@ import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { MVSNodeParams } from 'molstar/lib/extensions/mvs/tree/mvs/mvs-tree';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { DEFAULT_ENTITY_COLOR, WATER_COLOR } from './colors';
-import type { IDataProvider } from './data-provider';
 import {
   applyElementColors,
   applyEntityColors,
@@ -41,16 +40,10 @@ export interface MVSSnapshotProviderConfig {
   PdbStructureFormat: 'bcif' | 'mmcif' | 'pdb';
 }
 
-export const DefaultMVSSnapshotProviderConfig: MVSSnapshotProviderConfig = {
-  PdbStructureUrlTemplate: 'https://www.ebi.ac.uk/pdbe/entry-files/{pdb}.bcif',
-  PdbStructureFormat: 'bcif',
-};
-
 export class MVSSnapshotProvider {
   constructor(
     /** MVSData library object (from molstar/lib/extensions/mvs/mvs-data) */
     public readonly MVSDataLib: typeof MVSData,
-    public readonly dataProvider: IDataProvider,
     public readonly config: MVSSnapshotProviderConfig
   ) {}
 
