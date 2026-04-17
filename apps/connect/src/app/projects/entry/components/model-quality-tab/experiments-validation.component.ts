@@ -15,23 +15,21 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { AgGridAngular } from 'ag-grid-angular';
-import { ValidationDataProcessingFacade } from './validation-data.facade';
-import { ValidationTablesFacade } from './validation-tables.facade';
-
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Store } from '@ngrx/store';
 import { MaterialModule, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
 import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
+import { whenSignalFirstTrue } from '../../helpers/misc';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { MVSHandler } from '../../helpers/mvs-utils';
+import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -40,6 +38,8 @@ import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { StrucQualityGradientsComponent } from '../shared/struc-quality-gradients/struc-quality-gradients.component';
 import { ProcessedExperimentalDetails } from './data-models-and-definitions/processed-experimental-details.model';
+import { ValidationDataProcessingFacade } from './validation-data.facade';
+import { ValidationTablesFacade } from './validation-tables.facade';
 
 /**
  * Examples that should be tested when looking at this component
@@ -212,12 +212,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       this.molstarReady.set(true);
     }
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -247,7 +242,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }));
 
   public currentModelId$ = new BehaviorSubject<string>('1');
-  private modelIdObserver?: MutationObserver;
 
   constructor() {
     effect(() => {
@@ -285,17 +279,19 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         },
       });
     });
+
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+
+      /* 2a. Once molstar has rendered, initializes mutation observer for NMR model Id */
+      initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
+      // TODO: (low priority) do not observe changes from Molstar (dirty), implement external model switcher instead
+    });
   }
 
   ngOnInit() {
-    /* 2a. Once molstar has rendered, initializes mutation observer for NMR model Id */
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
-      if (finished) {
-        this.modelIdObserver = await initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer());
-      }
-    });
-    // TODO: do not observe changes from Molstar (dirty), implement external model switcher instead
-
     /* 2b. Every time NMR model Id updates, data for smart seq viewer is refreshed */
     this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
       this.modelId.set(newModelId);
@@ -410,17 +406,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
       footerObserver.observe(footerEl);
     });
-
-    this.molstarFirstRenderFinished$
-      .pipe(
-        filter((ready) => ready),
-        take(1)
-      )
-      .subscribe(() => {
-        // run after molstar rendered
-        const mvsHandler = MVSHandler(this._molstarComponent);
-        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
-      });
   }
 
   private waitForFooter(callback: (footer: HTMLElement) => void) {

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
@@ -8,12 +8,13 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import type { InitParams } from 'pdbe-molstar/lib/spec';
-import { BehaviorSubject, filter, map, take } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import type { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
+import { makeEntityColors, whenSignalFirstTrue } from '../../../../helpers/misc';
 import { Molstar370DefaultParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
-import { makeEntityColors, MVSHandler } from '../../../../helpers/mvs-utils';
+import { MVSHandler } from '../../../../helpers/mvs-handler';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
   getCleanMoleculeName,
@@ -41,7 +42,7 @@ type NestedDomainsData = Array<{
   imports: [CommonModule, MolstarComponent, NgxSkeletonLoaderModule, EntryDropdownComponent, MaterialModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
+export class Summary3DSectionComponent {
   public readonly helpLogoSrc = '/assets/images/help_outline_24px.svg';
   public baseUrl = baseUrl;
 
@@ -74,6 +75,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
       this.molstarReady.set(true);
     }
   }
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -92,33 +94,20 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
 
   private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
-  ngAfterViewInit(): void {
-    this.molstarFirstRenderFinished$
-      .pipe(
-        filter((ready) => ready),
-        take(1)
-      )
-      .subscribe(() => {
-        // run after molstar rendered
-        const mvsHandler = MVSHandler(this._molstarComponent);
-        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
-        this.updateMVSSnapshotSpec(undefined, 'Assembly'); // Set default view (Preferred assembly)
-      });
-  }
-  ngOnDestroy(): void {
-    this.mvsSnapshotSpec.unsubscribe();
+  constructor() {
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+    });
+
+    this.renderInMolstar(undefined, 'Assembly'); // Set default view (Preferred assembly)
   }
 
   public toggleMolstar() {
     const forceLoad = this.compCommunication.forceLoad();
     this.compCommunication.forceLoad.set(!forceLoad);
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
   public inPrefAssemblyForSelection = signal(true);
   public hasClosedMessage = signal(false);
@@ -559,7 +548,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     const listViewItem = this.lastSelection[tabName];
     this.updateDropdownOptions(listViewItem, tabName, resetDropdown);
     this.updateSymmetryDropdownOptions(listViewItem, tabName);
-    this.updateMVSSnapshotSpec(listViewItem, tabName);
+    this.renderInMolstar(listViewItem, tabName);
   }
 
   private updateSymmetryDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
@@ -716,7 +705,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     this.lastSubSelection[tabName] = subSelectionIdx;
     this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
     this.updateSymmetryDropdownOptions(listViewItem, tabName);
-    this.updateMVSSnapshotSpec(listViewItem, tabName);
+    this.renderInMolstar(listViewItem, tabName);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
@@ -724,7 +713,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     const tabName = this.openedAccordionName();
     if (!tabName) return;
     const listViewItem = this.lastSelection[tabName];
-    this.updateMVSSnapshotSpec(listViewItem, tabName);
+    this.renderInMolstar(listViewItem, tabName);
   }
 
   private async getSelectionObjForSelectionType(
@@ -755,7 +744,7 @@ export class Summary3DSectionComponent implements AfterViewInit, OnDestroy {
     return undefined;
   }
 
-  private updateMVSSnapshotSpec(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
+  private renderInMolstar(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
     this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(listItem, selectionType));
   }
 

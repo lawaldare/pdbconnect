@@ -2,18 +2,19 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, filter, take } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
+import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
 import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
-import { makeEntityColors, MVSHandler } from '../../helpers/mvs-utils';
+import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -28,7 +29,7 @@ import { InteractiveTablesComponent } from '../shared/interactive-tables/interac
   templateUrl: './assemblies-tab.component.html',
   styleUrl: './assemblies-tab.component.scss',
 })
-export class AssembliesTabComponent implements AfterViewInit {
+export class AssembliesTabComponent {
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly gAS = inject(GoogleAnalyticsService);
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
@@ -47,12 +48,7 @@ export class AssembliesTabComponent implements AfterViewInit {
       this.molstarReady.set(true);
     }
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -176,22 +172,15 @@ export class AssembliesTabComponent implements AfterViewInit {
         params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: false },
       });
     });
+
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+    });
   }
 
   private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
-
-  ngAfterViewInit(): void {
-    this.molstarFirstRenderFinished$
-      .pipe(
-        filter((ready) => ready),
-        take(1)
-      )
-      .subscribe(() => {
-        // run after molstar rendered
-        const mvsHandler = MVSHandler(this._molstarComponent);
-        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
-      });
-  }
 
   public getAdditionalData(name: string) {
     // this function is used to get specific data shown in Assembly dashboard view

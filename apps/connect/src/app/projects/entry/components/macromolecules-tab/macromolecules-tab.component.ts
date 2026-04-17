@@ -3,7 +3,7 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,9 +19,9 @@ import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValue
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
+import { whenSignalFirstTrue } from '../../helpers/misc';
 import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
-import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
-import { MVSHandler } from '../../helpers/mvs-utils';
+import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import {
@@ -68,7 +68,7 @@ declare let PdbRnaViewerPlugin: any;
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -242,16 +242,11 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
       this.molstarReady.set(true);
     }
   }
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public get isMobile(): boolean {
     return window.innerWidth <= 768; // typical mobile breakpoint
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -525,18 +520,15 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
 
   private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
-  ngAfterViewInit(): void {
-    this.molstarFirstRenderFinished$
-      .pipe(
-        filter((ready) => ready),
-        take(1)
-      )
-      .subscribe(() => {
-        // run after molstar rendered
-        const mvsHandler = MVSHandler(this._molstarComponent);
-        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
-      });
+  constructor() {
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+    });
+  }
 
+  ngAfterViewInit(): void {
     this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
@@ -546,10 +538,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
         await this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
-  }
-
-  ngOnDestroy(): void {
-    this.mvsSnapshotSpec.unsubscribe();
   }
 
   ngOnInit() {
@@ -841,8 +829,12 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
   public selectionData?: QueryParamForHelpers[];
 
   private renderInMolstar(macromolecule: ProcessedMacromolecule) {
+    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(macromolecule));
+  }
+
+  private getMvsSnapshotSpec(macromolecule: ProcessedMacromolecule): SnapshotSpec | undefined {
     const entryId = this.entryId();
-    if (!entryId) return;
+    if (!entryId) return undefined;
 
     const entityId = `${macromolecule.additionalData.molecule.entity_id}`;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
@@ -854,7 +846,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
     const assemblyId = isSelectionInPrefAssembly ? this.preferredAssemblyId() : undefined;
     const instanceId = this.getSelectedInstanceId();
 
-    const spec: SnapshotSpec = {
+    return {
       name: `Macromolecule ${entityId}`,
       kind: 'pdbconnect_macromolecule',
       params: {
@@ -869,7 +861,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit, OnDest
         color: macromolecule.molstarColorHex,
       },
     };
-    this.mvsSnapshotSpec.next(spec);
   }
 
   private async initOrRefreshProtvista(macromolecule: ProcessedMacromolecule) {

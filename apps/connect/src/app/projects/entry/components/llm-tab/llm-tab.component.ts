@@ -3,8 +3,8 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, ViewChild, AfterViewInit } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -15,12 +15,13 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { CitationDetail } from '../../data-models/publication.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
+import { whenSignalFirstTrue } from '../../helpers/misc';
 import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
-import { MVSHandler } from '../../helpers/mvs-utils';
+import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import {
   convertOutliersToSmartSequenceAnnotation,
@@ -67,7 +68,7 @@ import { colDefs, gridOptions } from './ag-grid';
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
-export class LLMTabComponent implements OnInit, AfterViewInit {
+export class LLMTabComponent implements OnInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly dialog = inject(MatDialog);
@@ -266,14 +267,9 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
       this.molstarReady.set(true);
     }
   }
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public currentModelId$ = new BehaviorSubject<string>('1');
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -317,6 +313,16 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
     const allAnnotations = this.groupedAnnotations();
     const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
     this.filteredLLMAnnotations.update(() => removeDuplicatesByKey(filteredByResidue, 'sentence'));
+  }
+
+  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+
+  constructor() {
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+    });
   }
 
   ngOnInit(): void {
@@ -367,21 +373,6 @@ export class LLMTabComponent implements OnInit, AfterViewInit {
         }
       });
   }
-
-  ngAfterViewInit(): void {
-    this.molstarFirstRenderFinished$
-      .pipe(
-        filter((ready) => ready),
-        take(1)
-      )
-      .subscribe(() => {
-        // run after molstar rendered
-        const mvsHandler = MVSHandler(this._molstarComponent);
-        this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
-      });
-  }
-
-  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
   private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));

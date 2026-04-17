@@ -2,9 +2,6 @@ import { SingleAsyncQueue } from '@pdbc/core';
 import type { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
 import { environment } from '../../../../environments/environment';
-import { Molecule } from '../data-models/molecule.model';
-import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
-import { ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
 import { MVSSnapshotProvider } from './mvs-views/mvs-snapshot-provider';
 import type { SnapshotSpec } from './mvs-views/mvs-snapshot-types';
 
@@ -39,18 +36,4 @@ function createMVSSnapshotProvider(PDBeMolstarPlugin_: typeof PDBeMolstarPlugin)
     PdbStructureFormat: 'bcif',
     PdbStructureUrlTemplate: `${baseUrl}pdbe/entry-files/{pdb}.bcif`,
   });
-}
-
-export function makeEntityColors(macromolecules: ProcessedMacromolecule[] | undefined, ligands: ProcessedLigandOrMod[] | undefined) {
-  const DEFAULT_ENTITY_COLOR = 'gray';
-  const colors: { [entityId: string]: string } = {};
-  for (const macromolecule of macromolecules ?? []) {
-    colors[macromolecule.additionalData.molecule.entity_id] = macromolecule.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
-  }
-  for (const ligand of ligands ?? []) {
-    if (ligand.type === 'ligand') {
-      colors[(ligand.additionalData.source as Molecule).entity_id] = ligand.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
-    }
-  }
-  return colors;
 }
