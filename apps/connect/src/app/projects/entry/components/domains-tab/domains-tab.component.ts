@@ -14,12 +14,11 @@ import { FixedSelectionInput, ProtvistaWrapperComponent } from '@pdbe-lib/pv-nig
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { InitParams } from 'pdbe-molstar/lib/spec';
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
-import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { createAuthAlternateNumbering, generateSeqViewerDomainAnnotation, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
@@ -252,13 +251,7 @@ export class DomainsTabComponent {
     return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
   }
 
-  public readonly configForMolstar = computed<InitParams>(() => ({
-    ...Molstar370DefaultParams,
-    subscribeEvents: true,
-    granularity: 'residue',
-    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-    sequencePanel: true,
-  }));
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   public sequenceDetails = signal<SequenceDetail[]>([]);
 

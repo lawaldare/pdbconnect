@@ -20,7 +20,7 @@ import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.mod
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
-import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
@@ -274,13 +274,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   private readonly preferredAssemblyId = computed(() => this.summaryData()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
 
-  public readonly configForMolstar = computed(() => ({
-    ...Molstar370DefaultParams,
-    subscribeEvents: true,
-    granularity: 'residue',
-    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-    sequencePanel: true,
-  }));
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   public molstarHeight = '100%';
 

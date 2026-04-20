@@ -13,7 +13,7 @@ import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
 import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
-import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
@@ -142,11 +142,8 @@ export class AssembliesTabComponent {
   });
 
   public readonly configForMolstar = computed(() => ({
-    ...Molstar370DefaultParams,
-    subscribeEvents: true,
+    ...EntryPageTabsCommonMolstarParams,
     granularity: 'chain',
-    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-    sequencePanel: true,
   }));
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;

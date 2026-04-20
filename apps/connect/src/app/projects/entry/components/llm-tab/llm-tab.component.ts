@@ -20,7 +20,7 @@ import { LLMAnnotation } from '../../data-models/llm-model';
 import { CitationDetail } from '../../data-models/publication.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
-import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import {
@@ -249,14 +249,7 @@ export class LLMTabComponent implements OnInit {
     return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
   }
 
-  public readonly configForMolstar = computed(() => ({
-    // TODO: @adam Factor out common settings for all tabs
-    ...Molstar370DefaultParams,
-    subscribeEvents: true,
-    granularity: 'residue',
-    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-    sequencePanel: true,
-  }));
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   private molstarReady = signal(false);
   public _molstarComponent?: MolstarComponent;

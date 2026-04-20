@@ -7,13 +7,12 @@ import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import type { InitParams } from 'pdbe-molstar/lib/spec';
 import { BehaviorSubject, map } from 'rxjs';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import type { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
 import { makeEntityColors, whenSignalFirstTrue } from '../../../../helpers/misc';
-import { Molstar370DefaultParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
 import { MVSHandler } from '../../../../helpers/mvs-handler';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
@@ -101,7 +100,11 @@ export class Summary3DSectionComponent {
       this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
 
-    this.renderInMolstar(undefined, 'Assembly'); // Set default view (Preferred assembly)
+    whenSignalFirstTrue(computed(() => this.procMacromolecules() && this.procLigands())).subscribe(() => {
+      // run after entityColors available
+      // TODO: implement this waiting for data properly (MVS spec should reflect data when they get loaded)
+      this.renderInMolstar(undefined, 'Assembly'); // Set default view (Preferred assembly)
+    });
   }
 
   public toggleMolstar() {
@@ -116,14 +119,7 @@ export class Summary3DSectionComponent {
     return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
   }
 
-  public readonly configForMolstar = computed<InitParams>(() => ({
-    ...Molstar370DefaultParams,
-    subscribeEvents: true,
-    granularity: 'residue',
-    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-    sequencePanel: true,
-    // tabs: 'all',
-  }));
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   public dropdownSelected!: string;
   public dropdownOptions = signal<DownloadOption[]>([]);
@@ -768,7 +764,6 @@ export class Summary3DSectionComponent {
         };
       case 'Macromolecules':
         if (!listItem) {
-          // Same as "Preferred complex", TODO create separate view (low prio)
           return {
             name: 'All macromolecules',
             kind: 'pdbconnect_complex',

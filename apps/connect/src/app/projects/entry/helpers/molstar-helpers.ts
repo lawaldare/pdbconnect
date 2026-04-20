@@ -11,6 +11,7 @@ export const Molstar370DefaultParams: InitParams = {
   moleculeId: undefined,
   customData: undefined,
   assemblyId: undefined,
+  modelId: undefined,
   defaultPreset: 'default',
   ligandView: undefined,
   alphafoldView: false,
@@ -23,7 +24,7 @@ export const Molstar370DefaultParams: InitParams = {
   hideStructure: [],
   loadMaps: false,
   mapSettings: undefined,
-  bgColor: 'white',
+  bgColor: 'black',
   highlightColor: undefined,
   selectColor: undefined,
   lighting: undefined,
@@ -52,6 +53,17 @@ export const Molstar370DefaultParams: InitParams = {
   landscape: false,
   reactive: false,
   tabs: 'pdbe',
+};
+
+/** PDBe Molstar initialization params shared across all Entry Page tabs */
+export const EntryPageTabsCommonMolstarParams: InitParams = {
+  ...Molstar370DefaultParams,
+  granularity: 'residue',
+  subscribeEvents: true,
+  hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
+  sequencePanel: true,
+  pdbeLink: false,
+  loadingOverlay: true,
 };
 
 export async function drawSelectionInMolstar(

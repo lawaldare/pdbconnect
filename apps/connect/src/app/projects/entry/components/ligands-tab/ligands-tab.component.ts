@@ -32,7 +32,7 @@ import { Molecule } from '../../data-models/molecule.model';
 import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
 import { interactionsToMolstar, MVSAtomInteraction, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
 import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
-import { Molstar370DefaultParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
@@ -178,11 +178,8 @@ export class LigandsTabComponent implements AfterViewInit {
   });
 
   public readonly configForMolstar = computed(() => ({
-    ...Molstar370DefaultParams,
-    subscribeEvents: true,
+    ...EntryPageTabsCommonMolstarParams,
     granularity: 'element',
-    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-    sequencePanel: true,
   }));
 
   private currentChainId = signal<string | undefined>(undefined);

@@ -27,7 +27,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
 import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
-import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
@@ -232,14 +232,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     const forceLoad = this.compCommunication.forceLoad();
     this.compCommunication.forceLoad.set(!forceLoad);
   }
-
-  public readonly configForMolstar = computed(() => ({
-    ...Molstar370DefaultParams,
-    subscribeEvents: true,
-    granularity: 'residue',
-    hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
-    sequencePanel: true,
-  }));
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   public currentModelId$ = new BehaviorSubject<string>('1');
 
