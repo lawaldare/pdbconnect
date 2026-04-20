@@ -58,6 +58,7 @@ export const Molstar370DefaultParams: InitParams = {
 /** PDBe Molstar initialization params shared across all Entry Page tabs */
 export const EntryPageTabsCommonMolstarParams: InitParams = {
   ...Molstar370DefaultParams,
+  bgColor: 'white',
   granularity: 'residue',
   subscribeEvents: true,
   hideCanvasControls: ['snapshotControls', 'snapshotDescription'],

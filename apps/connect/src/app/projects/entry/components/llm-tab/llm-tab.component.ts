@@ -3,8 +3,8 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, untracked, ViewChild } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -75,16 +75,23 @@ export class LLMTabComponent implements OnInit {
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
 
-  public dropdownSelected!: string;
+  public dropdownSelectedSignal = signal<string>('');
+  public get dropdownSelected() {
+    return untracked(this.dropdownSelectedSignal);
+  }
   public dropdownOptions: DownloadOption[] = [];
   public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
 
-  public symmetryDropdownSelected?: string;
-  public symmetryDropdownOptions: DownloadOption[] = [];
-  private getSelectedInstanceId() {
-    if (this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All') return this.symmetryDropdownSelected;
-    else return undefined;
+  public symmetryDropdownSelectedSignal = signal<string | undefined>(undefined);
+  public get symmetryDropdownSelected() {
+    return untracked(this.symmetryDropdownSelectedSignal);
   }
+  public symmetryDropdownOptions: DownloadOption[] = [];
+  private selectedInstanceId = computed(() => {
+    const value = this.symmetryDropdownSelectedSignal();
+    if (value && value !== 'All') return value;
+    else return undefined;
+  });
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -245,9 +252,9 @@ export class LLMTabComponent implements OnInit {
 
   public inPrefAssembly = signal(true);
   public inPrefAssemblyForChain = signal(true);
-  private getPreferredAssemblyId(): string | undefined {
-    return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
-  }
+  private preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
 
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
@@ -308,13 +315,11 @@ export class LLMTabComponent implements OnInit {
     this.filteredLLMAnnotations.update(() => removeDuplicatesByKey(filteredByResidue, 'sentence'));
   }
 
-  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
-
   constructor() {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
-      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
   }
 
@@ -440,7 +445,8 @@ export class LLMTabComponent implements OnInit {
         downloadable: false,
       };
     });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    // this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[0]);
   }
 
   async updateSymmetryDropdownOptions(macromolecule: ProcessedMacromolecule) {
@@ -456,9 +462,9 @@ export class LLMTabComponent implements OnInit {
           downloadable: false,
         };
       });
-      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
+      this.symmetryDropdownSelectedSignal.set(this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined);
     } else {
-      this.symmetryDropdownSelected = undefined;
+      this.symmetryDropdownSelectedSignal.set(undefined);
       this.symmetryDropdownOptions = [];
     }
   }
@@ -505,7 +511,8 @@ export class LLMTabComponent implements OnInit {
   }
 
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected = event;
+    // this.dropdownSelected = event;
+    this.dropdownSelectedSignal.set(event);
 
     const letter = event.split(' ')[1];
     const groupedAnnotations = this.groupedFilteredLLMAnnotations()[letter];
@@ -529,7 +536,7 @@ export class LLMTabComponent implements OnInit {
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
+    this.symmetryDropdownSelectedSignal.set(event);
 
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
@@ -547,7 +554,6 @@ export class LLMTabComponent implements OnInit {
   }
 
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
-    this.renderInMolstar(macromolecule);
     await this.setCurrentSelectionData(macromolecule);
   }
 
@@ -561,20 +567,18 @@ export class LLMTabComponent implements OnInit {
     this.visInteractivity.currentSelectionChainId.set(chainId);
   }
 
-  private async renderInMolstar(macromolecule: ProcessedMacromolecule) {
-    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(macromolecule));
-  }
-
-  private getMvsSnapshotSpec(macromolecule: ProcessedMacromolecule): SnapshotSpec | undefined {
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+
     const llmAnnotations = this.llmAnnotations();
+    const assemblyId = this.displayedAssemblyId();
+    const instanceId = this.selectedInstanceId();
 
-    const assemblyId = this.inPrefAssemblyForChain() ? this.getPreferredAssemblyId() : undefined; // undefined = deposited model
-    const instanceId = this.getSelectedInstanceId();
-
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelectedSignal()];
     const labelAsymId = molstarSelection[0].auth_asym_id; //  TODO: @adam USE LABEL_ASYM_ID!!!, fix annotation processing, see 6qb3 chain B[auth X], 7p19
     if (!labelAsymId) return undefined;
 
@@ -596,7 +600,8 @@ export class LLMTabComponent implements OnInit {
         volumeStreaming: true,
       },
     };
-  }
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   public openDialog(type: string) {
     const macromolecule = this.currentMacromoleculeDatum() as ProcessedMacromolecule;
