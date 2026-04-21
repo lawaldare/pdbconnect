@@ -31,7 +31,6 @@
       "@pdbe-lib/shared-services": ["libs/pdbe/shared-services/src/index.ts"],
       "@pdbe-lib/smart-seq-viewer": ["libs/pdbe/smart-seq-viewer/src/index.ts"],
       "@pdbe-lib/styles": ["libs/pdbe/styles/src/index.ts"],
-      "@pdbe-lib/swagger-docs": ["libs/pdbe/swagger-docs/src/index.ts"],
       "@pdbe-lib/tool-tip": ["libs/pdbe/tool-tip/src/index.ts"],
       "@vf-lib/ebi-footer": ["libs/vf/ebi-footer/src/index.ts"],
       "@vf-lib/ebi-header": ["libs/vf/ebi-header/src/index.ts"]

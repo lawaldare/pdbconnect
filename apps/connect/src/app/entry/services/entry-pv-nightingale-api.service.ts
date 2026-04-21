@@ -9,15 +9,12 @@ import { environment } from '../../../environments/environment';
 })
 export class PvDataApiService {
   private readonly http = inject(HttpClient);
-  private readonly isLocalhost = window?.location?.hostname === 'localhost';
 
-  private readonly BaseAPI = `https://www.ebi.ac.uk/pdbe/graph-api/`;
   private readonly AggregatedApiUrl = `${environment.baseUrl}pdbe/api/v2/`;
 
   private buildUrl(endpoint: string, entryId: string, entityId: string): string {
-    const baseUrl = this.isLocalhost ? this.BaseAPI : this.AggregatedApiUrl;
-    let urlPath = this.isLocalhost ? 'pdbe_pages/protvista/' : 'pdb/entry/protvista/';
-    if (endpoint === 'sequence_conservation') urlPath = 'pdb/';
+    const baseUrl = this.AggregatedApiUrl;
+    const urlPath = endpoint === 'sequence_conservation' ? 'pdb/' : 'pdb/entry/protvista/';
     return `${baseUrl}${urlPath}${endpoint}/${entryId}/${entityId}`;
   }
 
@@ -107,8 +104,7 @@ export class PvDataApiService {
   }
 
   public getPdbeVariationTrackData(entryId: string, entityId: string) {
-    const url = `${this.BaseAPI}pdbe_pages/protvista/variation/${entryId}/${entityId}`;
-    // const url = this.buildUrl('variation', entryId, entityId);
+    const url = this.buildUrl('variation', entryId, entityId);
     return this.http.get<APIVariationData>(url).pipe(
       catchError((error) => {
         if (error?.status === 404) {
