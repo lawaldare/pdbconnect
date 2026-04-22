@@ -252,9 +252,9 @@ export class LLMTabComponent implements OnInit {
 
   public inPrefAssembly = signal(true);
   public inPrefAssemblyForChain = signal(true);
-  private preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
   /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
-  private displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
 
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 

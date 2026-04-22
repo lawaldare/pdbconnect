@@ -157,27 +157,26 @@ export class AssembliesTabComponent {
   }
 
   constructor() {
-    effect(() => {
-      const entryId = this.entryId();
-      const complex = this.currentAssemblyDatum();
-      if (!entryId || !complex) return;
-
-      const assemblyId = complex.assemblyId;
-      this.mvsSnapshotSpec.next({
-        name: `Complex ${assemblyId}`,
-        kind: 'pdbconnect_complex',
-        params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: false },
-      });
-    });
-
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
-      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
   }
 
-  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    const complex = this.currentAssemblyDatum();
+    if (!entryId || !complex) return;
+
+    const assemblyId = complex.assemblyId;
+    return {
+      name: `Complex ${assemblyId}`,
+      kind: 'pdbconnect_complex',
+      params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: false },
+    };
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   public getAdditionalData(name: string) {
     // this function is used to get specific data shown in Assembly dashboard view

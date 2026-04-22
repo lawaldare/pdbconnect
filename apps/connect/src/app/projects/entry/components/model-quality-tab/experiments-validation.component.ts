@@ -15,7 +15,7 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Store } from '@ngrx/store';
@@ -250,33 +250,10 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       }
     });
 
-    effect(() => {
-      const entryId = this.entryId();
-      const currentModelId = this.modelId();
-      const validationData = this.residueWiseOutliers();
-      const selectedValidationType = this.selectedValidationType().value;
-      const selectedIssueKind = this.selectedSpecificIssueKindValue()?.value || this.selectedSpecificIssueKind.value;
-      if (!entryId || !currentModelId) return;
-
-      this.mvsSnapshotSpec.next({
-        name: 'Validation',
-        kind: 'pdbconnect_quality',
-        params: {
-          entry: entryId,
-          assemblyId: undefined,
-          modelId: parseInt(currentModelId),
-          validationData: validationData,
-          validationType: selectedValidationType === 'issue_count' ? { kind: 'issue_count' } : { kind: 'specific_issue', issue: selectedIssueKind },
-          validationColors: this.legends.map((t) => t.color),
-          volumeStreaming: true,
-        },
-      });
-    });
-
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
-      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
 
       /* 2a. Once molstar has rendered, initializes mutation observer for NMR model Id */
       initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
@@ -339,6 +316,30 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
       });
   }
 
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    const currentModelId = this.modelId();
+    if (!entryId || !currentModelId) return;
+    const validationData = this.residueWiseOutliers();
+    const selectedValidationType = this.selectedValidationType().value;
+    const selectedIssueKind = this.selectedSpecificIssueKindValue()?.value || this.selectedSpecificIssueKind.value;
+
+    return {
+      name: 'Validation',
+      kind: 'pdbconnect_quality',
+      params: {
+        entry: entryId,
+        assemblyId: undefined,
+        modelId: parseInt(currentModelId),
+        validationData: validationData,
+        validationType: selectedValidationType === 'issue_count' ? { kind: 'issue_count' } : { kind: 'specific_issue', issue: selectedIssueKind },
+        validationColors: this.legends.map((t) => t.color),
+        volumeStreaming: true,
+      },
+    };
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
+
   @HostListener('window:resize', ['$event'])
   onResize(_event: Event) {
     this.updateLeftSideWidth();
@@ -361,8 +362,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     this.selectedSpecificIssueKind.setValue(event.value);
     this.selectedSpecificIssueKindValue.set(event.value); // trigger effect
   }
-
-  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   async ngAfterViewInit() {
     this.updateLeftSideWidth();

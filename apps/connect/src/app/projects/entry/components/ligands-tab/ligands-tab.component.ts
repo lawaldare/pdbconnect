@@ -107,6 +107,8 @@ export class LigandsTabComponent implements AfterViewInit {
   private readonly procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
   private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
   private readonly preferredAssemblyId = computed(() => this.summaryData()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined));
 
   public residToInstanceId: { [key: string]: string | undefined } = {};
 
@@ -331,6 +333,9 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private getMvsSnapshotSpec(mvsAtomInteractions: MVSAtomInteraction[] | undefined): SnapshotSpec | undefined {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
+
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return undefined;
 
@@ -346,8 +351,8 @@ export class LigandsTabComponent implements AfterViewInit {
       name: 'Ligand environment',
       kind: 'pdbconnect_environment',
       params: {
-        entry: this.entryId()!,
-        assemblyId: this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined,
+        entry: entryId,
+        assemblyId: this.displayedAssemblyId(),
         labelAsymId,
         authAsymId,
         authSeqId,
@@ -376,7 +381,7 @@ export class LigandsTabComponent implements AfterViewInit {
 
     this.residToInstanceId = mvsInteractions.residToInstanceId;
 
-    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
+    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
 
     // TODO: @adam Refactor use of residToInstanceId
     // TODO: @adam Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
@@ -394,7 +399,7 @@ export class LigandsTabComponent implements AfterViewInit {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
-      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
   }
 
@@ -412,7 +417,7 @@ export class LigandsTabComponent implements AfterViewInit {
    */
   private viewReady = signal(false);
 
-  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   ngAfterViewInit(): void {
     this.viewReady.set(true);
@@ -513,7 +518,7 @@ export class LigandsTabComponent implements AfterViewInit {
       this.interactionsRowData.set(undefined);
     }
 
-    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(undefined));
+    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(undefined));
   }
 
   public async onDropdownSelect(event: string) {

@@ -247,9 +247,13 @@ export class DomainsTabComponent {
   public inPrefAssembly = signal(true);
   public inPrefAssemblyForChain = signal(true);
 
-  private getPreferredAssemblyId(): string | undefined {
-    return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
-  }
+  private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
+
+  // private getPreferredAssemblyId(): string | undefined {
+  //   return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
+  // }
 
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
@@ -297,11 +301,11 @@ export class DomainsTabComponent {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
-      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
   }
 
-  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
 
@@ -487,14 +491,14 @@ export class DomainsTabComponent {
   public getCleanSelectionName = getCleanSelectionName;
 
   private async renderInMolstar(domain: ProcessedDomain) {
-    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(domain));
+    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(domain));
   }
 
   private getMvsSnapshotSpec(domain: ProcessedDomain): SnapshotSpec | undefined {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
-    const assemblyId = this.inPrefAssemblyForChain() ? this.getPreferredAssemblyId() : undefined; // undefined = deposited model
+    const assemblyId = this.displayedAssemblyId();
     const instanceId = this.getSelectedInstanceId();
 
     return {

@@ -512,13 +512,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return rows.length > 0;
   });
 
-  private readonly mvsSnapshotSpec = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   constructor() {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
-      this.mvsSnapshotSpec.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
   }
 
@@ -823,7 +823,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public selectionData?: QueryParamForHelpers[];
 
   private renderInMolstar(macromolecule: ProcessedMacromolecule) {
-    this.mvsSnapshotSpec.next(this.getMvsSnapshotSpec(macromolecule));
+    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(macromolecule));
   }
 
   private getMvsSnapshotSpec(macromolecule: ProcessedMacromolecule): SnapshotSpec | undefined {
