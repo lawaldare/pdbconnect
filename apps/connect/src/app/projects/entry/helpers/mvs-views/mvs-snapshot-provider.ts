@@ -34,8 +34,10 @@ const INTERACTION_TUBE_DASH_LENGTH = 0.1;
 
 /** Color for water entity */
 const WATER_COLOR = '#ff0d0d';
-/** Color for entities if not specified otherwise */
-const DEFAULT_ENTITY_COLOR = '#808080';
+/** Color for (non-selected) entities if not specified otherwise */
+const DEFAULT_ENTITY_COLOR = '#cccccc';
+/** Color for selected entities if not specified otherwise */
+const DEFAULT_SELECTED_ENTITY_COLOR = '#808080';
 
 export interface MVSSnapshotProviderConfig {
   /** URL template for PDB structural data, '{pdb}' will be replaced by actual PDB ID. */
@@ -140,7 +142,8 @@ export class MVSSnapshotProvider {
     // Apply entity colors
     if (params.entityColors) {
       for (const repr of Object.values(ctx.representations)) {
-        applyEntityColors(repr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
+        applyEntityColors(repr, params.entityColors as Record<string, ColorT>, DEFAULT_ENTITY_COLOR);
+        ctx.representations.waterSticks?.color({ color: WATER_COLOR });
       }
     }
     // Apply element colors to atomic representations
@@ -166,7 +169,7 @@ export class MVSSnapshotProvider {
 
     // Apply color to the selected entity
     for (const repr of Object.values(ctx.representations)) {
-      repr.color({ selector: entitySelector, color: (params.color as ColorT | undefined) ?? DEFAULT_ENTITY_COLOR });
+      repr.color({ selector: entitySelector, color: (params.color as ColorT | undefined) ?? DEFAULT_SELECTED_ENTITY_COLOR });
     }
     // Apply element colors to atomic representations within the selected entity
     for (const repr of atomicRepresentations(ctx.representations)) {
@@ -191,7 +194,7 @@ export class MVSSnapshotProvider {
 
     // Add and color spacefill representation for ligands
     for (const entityId of params.ligandEntityIds) {
-      const entityColor = (params.entityColors?.[entityId] as ColorT | undefined) ?? DEFAULT_ENTITY_COLOR;
+      const entityColor = (params.entityColors?.[entityId] as ColorT | undefined) ?? DEFAULT_SELECTED_ENTITY_COLOR;
       ctx.structure
         .component({ selector: { label_entity_id: entityId } })
         .representation({ type: 'spacefill' })
@@ -273,7 +276,8 @@ export class MVSSnapshotProvider {
       // Apply entity colors
       if (params.entityColors) {
         for (const repr of Object.values(ctx.representations)) {
-          applyEntityColors(repr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
+          applyEntityColors(repr, params.entityColors as Record<string, ColorT>, DEFAULT_ENTITY_COLOR);
+          ctx.representations.waterSticks?.color({ color: WATER_COLOR });
         }
       }
       // Apply colors to modified residues
@@ -427,7 +431,8 @@ export class MVSSnapshotProvider {
       }
       const partnerResiduesRepr = ctx.structure.component({ selector: wholeResidues(interactingAtoms) }).representation({ type: 'ball_and_stick', size_factor: 0.5 });
       if (params.entityColors) {
-        applyEntityColors(partnerResiduesRepr, params.entityColors as Record<string, ColorT>, WATER_COLOR);
+        applyEntityColors(partnerResiduesRepr, params.entityColors as Record<string, ColorT>, DEFAULT_ENTITY_COLOR);
+        ctx.representations.waterSticks?.color({ color: WATER_COLOR });
       }
       applyElementColors(partnerResiduesRepr);
     }

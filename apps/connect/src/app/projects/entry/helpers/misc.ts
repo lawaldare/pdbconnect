@@ -1,6 +1,6 @@
-import { Signal } from '@angular/core';
+import { effect, Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { filter, Observable, take } from 'rxjs';
+import { BehaviorSubject, filter, Observable, skip, take } from 'rxjs';
 import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
@@ -26,4 +26,11 @@ export function whenSignalFirstTrue<T>(signal: Signal<T>): Observable<T> {
     filter((value) => !!value),
     take(1)
   );
+}
+
+/** Convert Signal to BehaviorSubject (emits one additional `undefined` in the beginning). */
+export function toBehaviorSubject<T>(signal: Signal<T>): BehaviorSubject<T | undefined> {
+  const subject = new BehaviorSubject<T | undefined>(undefined);
+  effect(() => subject.next(signal()));
+  return subject;
 }
