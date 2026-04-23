@@ -111,6 +111,8 @@ export type SnapshotSpecParams = {
      * - If `validationType` is 'issue_count': first color = 0 issues, second color = 1 issue..., last color = n or more issues).
      * - If `validationType` is 'specific_issue': first color = issue not present, last color = issue present). */
     validationColors: string[];
+    /** Nice names for outlier types e.g. { 'bond_angles': 'Bond Angles', 'planes': 'Planarity Deviations', ... } */
+    niceIssueNames: Record<string, string> | undefined;
     /** Turn on Volume Streaming */
     volumeStreaming: boolean;
   };

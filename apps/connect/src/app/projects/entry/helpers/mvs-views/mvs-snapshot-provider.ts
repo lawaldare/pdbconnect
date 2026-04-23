@@ -308,8 +308,6 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Model Quality tab */
   private loadPdbconnectQuality(params: SnapshotSpecParams['pdbconnect_quality']) {
-    // TODO: @adam Fix tooltips for Specific issue
-    // TODO: @adam Nice-format and sort issue names in tooltips
     const ctx = this._loadPdbconnectBase({
       entry: params.entry,
       assemblyId: params.assemblyId,
@@ -327,7 +325,7 @@ export class MVSSnapshotProvider {
         'loop_',
         '_validation.label_asym_id',
         '_validation.label_seq_id',
-        '_validation.class', // will contain either number of present issues, or 'y' where a specific issue is present
+        '_validation.issues', // will contain either number of present issues, or 'y' where a specific issue is present
         '_validation.tooltip',
         '. . . -',
       ];
@@ -336,15 +334,10 @@ export class MVSSnapshotProvider {
           const model = chain.models.find((m) => m.model_id === params.modelId);
           if (!model) continue;
           for (const residue of model.residues) {
-            const class_ =
-              params.validationType.kind === 'issue_count'
-                ? residue.outlier_types.length
-                : residue.outlier_types.includes(params.validationType.issue)
-                  ? 'y'
-                  : undefined;
-            if (class_ !== undefined) {
-              annotationCif.push(`${chain.struct_asym_id} ${residue.residue_number} ${class_} '${residue.outlier_types.join(', ')}'`);
-            }
+            const issues =
+              params.validationType.kind === 'issue_count' ? residue.outlier_types.length : residue.outlier_types.includes(params.validationType.issue) ? 'y' : '.';
+            const tooltip = residue.outlier_types.map((type) => params.niceIssueNames?.[type] ?? type).join(', ');
+            annotationCif.push(`${chain.struct_asym_id} ${residue.residue_number} ${issues} '${tooltip}'`);
           }
         }
       }
@@ -359,7 +352,7 @@ export class MVSSnapshotProvider {
         format: 'cif',
         schema: 'all_atomic',
         category_name: 'validation',
-        field_name: 'class',
+        field_name: 'issues',
         palette: {
           kind: 'categorical',
           colors: Object.fromEntries(params.validationColors.map((color, i) => [i, color as ColorT])),

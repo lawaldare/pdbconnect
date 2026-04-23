@@ -334,6 +334,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         validationData: validationData,
         validationType: selectedValidationType === 'issue_count' ? { kind: 'issue_count' } : { kind: 'specific_issue', issue: selectedIssueKind },
         validationColors: this.legends.map((t) => t.color),
+        niceIssueNames: OUTLIER_TYPE_LABELS,
         volumeStreaming: true,
       },
     };
