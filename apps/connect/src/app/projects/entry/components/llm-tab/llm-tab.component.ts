@@ -19,7 +19,7 @@ import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, fil
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { CitationDetail } from '../../data-models/publication.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
-import { whenSignalFirstTrue } from '../../helpers/misc';
+import { groupBy, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
@@ -96,7 +96,7 @@ export class LLMTabComponent implements OnInit {
   public dashboardStatLinks = dashboardStatLinks;
 
   private readonly globalStore = inject(Store<EntryStoreState>);
-  public readonly processedMacromolsLLM = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
+  public readonly processedMacromoleculesForLLM = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
@@ -166,12 +166,8 @@ export class LLMTabComponent implements OnInit {
 
   public readonly llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
 
-  public readonly tabDataLoaded = computed(() => this.processedMacromolsLLM() !== undefined);
-  public readonly macromoleculeTableRows = computed(() => {
-    const rows = this.processedMacromolsLLM();
-    if (rows === undefined) return [];
-    return rows;
-  });
+  public readonly tabDataLoaded = computed(() => this.processedMacromoleculesForLLM() !== undefined);
+  public readonly macromoleculeTableRows = computed(() => this.processedMacromoleculesForLLM() ?? []);
 
   public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
 
@@ -373,28 +369,9 @@ export class LLMTabComponent implements OnInit {
   }
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
-  private procLLMMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromoleculesForLLM));
-  public hasLoadedAnnotations = computed(() => this.procLLMMacromolecules() !== undefined);
-  public hasAnnotations = computed(() => {
-    const rows = this.procLLMMacromolecules();
-    if (rows === undefined) return false;
-    return rows.length > 0;
-  });
 
-  private groupAnnotationsByPdbChain(data: any) {
-    return data.reduce((acc: any, item: any) => {
-      const chain = item.pdbChain;
-      if (!acc[chain]) {
-        acc[chain] = [];
-      }
-      acc[chain].push(item);
-      return acc;
-    }, {});
-  }
-
-  private groupedFilteredLLMAnnotations = computed(() => {
-    const annotations = this.mappedAnnotations();
-    return this.groupAnnotationsByPdbChain(annotations);
+  private groupedFilteredLLMAnnotations = computed<{ [labelAsymId: string]: LLMAnnotation[] }>(() => {
+    return groupBy(this.mappedAnnotations(), (annot) => annot.pdbChain);
   });
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
@@ -579,11 +556,11 @@ export class LLMTabComponent implements OnInit {
     const instanceId = this.selectedInstanceId();
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelectedSignal()];
-    const labelAsymId = molstarSelection[0].auth_asym_id; //  TODO: @adam USE LABEL_ASYM_ID!!!, fix annotation processing, see 6qb3 chain B[auth X], 7p19
+    const labelAsymId = molstarSelection[0].auth_asym_id; //  TODO: USE LABEL_ASYM_ID!!! here, fix chain ID handling in annotation processing, see 6qb3 chain B[auth X], 7p19
     if (!labelAsymId) return undefined;
 
-    // TODO: @adam Decide coloring -> Chain colored by validation (or gray), non-selected chains white with lower opacity?
-    // TODO: @adam Store PDBe design colors as constants https://www.figma.com/design/oT5W7Ff1I2kj6tbsgs3iS6/PDBe-Design-System---Component-library?node-id=1-234&p=f&t=1yRGegyEwICmLdo5-0
+    // TODO: Decide coloring -> Chain colored by validation (or gray), non-selected chains white with lower opacity?
+    // TODO: Store PDBe design colors as constants https://www.figma.com/design/oT5W7Ff1I2kj6tbsgs3iS6/PDBe-Design-System---Component-library?node-id=1-234&p=f&t=1yRGegyEwICmLdo5-0
 
     return {
       name: 'Text annotations',

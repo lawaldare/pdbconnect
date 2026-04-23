@@ -2,6 +2,7 @@ import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { MVSNodeParams } from 'molstar/lib/extensions/mvs/tree/mvs/mvs-tree';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import { groupBy } from '../misc';
 import {
   applyElementColors,
   applyEntityColors,
@@ -10,7 +11,6 @@ import {
   assemblyText,
   atomicRepresentations,
   customTooltipText,
-  groupBy,
   max,
   wholeResidues,
 } from './helpers';
@@ -436,7 +436,6 @@ export class MVSSnapshotProvider {
       }
       applyElementColors(partnerResiduesRepr);
     }
-    // TODO: @adam we don't have data for non-preferred-assembly ligands (e.g. 1og5 chain B) - decide what to do (current PDBconnect falls back to builtin, but that's confusing IMHO)
 
     const description: string[] = [
       `## Ligand environment`,

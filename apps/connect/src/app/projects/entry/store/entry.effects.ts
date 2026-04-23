@@ -40,6 +40,7 @@ import {
 } from './data-processing/ligand-processing';
 import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
 import { MoleculeSource } from '../data-models/molecule.model';
+import { filterMacromoleculesForLLM } from './data-processing/llm-processing';
 
 @Injectable()
 export class EntryEffects {
@@ -1317,19 +1318,7 @@ export class EntryEffects {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         if ((<any>uniprotMappings).empty === true) uniprotMappings = {};
 
-        const primaryCitationYes = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
-        const llmUniProtIds = new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession));
-        const chainIds = new Set(primaryCitationYes?.map((a: any) => a.pdbChain));
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
-
-        const filteredMacromolecules = macromoleculesWithPrefAssembly.filter((macromolecule) => {
-          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageWithPrefAssembly);
-          const macromoleculeUniProts = uniprotData.uniprotAccsForMacromolecule;
-          const hasUniProtInCommon = macromoleculeUniProts.some((unp) => llmUniProtIds.has(unp));
-          const hasChainsInCommon = macromolecule.in_chains.some((ch) => chainIds.has(ch));
-          return hasUniProtInCommon && hasChainsInCommon;
-        });
+        const filteredMacromolecules = filterMacromoleculesForLLM(macromolecules, llmAnnotations, preferredAssembly, uniprotMappings, polymerCoverage);
         const procLLMCards = generateMacromoleculesCards(filteredMacromolecules);
         return EntryActions.getProcLLMCardsSuccess({ procLLMCards });
       }),
@@ -1377,20 +1366,7 @@ export class EntryEffects {
           throw 'missing data to process LLM macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
 
-        const primaryCitationYes = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
-        const llmUniProtIds = new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession));
-        const chainIds = new Set(primaryCitationYes?.map((a: any) => a.pdbChain));
-
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
-        const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
-
-        const filteredMacromolecules = macromoleculesWithPrefAssembly.filter((macromolecule) => {
-          const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageWithPrefAssembly);
-          const macromoleculeUniProts = uniprotData.uniprotAccsForMacromolecule;
-          const hasUniProtInCommon = macromoleculeUniProts.some((unp) => llmUniProtIds.has(unp));
-          const hasChainsInCommon = macromolecule.in_chains.some((ch) => chainIds.has(ch));
-          return hasUniProtInCommon && hasChainsInCommon;
-        });
+        const filteredMacromolecules = filterMacromoleculesForLLM(macromolecules, llmAnnotations, preferredAssembly, uniprotMappings, polymerCoverage);
         const processedMacromoleculesForLLM = generateProcessedMacromolecules(filteredMacromolecules, preferredAssembly, carbohydrates);
         return EntryActions.getProcessedMacromolsForLLMSuccess({ processedMacromoleculesForLLM });
       }),

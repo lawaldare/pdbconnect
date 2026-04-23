@@ -360,6 +360,7 @@ export class LigandsTabComponent implements AfterViewInit {
         instanceId: this.symmetryDropdownSelected || undefined,
         atomInteractions: mvsAtomInteractions ?? 'none',
         // TODO: @adam Show builtin interactions when data not available
+        // TODO: @adam Fix modres visualization (1hcj, 1gkt)
         volumeStreaming: true,
         entityColors: this.entityColors(),
       },
@@ -383,8 +384,8 @@ export class LigandsTabComponent implements AfterViewInit {
 
     this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
 
-    // TODO: @adam Refactor use of residToInstanceId
-    // TODO: @adam Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
+    // TODO: Refactor use of residToInstanceId
+    // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
   }
 
   private readonly ligandEnvMutex = Mutex('ligandEnvMutex');

@@ -250,14 +250,6 @@ export function max<T, V>(array: T[], key: (elem: T) => V = ((x: T) => x) as any
   return argMax;
 }
 
-export function groupBy<T>(items: T[], key: (item: T) => string | number): { [key: string]: T[] } {
-  const out: { [key: string]: T[] } = {};
-  for (const item of items) {
-    (out[key(item)] ??= []).push(item);
-  }
-  return out;
-}
-
 export function wholeResidues(selection: ComponentExpressionT[]): ComponentExpressionT[] {
   const selectionWithoutAtomConstraints: ComponentExpressionT[] = selection.map(
     (s) =>
