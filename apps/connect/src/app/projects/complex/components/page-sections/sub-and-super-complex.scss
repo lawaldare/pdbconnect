@@ -1,4 +1,4 @@
-@import 'https://cdn.jsdelivr.net/npm/pdbe-molstar@3.7.2/build/pdbe-molstar-light.css';
+@import 'https://cdn.jsdelivr.net/npm/pdbe-molstar@3.12.0/build/pdbe-molstar-light.css';
 
 p {
   margin-bottom: 20px !important;
@@ -30,7 +30,7 @@ p {
   grid-template-columns: repeat(2, 1fr);
   gap: 12px 80px;
 
-  @media (width <= 767px) {
+  @media (width <=767px) {
     grid-template-columns: 1fr;
   }
 }
@@ -39,7 +39,7 @@ section.table {
   display: flex;
   width: 100%;
 
-  @media screen and (width <= 768px) {
+  @media screen and (width <=768px) {
     display: none;
   }
 

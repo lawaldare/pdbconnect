@@ -129,8 +129,6 @@ export class MVSSnapshotProvider {
         : ctx.model.modelStructure({ model_index: params.modelIndex, custom: structureCustomProps });
     const components = applyStandardComponents(structure);
     const representations = applyStandardRepresentations(components, { opacityFactor: 1 });
-    // TODO Molstar: ball_and_stick size theme physical?
-    // TODO compute PCA to orient camera?
 
     return { ...ctx, structure, components, representations };
   }

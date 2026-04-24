@@ -832,7 +832,7 @@ export class Summary3DSectionComponent {
             volumeStreaming: true,
           },
         };
-        // TODO fix every domain appearing twice in the list (entry 1bvy)
+        // TODO: fix every domain appearing twice in the list (entry 1bvy)
       }
       case 'Modifications': {
         const allModres = this.processedModifications();
