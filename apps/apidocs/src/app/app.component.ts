@@ -1,28 +1,29 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
+import { VfEbiHeaderComponent } from '@vf-lib/ebi-header';
 import { VfEbiFooterComponent } from '@vf-lib/ebi-footer';
-import { PdbeSwaggerDocsComponent } from '@pdbe-lib/swagger-docs';
-import { ConfigService } from '@pdbe-lib/shared-services';
+import { PdbeApiPage } from './pages/pdbe-api/pdbe-api-page.component';
 
 @Component({
   standalone: true,
-  imports: [PdbeHeaderLogoMenuComponent, VfEbiFooterComponent, PdbeSwaggerDocsComponent],
+  imports: [RouterOutlet, PdbeHeaderLogoMenuComponent, VfEbiHeaderComponent, VfEbiFooterComponent],
   selector: 'pdbc-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'PDBe RESTful API Documentation';
-  @Input() url = '';
 
   public readonly headerLogoMenuConfig = {
     backgroundColor: '#056643',
     logoType: 'PDBe',
+    urls: [
+      { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe/', openInNewTab: false },
+      { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
+      { name: 'Documentation', path: 'https://www.ebi.ac.uk/pdbe/documentation', openInNewTab: true },
+      { name: 'Training', path: 'https://www.ebi.ac.uk/pdbe/pdbe-training', openInNewTab: true },
+    ],
+    menuHighlightColor: '#0a5032',
   };
-
-  constructor(private configService: ConfigService) {}
-
-  ngOnInit(): void {
-    this.url = this.configService.getConfig().openApiJsonUrl;
-  }
 }

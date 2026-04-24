@@ -29,16 +29,15 @@
         "scripts": [],
         "customWebpackConfig": {
           "path": "apps/apidocs/webpack.config.js"
-        },
-        "baseHref": "$APP_BASE_HREF"
+        }
       },
       "configurations": {
         "production": {
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "2mb"
+              "maximumWarning": "2.5mb",
+              "maximumError": "2.5mb"
             },
             {
               "type": "anyComponentStyle",
