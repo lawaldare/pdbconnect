@@ -339,11 +339,9 @@ export class LigandsTabComponent implements AfterViewInit {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     if (!molstarSelection) return undefined;
 
-    const labelAsymId = molstarSelection[0].label_asym_id;
     const authAsymId = molstarSelection[0].auth_asym_id;
     const authSeqId = molstarSelection[0].auth_seq_id;
     const authInsCode = molstarSelection[0].pdbx_PDB_ins_code ?? '';
-    if (labelAsymId === undefined) throw new Error('labelAsymId is undefined');
     if (authAsymId === undefined) throw new Error('authAsymId is undefined');
     if (authSeqId === undefined) throw new Error('authSeqId is undefined');
 
@@ -353,14 +351,12 @@ export class LigandsTabComponent implements AfterViewInit {
       params: {
         entry: entryId,
         assemblyId: this.displayedAssemblyId(),
-        labelAsymId,
         authAsymId,
         authSeqId,
         authInsCode,
         instanceId: this.symmetryDropdownSelected || undefined,
-        atomInteractions: mvsAtomInteractions ?? 'none',
-        // TODO: @adam Show builtin interactions when data not available
-        // TODO: @adam Fix modres visualization (1hcj, 1gkt)
+        atomInteractions: mvsAtomInteractions ?? 'builtin',
+        // atomInteractions: mvsAtomInteractions ?? 'none',
         volumeStreaming: true,
         entityColors: this.entityColors(),
       },
@@ -386,6 +382,7 @@ export class LigandsTabComponent implements AfterViewInit {
 
     // TODO: Refactor use of residToInstanceId
     // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
+    // TODO: Fix weird table behavior when the user changes to a ligand with no interaction data
   }
 
   private readonly ligandEnvMutex = Mutex('ligandEnvMutex');

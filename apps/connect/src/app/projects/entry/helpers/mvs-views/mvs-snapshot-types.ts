@@ -122,8 +122,6 @@ export type SnapshotSpecParams = {
     entry: string;
     /** Assembly ID (or `undefined` for deposited model) */
     assemblyId: string | undefined;
-    /** Chain identifier (label_asym_id) */
-    labelAsymId: string;
     /** Author chain identifier (auth_asym_id) */
     authAsymId: string;
     /** Author residue number (auth_seq_id) */
