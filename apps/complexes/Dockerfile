@@ -30,7 +30,7 @@ FROM node:20-alpine3.20 AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 
@@ -38,7 +38,6 @@ RUN npx nx build complexes --configuration=production
 
 
 # ---------- RUNTIME STAGE ----------
-# ---------- RUNTIME ----------
 FROM node:20-alpine3.20
 
 WORKDIR /app
