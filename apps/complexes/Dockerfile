@@ -3,25 +3,57 @@
 # Build the docker image with `npx nx docker-build complexes`.
 # Tip: Modify "docker-build" options in project.json to change docker build args.
 #
-FROM nginx:1.21.3
+# FROM nginx:1.21.3
+# WORKDIR /app
+
+# COPY dist/apps/complexes/browser /usr/share/nginx/html
+# COPY apps/complexes/nginx-custom.conf /etc/nginx/conf.d/default.conf
+
+# ARG APP_BASE_HREF
+# ENV APP_BASE_HREF=$APP_BASE_HREF
+
+# RUN echo "ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
+#           echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
+#           indexFileName=\"\$(ls /usr/share/nginx/html/index.html)\" && \
+#           envsubst '\$APP_BASE_HREF' < \${indexFileName} > /tmp/index.tmp && \
+#           mv /tmp/index.tmp \${indexFileName} && \
+#           nginx -g 'daemon off;'" > /tmp/run.sh
+
+# ENTRYPOINT [ "sh", "/tmp/run.sh" ]
+
+# ---------- BUILD STAGE ----------
+# FROM node:20-alpine AS builder
+
+FROM node:20-alpine3.20
+
+RUN apk update && apk upgrade
+
 WORKDIR /app
 
-RUN rm -rf /usr/share/nginx/html/*
+COPY package*.json ./
+RUN npm ci
 
-COPY dist/apps/complexes/browser /usr/share/nginx/html
-COPY apps/complexes/nginx-custom.conf /etc/nginx/conf.d/default.conf
+COPY . .
 
-ARG APP_BASE_HREF
-ENV APP_BASE_HREF=$APP_BASE_HREF
+# Build SSR app
+RUN npx nx build complexes --configuration=production
 
-RUN echo "set -eu && \
-          ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
-          echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
-          test -f /usr/share/nginx/html/index.html && \
-          indexFileName=\"/usr/share/nginx/html/index.html\" && \
-          envsubst '\$APP_BASE_HREF' < \${indexFileName} > /tmp/index.tmp && \
-          mv /tmp/index.tmp \${indexFileName} && \
-          nginx -t && \
-          nginx -g 'daemon off;'" > /tmp/run.sh
 
-ENTRYPOINT [ "sh", "/tmp/run.sh" ]
+# ---------- RUNTIME STAGE ----------
+FROM node:20-alpine3.20
+
+RUN apk update && apk upgrade
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy built app (browser + server)
+COPY --from=builder /app/dist/apps/complexes ./dist
+
+# Install only what SSR needs
+RUN npm install express xhr2 --omit=dev
+
+EXPOSE 4000
+
+CMD ["node", "dist/server/main.js"]
