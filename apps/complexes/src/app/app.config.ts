@@ -2,8 +2,6 @@ import { APP_INITIALIZER, ApplicationConfig, isDevMode, provideBrowserGlobalErro
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { appRoutes } from './app.routes';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore } from '@ngrx/store';
 import { ComplexEffects } from './store/complex.effects';
@@ -18,12 +16,10 @@ export function initializeApp(baseHrefService: BaseHrefService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(appRoutes),
+    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(withFetch()),
-    provideAnimations(),
-    provideAnimationsAsync(),
     provideEffects([ComplexEffects]),
     provideStore({ complex: complexReducer }),
     provideStoreDevtools({
