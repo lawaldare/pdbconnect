@@ -1,18 +1,21 @@
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntrySelectors } from '../../../store/entry.selectors';
-import { MobileFacade } from '../mobile.facade';
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { take } from 'rxjs';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject, take } from 'rxjs';
+import { whenSignalFirstTrue } from '../../../helpers/misc';
+import { Molstar370DefaultParams } from '../../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
+import { MVSHandler } from '../../../helpers/mvs-handler';
+import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MobileTabChips } from '../../../store/data-processing/models/other-models';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntrySelectors } from '../../../store/entry.selectors';
 import { MbAssembliesComponent } from '../mb-assemblies/mb-assemblies.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
@@ -20,7 +23,7 @@ import { MbMacromoleculeComponent } from '../mb-macromolecules/mb-macromolecule.
 import { MbModelQualityComponent } from '../mb-model-quality/mb-model-quality.component';
 import { MobileStateService } from '../mobile-state.service';
 import { MobileTabNames } from '../mobile-tab.model';
-import { Molstar370DefaultParams } from '../../../helpers/molstar-helpers';
+import { MobileFacade } from '../mobile.facade';
 
 const MOBILE_COMPONENT_MAP = {
   [MobileTabChips.MQuality]: MbModelQualityComponent,
@@ -73,12 +76,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
       this.molstarReady.set(true);
     }
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -103,14 +101,15 @@ export class MbMolstarTabComponent implements AfterViewInit {
   public inPrefAssembly = this.compCommunication.mobileIsPrefAssembly;
   public hasClosedMessage = this.compCommunication.mobileHasClosedMessage;
 
+  private preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+
   public readonly configForMolstar = computed(() => {
     const summary = this.summary();
     const entryId = this.entryId();
     const inPrefAssembly = this.inPrefAssembly();
 
     if (!summary || !entryId) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
+    const preferredAssemblyId = this.preferredAssemblyId();
     const assemblyId = inPrefAssembly ? preferredAssemblyId : undefined;
 
     const configForMolstar = {
@@ -129,6 +128,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
           // colorParams: { value: Color(0xd4d5d4) },
         },
       },
+      bgColor: 'white',
       hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
       loadMaps: true,
       mapSettings: { defaultView: 'selection-box' },
@@ -138,19 +138,24 @@ export class MbMolstarTabComponent implements AfterViewInit {
   });
   public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
-  private modelIdObserver?: MutationObserver;
   constructor() {
-    // once molstar has rendered, initializes mutation observer for NMR model Id
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
-      if (finished) {
-        this.compCommunication.mobileMolstarLoaded$.next(true);
-        this.modelIdObserver = await initializeModelIdTracking(this.compCommunication.mobileModelIdx$, this._molstarComponent?.getContainer());
-      }
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(async () => {
+      // run after molstar rendered
+      this.compCommunication.mobileMolstarLoaded$.next(true);
+
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+
+      // once molstar has rendered, initializes mutation observer for NMR model Id
+      initializeModelIdTracking(this.compCommunication.mobileModelIdx$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
     });
+
     this.configForMolstar$.subscribe((cfg) => {
       this.compCommunication.configForMobileMolstar.set(cfg);
     });
   }
+
+  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   ngAfterViewInit(): void {
     // Angular materials body style patch
