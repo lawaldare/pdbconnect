@@ -24,9 +24,8 @@
 # ---------- BUILD STAGE ----------
 # FROM node:20-alpine AS builder
 
-FROM node:20-alpine3.20
-
-RUN apk update && apk upgrade
+# ---------- BUILD STAGE ----------
+FROM node:20-alpine3.20 AS builder
 
 WORKDIR /app
 
@@ -35,23 +34,17 @@ RUN npm ci
 
 COPY . .
 
-# Build SSR app
 RUN npx nx build complexes --configuration=production
 
 
 # ---------- RUNTIME STAGE ----------
+# ---------- RUNTIME ----------
 FROM node:20-alpine3.20
-
-RUN apk update && apk upgrade
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-# Copy built app (browser + server)
 COPY --from=builder /app/dist/apps/complexes ./dist
 
-# Install only what SSR needs
 RUN npm install express xhr2 --omit=dev
 
 EXPOSE 4000
