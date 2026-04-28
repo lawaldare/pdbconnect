@@ -1,4 +1,8 @@
-@import '@visual-framework/vf-sass-config/index.scss';
-@import '@visual-framework/vf-grid/vf-grid.scss';
-@import '@visual-framework/vf-list/vf-list.scss';
-@import '@visual-framework/vf-footer/vf-footer.scss';
+@import '@visual-framework/vf-sass-config/index';
+@import '@visual-framework/vf-grid/vf-grid';
+@import '@visual-framework/vf-list/vf-list';
+@import '@visual-framework/vf-footer/vf-footer';
+
+.vf-footer__inner {
+  max-width: 90em !important;
+}

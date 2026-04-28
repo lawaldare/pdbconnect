@@ -148,3 +148,10 @@ span.mat-mdc-menu-item.small > .mat-mdc-menu-content,
     white-space: pre-line;
   }
 }
+
+// Subdiv within Molstar tooltip box, showing custom tooltips (e.g. validation, domains, annotations...)
+.mvs-custom-tooltip-box {
+  border: 1px solid currentcolor;
+  padding-inline: 5px;
+  margin-top: 5px;
+}
