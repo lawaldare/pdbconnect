@@ -1,11 +1,13 @@
+/* eslint-disable @angular-eslint/prefer-inject */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @angular-eslint/component-selector */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, Inject, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { environment } from '../environments/environment';
 import { filter } from 'rxjs';
 import { HeaderComponent } from './header/header.component';
+import { isPlatformBrowser } from '@angular/common';
 
 declare const gtag: any;
 
@@ -17,20 +19,29 @@ declare const gtag: any;
 export class App implements OnInit {
   public readonly gaTag = computed(() => environment.gaTag ?? 'G-6EJJZ57S1H');
   private readonly router = inject(Router);
-  constructor() {
+  private isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
-      window.scrollTo(0, 0);
-      gtag('js', new Date());
-      gtag('config', environment.gaTag, { debug_mode: true });
+      if (this.isBrowser) {
+        window.scrollTo(0, 0);
+        gtag('js', new Date());
+        gtag('config', environment.gaTag, { debug_mode: true });
+      }
     });
   }
 
   ngOnInit(): void {
-    this.init();
+    if (this.isBrowser) {
+      this.init();
+    }
   }
 
   onActivate(event: any) {
-    document.body.scrollTop = 0;
+    if (this.isBrowser) {
+      document.body.scrollTop = 0;
+    }
   }
 
   private init(): void {

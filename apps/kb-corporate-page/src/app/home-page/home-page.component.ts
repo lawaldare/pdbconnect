@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, computed, AfterViewInit } from '@angular/core';
+import { Component, OnInit, inject, computed, AfterViewInit, PLATFORM_ID } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HeaderJumbotronComponent } from '../header-jumbotron/header-jumbotron.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
@@ -8,7 +8,8 @@ import { KeyFeaturesListComponent } from '../key-features-list/key-features-list
 import { FaqsListComponent } from '../faqs-list/faqs-list.component';
 import { CorporatePagesBioschemasService } from '../services/corporate-pages.bioschemas';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
-import { RouterModule } from '@angular/router';
+import { SeoService } from '../services/seo.service';
+import { SEO_CONFIG } from '../corporate-page.constant';
 
 declare const $: any;
 
@@ -16,11 +17,12 @@ declare const $: any;
   selector: 'pdbc-app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss'],
-  imports: [CommonModule, RouterModule, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent],
+  imports: [CommonModule, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent],
 })
 export class HomePageComponent implements OnInit, AfterViewInit {
   private readonly bioschemasService = inject(CorporatePagesBioschemasService);
   private readonly cpApiService = inject(CorporatePagesApiService);
+  private platformId = inject(PLATFORM_ID);
   public readonly realeaseData = toSignal(this.cpApiService.getReleaseData());
   public releaseDate = computed(() => {
     const data = this.realeaseData();
@@ -50,13 +52,17 @@ export class HomePageComponent implements OnInit, AfterViewInit {
     }
     return '';
   });
+  private seo = inject(SeoService);
 
   ngOnInit(): void {
     this.bioschemasService.buildBioschemasJSON();
+    this.seo.update(SEO_CONFIG.home);
   }
 
   ngAfterViewInit() {
-    $(document).foundation();
-    $(document).foundationExtendEBI();
+    if (isPlatformBrowser(this.platformId)) {
+      $(document).foundation();
+      $(document).foundationExtendEBI();
+    }
   }
 }

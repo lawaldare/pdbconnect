@@ -1,7 +1,8 @@
+/* eslint-disable @angular-eslint/prefer-inject */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, HostListener, input, signal, computed } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, HostListener, input, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -16,6 +17,11 @@ export class NavTabsComponent implements OnInit {
   public activePage = computed(() => this.activePageInput() ?? 'home');
 
   public showExtra = signal<boolean>(false);
+  private isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit(): void {
     // if (!this.activePage()) this.activePage.set('home');
@@ -25,7 +31,7 @@ export class NavTabsComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   calcExtra(event: any) {
     this.showExtra.set(false);
-    if (window.innerWidth <= 425) {
+    if (this.isBrowser && window.innerWidth <= 425) {
       this.showExtra.set(true);
     }
   }
