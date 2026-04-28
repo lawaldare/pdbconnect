@@ -20,7 +20,7 @@
         <a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank"> {{ sourceOrganismWithStrain.name }} </a>
       </span>
       @if( sourceOrganismWithStrain.strain) { (strain {{sourceOrganismWithStrain.strain}}) } {{ islast ? '' : ',' }} } @if
-      (organismScientificNamesWithStrains()?.length === 0) {
+      (organismScientificNamesWithStrains().length === 0) {
       <span>Not available</span>
       }
     </p>

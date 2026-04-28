@@ -41,7 +41,7 @@
           </span>
         </div>
         <div class="buttons">
-          <button class="small-flat-btn" (click)="zoomInCurrentSelection()">
+          <button class="small-flat-btn" (click)="zoomCurrentSelection(true)">
             Zoom in
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" fill="none">
               <path
@@ -52,7 +52,7 @@
               />
             </svg>
           </button>
-          <button class="small-flat-btn" (click)="onZoomOut(zoomOutDuration)">
+          <button class="small-flat-btn" (click)="zoomCurrentSelection(false)">
             Zoom out
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="19" viewBox="0 0 18 19" fill="none">
               <path

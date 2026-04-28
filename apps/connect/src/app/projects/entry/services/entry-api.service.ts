@@ -325,8 +325,7 @@ export class EntryApiService {
   }
 
   public getPisaAssembly(entryId: string, assemblyId: string): Observable<PisaAssembly> {
-    // return this.http.get<Record<string, PisaAssembly>>(`${this.BASE_API_V2}pisa/assembly/${entryId}/${assemblyId}`).pipe(
-    return this.http.get<Record<string, PisaAssembly>>(`https://www.ebi.ac.uk/pdbe/api/pisa/assembly/${entryId}/${assemblyId}`).pipe(
+    return this.http.get<Record<string, PisaAssembly>>(`${this.BASE_API_V2}pisa/assembly/${entryId}/${assemblyId}`).pipe(
       map((data) => data[entryId]),
       catchError((error) => {
         if (error?.status === 404) {

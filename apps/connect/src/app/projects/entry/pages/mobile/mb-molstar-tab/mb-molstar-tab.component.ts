@@ -117,7 +117,6 @@ export class MbMolstarTabComponent implements AfterViewInit {
       ...Molstar370DefaultParams,
       moleculeId: this.entryId(),
       assemblyId,
-      bgColor: { r: 255, g: 255, b: 255 },
       landscape: false,
       subscribeEvents: true,
       granularity: 'residue',

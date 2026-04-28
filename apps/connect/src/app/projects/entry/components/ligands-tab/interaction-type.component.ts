@@ -1,9 +1,11 @@
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { MaterialModule } from '@pdbc/core';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MaterialModule } from '@pdbc/core';
 
+/** Human-friendly name from atom interactions.
+ * This is not exhaustive (e.g. 'OE' in 1og5). */
 export const INTX_NAME_STANDARDIZER = {
   clash: 'Covalent clash',
   covalent: 'Covalent',

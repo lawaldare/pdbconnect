@@ -4,7 +4,7 @@ import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
-import { resourceUrls } from '../../../entry-constant';
+import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, resourceUrls } from '../../../entry-constant';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../../store/entry-store.model';
@@ -201,13 +201,12 @@ export class MbDomainsComponent implements OnInit {
     }
 
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const domainColor = '#B5CB93'; // domain.molstarColorHex;
     const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
     this.selectionData = molstarSelection.map((eachSelection) => {
       return {
         ...eachSelection,
         instance_id,
-        color: domainColor,
+        color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
         focus: true,
       };
     });
