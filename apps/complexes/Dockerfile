@@ -21,7 +21,7 @@ ENV NODE_ENV=production
 ENV PORT=80
 
 COPY package*.json ./
-RUN npm ci --omit=dev --legacy-peer-deps
+RUN npm ci --omit=dev --legacy-peer-deps --ignore-scripts
 
 COPY --from=builder /app/dist/apps/complexes ./dist
 
