@@ -9,7 +9,7 @@ type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEn
   template: `
     @if (showBanner()) {
       <div class="data-privacy-banner">
-        <div class="row">
+        <div class="row container">
           <div class="columns medium-8 large-9 white-color">
             This website requires cookies, and the limited processing of your personal data in order to function. By using the site you are agreeing to this as
             outlined in our
@@ -36,10 +36,30 @@ type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEn
         color: rgb(238, 238, 238);
         z-index: 10;
 
+        .container {
+          padding: 10px;
+        }
+
+        .medium-8 {
+          width: 67%;
+        }
+
+        .medium-4 {
+          width: 33%;
+          text-align: right;
+        }
+
+        .row {
+          display: flex;
+          justify-content: space-between;
+        }
+
         a {
           border-bottom-width: 1px;
           border-bottom-style: dotted;
           border-bottom-color: inherit;
+          cursor: pointer;
+          color: #ffffff;
         }
       }
     `,
