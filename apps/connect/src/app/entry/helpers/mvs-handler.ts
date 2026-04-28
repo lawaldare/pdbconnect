@@ -1,7 +1,7 @@
 import { SingleAsyncQueue } from '@pdbc/core';
 import type { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { MVSSnapshotProvider } from './mvs-views/mvs-snapshot-provider';
 import type { SnapshotSpec } from './mvs-views/mvs-snapshot-types';
 
