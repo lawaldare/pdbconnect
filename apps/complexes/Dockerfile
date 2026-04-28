@@ -3,25 +3,43 @@
 # Build the docker image with `npx nx docker-build complexes`.
 # Tip: Modify "docker-build" options in project.json to change docker build args.
 #
-FROM nginx:1.21.3
+# FROM nginx:1.21.3
+# WORKDIR /app
+
+# RUN rm -rf /usr/share/nginx/html/*
+
+# COPY dist/apps/complexes/browser /usr/share/nginx/html
+# COPY apps/complexes/nginx-custom.conf /etc/nginx/conf.d/default.conf
+
+# ARG APP_BASE_HREF
+# ENV APP_BASE_HREF=$APP_BASE_HREF
+
+# RUN echo "set -eu && \
+#           ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
+#           echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
+#           test -f /usr/share/nginx/html/index.html && \
+#           indexFileName=\"/usr/share/nginx/html/index.html\" && \
+#           envsubst '\$APP_BASE_HREF' < \${indexFileName} > /tmp/index.tmp && \
+#           mv /tmp/index.tmp \${indexFileName} && \
+#           nginx -t && \
+#           nginx -g 'daemon off;'" > /tmp/run.sh
+
+# ENTRYPOINT [ "sh", "/tmp/run.sh" ]
+
+FROM node:20-alpine AS runner
+
 WORKDIR /app
 
-RUN rm -rf /usr/share/nginx/html/*
+# Copy the SSR server bundle
+COPY dist/apps/complexes/server /app/server
 
-COPY dist/apps/complexes/browser /usr/share/nginx/html
-COPY apps/complexes/nginx-custom.conf /etc/nginx/conf.d/default.conf
+# Copy the browser assets (Express serves these as static files)
+COPY dist/apps/complexes/browser /app/browser
 
 ARG APP_BASE_HREF
 ENV APP_BASE_HREF=$APP_BASE_HREF
+ENV PORT=4000
 
-RUN echo "set -eu && \
-          ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
-          echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
-          test -f /usr/share/nginx/html/index.html && \
-          indexFileName=\"/usr/share/nginx/html/index.html\" && \
-          envsubst '\$APP_BASE_HREF' < \${indexFileName} > /tmp/index.tmp && \
-          mv /tmp/index.tmp \${indexFileName} && \
-          nginx -t && \
-          nginx -g 'daemon off;'" > /tmp/run.sh
+EXPOSE 4000
 
-ENTRYPOINT [ "sh", "/tmp/run.sh" ]
+CMD ["node", "/app/server/server.mjs"]
