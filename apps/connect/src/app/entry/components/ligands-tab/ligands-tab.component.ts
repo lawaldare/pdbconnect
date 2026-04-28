@@ -3,54 +3,49 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild, AfterViewInit } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
-import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
-import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, map, take, skip, timer, lastValueFrom } from 'rxjs';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { EntrySelectors } from '../../store/entry.selectors';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import {
   AG_Grid_Theme_Class,
   DownloadFileTypeService,
   GoogleAnalyticsService,
   MaterialModule,
+  Mutex,
   PopupWindowService,
   ScriptLoaderService,
   TruncateTextDirective,
   UtilService,
 } from '@pdbc/core';
-import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
-import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
-import { AgGridAngular } from 'ag-grid-angular';
-import { colDefs, gridOptions } from './ag-grid';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-import { EntryActions } from '../../store/entry.actions';
-import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
-import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
-import { Molecule } from '../../data-models/molecule.model';
-import { ToolTipComponent } from '@pdbe-lib/tool-tip';
-import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
-import {
-  componentExistsInMolstar,
-  drawSelectionInMolstar,
-  Molstar370DefaultParams,
-  QueryParamForHelpers,
-  removeComponent,
-  showInteractivityFocusInMolstar,
-  zoomOutStructureInMolstar,
-} from '../../helpers/molstar-helpers';
-import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
-import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { ToolTipComponent } from '@pdbe-lib/tool-tip';
+import { AgGridAngular } from 'ag-grid-angular';
+import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, take, timer } from 'rxjs';
 import { EntryApiService } from '../../services/entry-api.service';
+import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
+import { Molecule } from '../../data-models/molecule.model';
+import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
+import { interactionsToMolstar, MVSAtomInteraction, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
+import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { MVSHandler } from '../../helpers/mvs-handler';
+import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
+import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
+import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntryActions } from '../../store/entry.actions';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { colDefs, gridOptions } from './ag-grid';
+import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -108,6 +103,12 @@ export class LigandsTabComponent implements AfterViewInit {
   public readonly chainToEntityId = toSignal(this.globalStore.select(EntrySelectors.macromolsChainsToEntityIds));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly ligandSummaryList = toSignal(this.globalStore.select(EntrySelectors.ligandPagesSummary));
+  private readonly procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private readonly procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
+  private readonly preferredAssemblyId = computed(() => this.summaryData()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined));
 
   public residToInstanceId: { [key: string]: string | undefined } = {};
 
@@ -148,12 +149,7 @@ export class LigandsTabComponent implements AfterViewInit {
       this.molstarReady.set(true);
     }
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -183,44 +179,10 @@ export class LigandsTabComponent implements AfterViewInit {
     return 'No ligand interactions found';
   });
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summaryData();
-    const entryId = this.entryId();
-    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
-
-    if (!summary || !entryId) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const assemblyId = inPrefAssemblyForInstance ? preferredAssemblyId : undefined;
-
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      bgColor: { r: 255, g: 255, b: 255 },
-      subscribeEvents: true,
-      granularity: 'element',
-      // 'granularity': 'residue',
-      hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'entity-id',
-          // 'color': 'uniform',
-          // 'colorParams': { value: Color(0xfefefe) },
-        },
-        het: {
-          type: 'ball-and-stick',
-          color: 'entity-id',
-        },
-      },
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-    };
-    return configForMolstar;
-  });
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
+  public readonly configForMolstar = computed(() => ({
+    ...EntryPageTabsCommonMolstarParams,
+    granularity: 'element',
+  }));
 
   private currentChainId = signal<string | undefined>(undefined);
   private currentResidueId = signal<string | undefined>(undefined);
@@ -292,42 +254,11 @@ export class LigandsTabComponent implements AfterViewInit {
     }));
   }
 
-  private async updateConfigAssemblyAndSyncMolstar(ligand: ProcessedLigandOrMod) {
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
+  private async updateInPrefAssemblyForInstance(ligand: ProcessedLigandOrMod) {
     // check if ligand instance is in pref assembly based on idx of ligand instance
-    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
     const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
     const isSelectionPrefAssembly = ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
-    const changedDisplayedAssembly = inPrefAssemblyForInstance !== isSelectionPrefAssembly;
-
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
     this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-      const newCfg = await firstValueFrom(
-        this.configForMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this._molstarComponent!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
   }
 
   async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
@@ -342,7 +273,7 @@ export class LigandsTabComponent implements AfterViewInit {
     await this.updateVisualsDisplayed(ligand);
 
     // check if molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(ligand);
+    await this.updateInPrefAssemblyForInstance(ligand);
     const allLigandsInPrefAssembly = ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
     this.inPrefAssembly.set(allLigandsInPrefAssembly);
 
@@ -401,72 +332,72 @@ export class LigandsTabComponent implements AfterViewInit {
     }
   }
 
-  private selectionData?: QueryParamForHelpers[];
-  private ligandSelection?: QueryParamForHelpers[];
-  private residuesAsSticks?: QueryParamForHelpers[];
+  private getMvsSnapshotSpec(mvsAtomInteractions: MVSAtomInteraction[] | undefined): SnapshotSpec | undefined {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
 
-  async triggerLigandInteractionsSideEffects(rawInteractions: InteractionFromAPI | undefined) {
-    const interactions = rawInteractions ? rawInteractions.interactions : undefined;
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-    if (interactions === undefined) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    if (!molstarSelection) return;
-    if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
+    if (!molstarSelection) return undefined;
 
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
+    const authAsymId = molstarSelection[0].auth_asym_id;
+    const authSeqId = molstarSelection[0].auth_seq_id;
+    const authInsCode = molstarSelection[0].pdbx_PDB_ins_code ?? '';
+    if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+    if (authSeqId === undefined) throw new Error('authSeqId is undefined');
 
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-
-    if (!this.molstarPluginService.PDBeMolstarPluginClass) return;
-    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-
-    const { residuesMolstarSelections, interactionsMolstarSelections, residToInstanceId } = interactionsToMolstar(
-      ligand,
-      molstarSelection,
-      interactions,
-      instance_id
-    );
-    this.residToInstanceId = residToInstanceId;
-
-    const pdbeInteractions = interactionsMolstarSelections as unknown as PDBeMolstarInteraction[];
-
-    const residueSelectionData: QueryParamForHelpers[] = residuesMolstarSelections.map((resid) => {
-      // TODO: Once endpoint has entity_id data use it to map colours
-      return {
-        ...resid,
-        // type_symbol: ['C'],
-        representation: 'ball-and-stick',
-        // representationColor: '#d3d3d3',
-        focus: false,
-      };
-    });
-    this.residuesAsSticks = residueSelectionData;
-    this.selectionData = this.ligandSelection ? [...this.ligandSelection] : [];
-    this.selectionData.push(...residueSelectionData);
-    await this.onDrawSelectionInMolstar();
-
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
-      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, { interactions: pdbeInteractions, structureId: 1 });
-    });
+    return {
+      name: 'Ligand environment',
+      kind: 'pdbconnect_environment',
+      params: {
+        entry: entryId,
+        assemblyId: this.displayedAssemblyId(),
+        authAsymId,
+        authSeqId,
+        authInsCode,
+        instanceId: this.symmetryDropdownSelected || undefined,
+        atomInteractions: mvsAtomInteractions ?? 'builtin',
+        // atomInteractions: mvsAtomInteractions ?? 'none',
+        volumeStreaming: true,
+        entityColors: this.entityColors(),
+      },
+    };
   }
 
-  private ligandEnvMutex = Promise.resolve();
+  async triggerLigandInteractionsSideEffects(rawInteractions: InteractionFromAPI | undefined) {
+    const interactions = rawInteractions?.interactions;
+    if (!interactions) return;
+    const ligand = this.currentLigandDatum();
+    if (!ligand) return;
+    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    if (!molstarSelection) return;
+
+    if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
+
+    const instanceId = this.symmetryDropdownSelected || undefined;
+    const mvsInteractions = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId);
+
+    this.residToInstanceId = mvsInteractions.residToInstanceId;
+
+    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
+
+    // TODO: Refactor use of residToInstanceId
+    // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
+    // TODO: Fix weird table behavior when the user changes to a ligand with no interaction data
+  }
+
+  private readonly ligandEnvMutex = Mutex('ligandEnvMutex');
+  private readonly tableHoverMutex = Mutex('tableHoverMutex');
 
   constructor() {
-    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+    this.ligandEnvMutex.run(async () => {
       // await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js', true);
       await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
+    });
+
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
   }
 
@@ -483,6 +414,8 @@ export class LigandsTabComponent implements AfterViewInit {
    * For ligand env viewer to always initialise
    */
   private viewReady = signal(false);
+
+  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   ngAfterViewInit(): void {
     this.viewReady.set(true);
@@ -556,9 +489,8 @@ export class LigandsTabComponent implements AfterViewInit {
   private async renderInMolstar(ligand: ProcessedLigandOrMod) {
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
 
-    // const entityId = molstarSelection[0].entity_id;
-    const chainId = molstarSelection[0].auth_asym_id!;
-    const residueId = molstarSelection[0].auth_residue_number!;
+    const chainId = molstarSelection[0].auth_asym_id;
+    const residueId = molstarSelection[0].auth_seq_id;
 
     this.currentChainId.set(chainId);
     this.currentResidueId.set(`${residueId}`);
@@ -584,45 +516,7 @@ export class LigandsTabComponent implements AfterViewInit {
       this.interactionsRowData.set(undefined);
     }
 
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
-
-    // Access Molstar instance
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-
-    const entityColor = ligand.molstarColorHex;
-    const componentQuery = ligand.type === 'modification' ? 'non-standard' : 'ligand';
-    const hasLigandsOrMod = await componentExistsInMolstar(instance, componentQuery);
-
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-    this.ligandSelection = [
-      {
-        ...molstarSelection[0],
-        color: entityColor,
-        focus: true,
-        instance_id,
-        ...(hasLigandsOrMod === false && {
-          representation: 'ball-and-stick',
-          representationColor: ligand.molstarColorHex,
-        }),
-      },
-    ];
-    this.selectionData = [...this.ligandSelection];
-
-    const durationMs = this._molstarComponent ? 1200 : 0;
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
-      await zoomOutStructureInMolstar(instance, durationMs);
-    });
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onDrawSelectionInMolstar();
-    });
+    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(undefined));
   }
 
   public async onDropdownSelect(event: string) {
@@ -634,7 +528,7 @@ export class LigandsTabComponent implements AfterViewInit {
     this.updateSymmetryDropdownOptions(ligand);
 
     // check if molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(ligand);
+    await this.updateInPrefAssemblyForInstance(ligand);
 
     // get interactions data, create ligand selection, zoom in ligand
     this.renderInMolstar(ligand);
@@ -660,7 +554,7 @@ export class LigandsTabComponent implements AfterViewInit {
     const ligandId = ligand.id;
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const resId = molstarSelection[0].auth_residue_number!;
+    const resId = molstarSelection[0].auth_seq_id;
     const chainId = molstarSelection[0].auth_asym_id!;
 
     // this.resetLigEnvRenderer();
@@ -674,7 +568,7 @@ export class LigandsTabComponent implements AfterViewInit {
     }
     const imageContainer = this.ligandEnvContainer.nativeElement;
 
-    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+    this.ligandEnvMutex.run(async () => {
       const depiction = await firstValueFrom(this.entryApiService.fetchDepiction(ligandId).pipe(takeUntilDestroyed(this.destroyRef)));
 
       if (this.ligandEv) {
@@ -702,7 +596,7 @@ export class LigandsTabComponent implements AfterViewInit {
       this.ligandEv.display.resId = resId;
     });
     if (interactionsRawData) {
-      this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+      this.ligandEnvMutex.run(async () => {
         const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
         const copiedInteractions = JSON.parse(JSON.stringify(interactionsRawData));
         dataToLigEnv[`${this.entryId()}`] = [copiedInteractions];
@@ -735,7 +629,7 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async destroyLigandEnv() {
-    this.ligandEnvMutex = this.ligandEnvMutex.then(async () => {
+    this.ligandEnvMutex.run(async () => {
       // to destroy ligand env we use removeChild and reset all variables related to it's loading status
       if (this.ligandEnvContainer && this.ligandEnvContainer.nativeElement) {
         const imageContainer = this.ligandEnvContainer.nativeElement;
@@ -770,31 +664,12 @@ export class LigandsTabComponent implements AfterViewInit {
     const data = event.api.getSelectedNodes()[0].data;
   }
 
-  private tableHoverMutex = Promise.resolve();
-  private molstarSelectionMutex = Promise.resolve();
-
-  async onDrawSelectionInMolstar() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-
-    this.molstarSelectionMutex = this.molstarSelectionMutex.then(async () => {
-      await drawSelectionInMolstar(instance, this.residuesAsSticks);
-      await drawSelectionInMolstar(instance, this.ligandSelection, undefined, true);
-      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
-      await removeComponent(instance, 'structure-focus-target-sel');
-      await removeComponent(instance, 'structure-focus-surr-sel');
-    });
-    await this.molstarSelectionMutex;
-  }
-
   async onCellMouseOver(event: CellMouseOverEvent<Interaction>) {
-    this.tableHoverMutex = this.tableHoverMutex.then(() => this._handleCellMouseOver(event));
-    await this.tableHoverMutex;
+    await this.tableHoverMutex.run(() => this._handleCellMouseOver(event));
   }
 
   async onCellMouseOut() {
-    this.tableHoverMutex = this.tableHoverMutex.then(() => this._handleCellMouseOut());
-    await this.tableHoverMutex;
+    await this.tableHoverMutex.run(() => this._handleCellMouseOut());
   }
 
   private async _handleCellMouseOver(event: CellMouseOverEvent<Interaction>) {
@@ -804,10 +679,10 @@ export class LigandsTabComponent implements AfterViewInit {
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
     const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection[0].entity_id;
+    const entityId = molstarSelection[0].label_entity_id;
     const chainId = molstarSelection[0].auth_asym_id;
-    const residueId = molstarSelection[0].auth_residue_number!;
-    const resIns = molstarSelection[0].auth_ins_code_id;
+    const residueId = molstarSelection[0].auth_seq_id;
+    const resIns = molstarSelection[0].pdbx_PDB_ins_code;
 
     const chainToEntityId = this.chainToEntityId();
     if (!chainToEntityId) return;
@@ -822,47 +697,31 @@ export class LigandsTabComponent implements AfterViewInit {
 
     const atomSelections: QueryParamForHelpers[] = [
       {
-        entity_id: `${entityId}`,
+        label_entity_id: `${entityId}`,
         auth_asym_id: chainId,
         auth_seq_id: residueId,
-        auth_ins_code_id: normalizeInsertionCode(resIns),
+        pdbx_PDB_ins_code: normalizeInsertionCode(resIns),
         atoms: int.ligand_atoms,
-        focus: true,
         instance_id,
       },
       {
-        entity_id: `${residEntityId}`,
+        label_entity_id: `${residEntityId}`,
         auth_asym_id: residueChain,
         auth_seq_id: residueNum,
-        auth_ins_code_id: residueIns,
+        pdbx_PDB_ins_code: residueIns,
         atoms: int.end.atom_names,
-        focus: true,
         instance_id: this.residToInstanceId[resIdentifier],
       },
     ];
-
-    await instance.visual.focus(atomSelections);
     await instance.visual.highlight({ data: atomSelections });
+    // await instance.visual.focus(atomSelections);
   }
 
   private async _handleCellMouseOut() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
+    const instance = this._molstarComponent?.getInstance();
     if (!instance) return;
-
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-
-    if (!this.ligandSelection) return;
-
-    this.selectionData = [];
-    if (this.ligandSelection) this.selectionData.push(...this.ligandSelection);
-    if (this.residuesAsSticks) this.selectionData.push(...this.residuesAsSticks);
-
-    await instance.visual.focus(this.ligandSelection);
-    await showInteractivityFocusInMolstar(instance, this.ligandSelection);
-    await removeComponent(instance, 'structure-focus-target-sel');
-    await removeComponent(instance, 'structure-focus-surr-sel');
     await instance.visual.clearHighlight();
+    // if (this.ligandSelection) await instance.visual.focus(this.ligandSelection);
   }
 
   public downloadCSV(): void {

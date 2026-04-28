@@ -1,39 +1,44 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, ViewChild } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, signal, untracked, ViewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { EntryStoreState } from '../../../../store/entry-store.model';
-import { EntrySelectors } from '../../../../store/entry.selectors';
-import { ComponentCommunicationService } from '../../../../services/component-comm.service';
-import {
-  componentExistsInMolstar,
-  drawSelectionInMolstar,
-  QueryParamForHelpers,
-  Molstar370DefaultParams,
-  zoomOutStructureInMolstar,
-} from '../../../../helpers/molstar-helpers';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { map } from 'rxjs';
+import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
+import type { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
-import { filter, firstValueFrom, map, take, timer } from 'rxjs';
-import { Molecule } from '../../../../data-models/molecule.model';
-import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-processing/models/processed-entities.model';
-import { ProcessedLigandOrMod } from '../../../../store/data-processing/ligand-processing';
-import { GoogleAnalyticsService } from '@pdbc/core';
+import { makeEntityColors, toBehaviorSubject, whenSignalFirstTrue } from '../../../../helpers/misc';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
+import { MVSHandler } from '../../../../helpers/mvs-handler';
+import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
   getCleanMoleculeName,
   getDomainChainDropdownOptions,
   getLigandsDropdownOptions,
   getMacromoleculeChainDropdownOptions,
 } from '../../../../helpers/processed-data-to-controls';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { ComponentCommunicationService } from '../../../../services/component-comm.service';
+import { ProcessedLigandOrMod } from '../../../../store/data-processing/ligand-processing';
+import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-processing/models/processed-entities.model';
+import { EntryStoreState } from '../../../../store/entry-store.model';
+import { EntrySelectors } from '../../../../store/entry.selectors';
 import { EntryDropdownComponent } from '../../../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { MaterialModule } from '@pdbc/core';
 
 type NestedDomainsData = Array<{
   macromolecule: ProcessedMacromolecule;
   domains: ProcessedDomain[];
 }>;
+
+type ViewItem =
+  | { kind: 'Assembly'; item: undefined }
+  | { kind: 'Macromolecules'; item: ProcessedMacromolecule | undefined }
+  | { kind: 'Ligands'; item: ProcessedLigandOrMod | undefined }
+  | { kind: 'Domains'; item: ProcessedDomain | undefined }
+  | { kind: 'Modifications'; item: ProcessedLigandOrMod | undefined };
 
 @Component({
   selector: 'pdbc-summary-3d-section',
@@ -76,6 +81,7 @@ export class Summary3DSectionComponent {
       this.molstarReady.set(true);
     }
   }
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -92,90 +98,60 @@ export class Summary3DSectionComponent {
     return isSlow === false || forceLoad === true;
   });
 
+  constructor() {
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+    });
+  }
+
   public toggleMolstar() {
     const forceLoad = this.compCommunication.forceLoad();
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
-
   public inPrefAssemblyForSelection = signal(true);
   public hasClosedMessage = signal(false);
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summary();
-    const entryId = this.entryId();
-    // const chainSelection = this.chainSelection();
-    const inPrefAssemblyForSelection = this.inPrefAssemblyForSelection();
+  private preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
 
-    if (!summary || !entryId) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const assemblyId = inPrefAssemblyForSelection ? preferredAssemblyId : undefined;
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      bgColor: { r: 255, g: 255, b: 255 },
-      subscribeEvents: true,
-      granularity: 'residue',
-      hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'entity-id',
-        },
-      },
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-      // ...(chainSelection && { 'selection': chainSelection }),
-    };
+  private readonly viewItem = signal<ViewItem>({ kind: 'Assembly', item: undefined });
 
-    return configForMolstar;
-  });
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
-
-  public zoomOutDuration = 600;
-
-  public dropdownSelected!: string;
+  public dropdownSelectedSignal = signal<string>('');
+  public get dropdownSelected() {
+    return untracked(this.dropdownSelectedSignal);
+  }
   public dropdownOptions = signal<DownloadOption[]>([]);
   public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
 
-  public symmetryDropdownSelected?: string;
+  public symmetryDropdownSelectedSignal = signal<string | undefined>(undefined);
+  public get symmetryDropdownSelected() {
+    return untracked(this.symmetryDropdownSelectedSignal);
+  }
   public symmetryDropdownOptions = signal<DownloadOption[]>([]);
-
-  private selectionData?: QueryParamForHelpers[];
-  private nonSelectionColor?: string;
-
-  private zoomSelectionMutex = Promise.resolve();
+  private selectedInstanceId = computed(() => {
+    const value = this.symmetryDropdownSelectedSignal();
+    if (value && value !== 'All') return value;
+    else return undefined;
+  });
 
   public getCleanMoleculeName = getCleanMoleculeName;
 
-  private async resetSelection() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance || !this.selectionData) return;
-    await instance.visual.clearSelection();
-    await this.onZoomOut(this.zoomOutDuration);
-  }
+  /** Indicates if the currently selected substructure should be focused in 3D or not. */
+  public readonly zoomed = signal<boolean>(true);
 
-  async onZoomOut(durationMs: number) {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => zoomOutStructureInMolstar(instance, durationMs));
-    await this.zoomSelectionMutex;
-  }
-
-  async onZoomInAndSelect() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    this.zoomSelectionMutex = this.zoomSelectionMutex.then(() => drawSelectionInMolstar(instance, this.selectionData, this.nonSelectionColor));
-    await this.zoomSelectionMutex;
+  /** Zoom in or out currently selected substructure */
+  async zoomCurrentSelection(zoomed: boolean) {
+    if (zoomed !== this.zoomed()) {
+      // Update mvsSnapshotSpec indirectly
+      this.zoomed.set(zoomed);
+    } else {
+      // Replay current mvsSnapshotSpec
+      this.mvsSnapshotSpec$.next(this.mvsSnapshotSpec$.value);
+    }
   }
 
   //  data used in template for assembly accordion
@@ -203,11 +179,7 @@ export class Summary3DSectionComponent {
 
   // data processed for all views
   readonly maxPerPage = 80;
-  public processedMacromolecules = computed(() => {
-    const rows = this.procMacromolecules();
-    if (rows === undefined) return [];
-    return rows;
-  });
+  public processedMacromolecules = computed(() => this.procMacromolecules() ?? []);
 
   public currentMacromoleculesPage = signal(0);
 
@@ -269,11 +241,9 @@ export class Summary3DSectionComponent {
     return macromolecules.slice(start, end);
   });
 
-  public processedLigands = computed(() => {
-    const rows = this.procLigands();
-    if (rows === undefined) return [];
-    return rows.filter((lig) => lig.type === 'ligand');
-  });
+  public processedLigands = computed(() => this.procLigands()?.filter((lig) => lig.type === 'ligand') ?? []);
+
+  private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
 
   public currentLigandsPage = signal(0);
 
@@ -291,29 +261,6 @@ export class Summary3DSectionComponent {
     const start = page * this.maxPerPage;
     const end = start + this.maxPerPage;
     return ligands.slice(start, end);
-  });
-
-  public allLigandsQueryParam = computed(() => {
-    const ligandsSelectionData: QueryParamForHelpers[] = [];
-    const hasLigandsData = this.procLigands();
-    if (hasLigandsData === undefined) return ligandsSelectionData;
-    const ligands = this.processedLigands();
-    ligandsSelectionData.push(
-      ...ligands.map((ligand) => {
-        const entityId = (ligand.additionalData.source as Molecule).entity_id;
-        const entityColor = ligand.molstarColorHex;
-        const queryParam: QueryParamForHelpers = {
-          entity_id: `${entityId}`,
-          color: entityColor,
-          representation: 'spacefill',
-          representationColor: entityColor,
-          focus: false,
-        };
-        this.nonSelectionColor = '#FEFEFE';
-        return queryParam;
-      })
-    );
-    return ligandsSelectionData;
   });
 
   public processedModifications = computed(() => {
@@ -338,28 +285,6 @@ export class Summary3DSectionComponent {
     const start = page * this.maxPerPage;
     const end = start + this.maxPerPage;
     return modifications.slice(start, end);
-  });
-
-  public allModificationsQueryParam = computed(() => {
-    const modsSelectionData: QueryParamForHelpers[] = [];
-    const hasLigandsData = this.procLigands();
-    if (hasLigandsData === undefined) return modsSelectionData;
-    const modifications = this.processedModifications();
-    for (const mod of modifications) {
-      for (const sel of mod.additionalData.selections) {
-        const modSel = sel[0];
-        const entityColor = mod.molstarColorHex;
-        modsSelectionData.push({
-          ...modSel,
-          color: entityColor,
-          representation: 'spacefill',
-          representationColor: entityColor,
-          focus: false,
-        });
-        this.nonSelectionColor = '#FEFEFE';
-      }
-    }
-    return modsSelectionData;
   });
 
   public processedDomainsAsList = computed(() => {
@@ -566,13 +491,7 @@ export class Summary3DSectionComponent {
     [key: string]: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined;
   } = {};
 
-  public lastSubSelection: {
-    [key: string]: number;
-  } = {
-    Macromolecules: 0,
-    Ligands: 0,
-    Modifications: 0,
-  };
+  public lastSubSelection: { [key: string]: number } = { Macromolecules: 0, Ligands: 0, Modifications: 0 };
 
   public getDomainResourceCountTxt(domainName: string, countByResource: { [key: string]: number }) {
     if (domainName === 'All') {
@@ -615,7 +534,7 @@ export class Summary3DSectionComponent {
   }
 
   public async mouseinListItem(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string) {
-    const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType, false, false);
+    const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType);
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance || !selectionToHighlight) return;
     await instance.visual.highlight({ data: selectionToHighlight });
@@ -634,16 +553,15 @@ export class Summary3DSectionComponent {
 
   private updateView(tabName: string, resetDropdown: boolean) {
     const listViewItem = this.lastSelection[tabName];
-    // if (listViewItem) {
-    // }
     this.updateDropdownOptions(listViewItem, tabName, resetDropdown);
     this.updateSymmetryDropdownOptions(listViewItem, tabName);
-    this.updateMolstarAny(listViewItem, tabName);
+    this.viewItem.set({ kind: tabName as any, item: listViewItem });
+    this.zoomed.set(true);
   }
 
   private updateSymmetryDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
-    this.symmetryDropdownSelected = undefined;
     this.symmetryDropdownOptions.set([]);
+    this.symmetryDropdownSelectedSignal.set(undefined);
     // update for symmetry operations dropdown
     if (!listItem) return;
     if (selectionType === 'Macromolecules') {
@@ -661,10 +579,7 @@ export class Summary3DSectionComponent {
             };
           })
         );
-        this.symmetryDropdownSelected = this.symmetryDropdownOptions().length > 0 ? this.symmetryDropdownOptions()[0].name : undefined;
-      } else {
-        this.symmetryDropdownSelected = undefined;
-        this.symmetryDropdownOptions.set([]);
+        this.symmetryDropdownSelectedSignal.set(this.symmetryDropdownOptions()[0]?.name);
       }
     }
     if (selectionType === 'Ligands' || selectionType === 'Modifications') {
@@ -682,10 +597,7 @@ export class Summary3DSectionComponent {
             };
           })
         );
-        this.symmetryDropdownSelected = this.symmetryDropdownOptions().length > 0 ? this.symmetryDropdownOptions()[0].name : undefined;
-      } else {
-        this.symmetryDropdownSelected = undefined;
-        this.symmetryDropdownOptions.set([]);
+        this.symmetryDropdownSelectedSignal.set(this.symmetryDropdownOptions()[0]?.name);
       }
     }
     if (selectionType === 'Domains') {
@@ -702,10 +614,7 @@ export class Summary3DSectionComponent {
             };
           })
         );
-        this.symmetryDropdownSelected = this.symmetryDropdownOptions().length > 0 ? this.symmetryDropdownOptions()[0].name : undefined;
-      } else {
-        this.symmetryDropdownSelected = undefined;
-        this.symmetryDropdownOptions.set([]);
+        this.symmetryDropdownSelectedSignal.set(this.symmetryDropdownOptions()[0]?.name);
       }
     }
   }
@@ -721,6 +630,7 @@ export class Summary3DSectionComponent {
     if (selectionType === 'Assembly') {
       this.dropdownOptionsToMolstar = {};
       this.dropdownOptions.set([]);
+      this.dropdownSelectedSignal.set('');
     }
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as ProcessedMacromolecule;
@@ -736,7 +646,7 @@ export class Summary3DSectionComponent {
       );
       const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
       if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
+      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
     }
     if (selectionType === 'Ligands') {
       this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as ProcessedLigandOrMod);
@@ -751,7 +661,7 @@ export class Summary3DSectionComponent {
       );
       const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
       if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
+      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
     }
     if (selectionType === 'Modifications') {
       this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as ProcessedLigandOrMod);
@@ -766,7 +676,7 @@ export class Summary3DSectionComponent {
       );
       const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
       if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
+      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
     }
     if (selectionType === 'Domains') {
       const domain = listItem as ProcessedDomain;
@@ -782,7 +692,7 @@ export class Summary3DSectionComponent {
       );
       const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
       if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
+      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
     }
   }
 
@@ -793,274 +703,183 @@ export class Summary3DSectionComponent {
     const subSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(event);
     if (subSelectionIdx === -1) return;
     this.lastSubSelection[tabName] = subSelectionIdx;
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx];
+    this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
     this.updateSymmetryDropdownOptions(listViewItem, tabName);
-    this.updateMolstarAny(listViewItem, tabName);
+    this.zoomed.set(true);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
-    const tabName = this.openedAccordionName();
-    if (!tabName) return;
-    const listViewItem = this.lastSelection[tabName];
-    this.updateMolstarAny(listViewItem, tabName);
+    this.symmetryDropdownSelectedSignal.set(event);
+    this.zoomed.set(true);
   }
 
   private async getSelectionObjForSelectionType(
     listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain,
-    selectionType: string,
-    focusType: boolean,
-    useCurrent: boolean
-  ): Promise<QueryParamForHelpers[] | undefined> {
-    let molstarSelections: QueryParamForHelpers[] | undefined = undefined;
+    selectionType: string
+  ): Promise<ComponentExpressionT[] | undefined> {
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as ProcessedMacromolecule;
-      const allSelections: QueryParamForHelpers[] = [
-        {
-          entity_id: `${macromolecule.additionalData.molecule.entity_id}`,
-        },
-      ];
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
+      return [{ label_entity_id: String(macromolecule.additionalData.molecule.entity_id) }];
     }
     if (selectionType === 'Ligands') {
       const ligand = listItem as ProcessedLigandOrMod;
       const src = ligand.additionalData.source as Molecule;
-      const allSelections: QueryParamForHelpers[] = [
-        {
-          entity_id: `${src.entity_id}`,
-        },
-      ];
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      molstarSelections = useCurrent ? currentMolstarSelection : allSelections;
+      return [{ label_entity_id: String(src.entity_id) }];
     }
     if (selectionType === 'Domains') {
       const domain = listItem as ProcessedDomain;
-      const allSelections = domain.additionalData.selections;
-      const flatSelections = allSelections.flat(1);
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
-      // molstarSelections = domain.additionalData.selections[0];
+      return domain.additionalData.boundaries.map((segment) => ({
+        auth_asym_id: segment.chain,
+        beg_label_seq_id: segment.start,
+        end_label_seq_id: segment.end,
+      }));
     }
     if (selectionType === 'Modifications') {
       const mod = listItem as ProcessedLigandOrMod;
-      const allSelections = mod.additionalData.selections;
-      const currentMolstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const flatSelections = allSelections.flat(1);
-      molstarSelections = useCurrent ? currentMolstarSelection : flatSelections;
+      return [{ label_comp_id: `${mod.id}` }];
     }
-    if (!molstarSelections) return molstarSelections;
-
-    // loop over each molstar selection and add color and focus
-    const selectionToHighlight = molstarSelections.map((eachSelection) => {
-      return {
-        ...eachSelection,
-        color: listItem.molstarColorHex,
-        focus: focusType,
-      };
-    });
-    return selectionToHighlight;
+    return undefined;
   }
 
-  public async zoomInCurrentSelection() {
-    const tabName = this.openedAccordionName();
-    if (!tabName) return;
-    const listViewItem = this.lastSelection[tabName];
-    if (!listViewItem) return;
-    const selectionToZoom = await this.getSelectionObjForSelectionType(listViewItem, tabName, true, true);
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance || !selectionToZoom) return;
-    await instance.visual.focus(selectionToZoom);
-  }
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
+    const viewItem = this.viewItem();
+    if (!viewItem) return undefined;
 
-  private async updateMolstarAny(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
+    const preferredAssemblyId = this.preferredAssemblyId();
+    const dropdownSelected = this.dropdownSelectedSignal();
+    const molstarSelectionIndex = Object.keys(this.dropdownOptionsToMolstar).indexOf(dropdownSelected);
+    const molstarSelection = this.dropdownOptionsToMolstar[dropdownSelected];
+    const isSelectionInPrefAssembly = viewItem.item ? viewItem.item.additionalData.selectionsInPrefAssembly[molstarSelectionIndex] : true;
+    const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : undefined; // undefined = deposited model
+    const entityColors = this.entityColors();
 
-    // check whether selection is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(listItem, selectionType === 'Assembly');
-
-    this.nonSelectionColor = undefined;
-    if (selectionType === 'Assembly') {
-      this.resetSelection();
+    switch (viewItem.kind) {
+      case 'Assembly':
+        return {
+          name: 'Preferred complex',
+          kind: 'pdbconnect_complex',
+          params: { entry: entryId, assemblyId, volumeStreaming: true, entityColors },
+        };
+      case 'Macromolecules':
+        if (!viewItem.item) {
+          return {
+            name: 'All macromolecules',
+            kind: 'pdbconnect_complex',
+            params: { entry: entryId, assemblyId, volumeStreaming: true, entityColors },
+          };
+        } else {
+          const entityData = viewItem.item.additionalData;
+          const entityId = String(entityData.molecule.entity_id);
+          const labelAsymId = molstarSelection[0].label_asym_id;
+          const authAsymId = molstarSelection[0].auth_asym_id;
+          const instanceId = this.selectedInstanceId();
+          const focus = this.zoomed();
+          return {
+            name: 'Macromolecule',
+            kind: 'pdbconnect_macromolecule',
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId, focus, volumeStreaming: true, color: entityColors[entityId] },
+          };
+        }
+      case 'Ligands':
+        if (!viewItem.item) {
+          const ligandEntityIds = this.processedLigands().map((ligand) => (ligand.additionalData.source as Molecule).entity_id.toString());
+          return {
+            name: 'All ligands',
+            kind: 'pdbconnect_all_ligands',
+            params: { entry: entryId, assemblyId, volumeStreaming: true, ligandEntityIds, entityColors },
+          };
+        } else {
+          const ligandData = viewItem.item.additionalData;
+          const moleculeData = ligandData.source as Molecule;
+          const entityId = String(moleculeData.entity_id);
+          const labelAsymId = molstarSelection[0].label_asym_id;
+          if (!labelAsymId) throw new Error('label_asym_id for ligand instance not set');
+          const instanceId = this.selectedInstanceId();
+          const focus = this.zoomed();
+          return {
+            name: 'Ligand',
+            kind: 'pdbconnect_ligand',
+            params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId, focus, volumeStreaming: true, entityColors },
+          };
+        }
+      case 'Domains': {
+        const selectedResource = this.currentDomainResource();
+        const domains: ProcessedDomain[] = viewItem.item ? [viewItem.item] : this.procDomains()?.filter((dom) => dom.resource === selectedResource) ?? []; // empty list when selectedResource==='All'
+        const instanceId = this.selectedInstanceId();
+        const focus = this.zoomed();
+        return {
+          name: 'Domains',
+          kind: 'pdbconnect_domains',
+          params: {
+            entry: entryId,
+            assemblyId,
+            domains: domains.map((dom) => ({
+              name: dom.additionalData.accession,
+              color: dom.molstarColorHex ?? 'gray',
+              selector: dom.additionalData.boundaries.map(
+                (segment) =>
+                  ({
+                    auth_asym_id: segment.chain,
+                    beg_label_seq_id: segment.start,
+                    end_label_seq_id: segment.end,
+                    instance_id: instanceId,
+                  }) satisfies ComponentExpressionT
+              ),
+            })),
+            focus,
+            volumeStreaming: true,
+          },
+        };
+        // TODO: fix every domain appearing twice in the list (entry 1bvy)
+      }
+      case 'Modifications': {
+        const allModres = this.processedModifications();
+        const spec: SnapshotSpec<'pdbconnect_modifications'> = {
+          name: 'Modifications',
+          kind: 'pdbconnect_modifications',
+          params: {
+            entry: entryId,
+            assemblyId,
+            modifications: allModres.map((mod) => ({
+              labelCompId: mod.id,
+              name: mod.codeAndName.name,
+              color: mod.molstarColorHex ?? 'gray',
+            })),
+            selected: undefined,
+            focus: false,
+            volumeStreaming: true,
+            entityColors,
+          },
+        };
+        if (viewItem.item) {
+          const modresData = viewItem.item.additionalData;
+          const labelCompId = viewItem.item.id;
+          const modres = (modresData.source as ModifiedResidue[])[molstarSelectionIndex];
+          const instanceId = this.selectedInstanceId();
+          spec.name = `Selected modification ${labelCompId}`;
+          spec.params.selected = [
+            {
+              label_asym_id: modres.struct_asym_id,
+              label_seq_id: modres.residue_number,
+              instance_id: instanceId,
+            },
+          ];
+          spec.params.focus = this.zoomed();
+        }
+        return spec;
+      }
+      default: {
+        console.warn('unknown view kind:', (viewItem as any).kind);
+        return undefined;
+      }
     }
-    if (selectionType === 'Macromolecules') {
-      this.updateMolstarMacromolecules(listItem as ProcessedMacromolecule | undefined);
-    }
-    if (selectionType === 'Ligands') {
-      this.updateMolstarLigands(listItem as ProcessedLigandOrMod | undefined);
-    }
-    if (selectionType === 'Domains') {
-      this.updateMolstarDomains(listItem as ProcessedDomain | undefined);
-    }
-    if (selectionType === 'Modifications') {
-      this.updateMolstarModifications(listItem as ProcessedLigandOrMod | undefined);
-    }
-  }
+  });
+  private readonly mvsSnapshotSpec$ = toBehaviorSubject(this.mvsSnapshotSpec); // Using `BehaviorSubject` instead of `toObservable` so that we can force to re-emit current value (for zoom in/out)
 
   public hasNonPrefAssemblySelection(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, mode: 'all' | 'any') {
     if (mode === 'all') return listItem.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === false);
     else return listItem.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true) === false;
-  }
-
-  private async updateConfigAssemblyAndSyncMolstar(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, forAssembly: boolean) {
-    const inPrefAssemblyForSelection = this.inPrefAssemblyForSelection();
-    let isSelectionPrefAssembly = true;
-    if (forAssembly) {
-      isSelectionPrefAssembly = true;
-    } else if (listItem) {
-      const molstarSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-      isSelectionPrefAssembly = listItem.additionalData.selectionsInPrefAssembly[molstarSelectionIdx];
-    }
-
-    const changedDisplayedAssembly = inPrefAssemblyForSelection !== isSelectionPrefAssembly;
-    if (changedDisplayedAssembly && isSelectionPrefAssembly === false) {
-      this.hasClosedMessage.set(false);
-    }
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
-    this.inPrefAssemblyForSelection.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-
-      const newCfg = await firstValueFrom(
-        this.configForMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this._molstarComponent!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
-  }
-
-  private async updateMolstarMacromolecules(macromolecule: ProcessedMacromolecule | undefined) {
-    if (!macromolecule) {
-      await this.resetSelection();
-      return;
-    }
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    // loop over each molstar selection and add color and focus
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-    this.selectionData = molstarSelection.map((eachSelection) => {
-      return {
-        ...eachSelection,
-        color: macromolecule.molstarColorHex,
-        instance_id,
-        focus: true,
-      };
-    });
-    this.nonSelectionColor = '#FEFEFE';
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
-  }
-
-  private async updateMolstarLigands(ligand: ProcessedLigandOrMod | undefined) {
-    if (!ligand) {
-      this.selectionData = [];
-      const ligandsSelectionData = this.allLigandsQueryParam();
-      this.selectionData = ligandsSelectionData;
-      this.nonSelectionColor = '#FEFEFE';
-    } else {
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const molstarInstance = this._molstarComponent?.getInstance() ?? undefined;
-      const hasLigands = await componentExistsInMolstar(molstarInstance, 'ligand');
-      const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-      this.selectionData = molstarSelection.map((eachSelection) => {
-        return {
-          ...eachSelection,
-          color: ligand.molstarColorHex,
-          instance_id,
-          focus: true,
-          ...(hasLigands === false && {
-            representation: 'ball-and-stick',
-            representationColor: ligand.molstarColorHex,
-          }),
-        };
-      });
-    }
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
-  }
-
-  private async updateMolstarDomains(domain: ProcessedDomain | undefined) {
-    this.nonSelectionColor = '#FEFEFE';
-    if (!domain) {
-      this.selectionData = [];
-      const domainsSelectionData = this.allCurrentResourceDomainsQueryParam();
-      this.selectionData = domainsSelectionData;
-    } else {
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-      this.selectionData = molstarSelection.map((eachSegment) => {
-        return {
-          ...eachSegment,
-          color: domain.molstarColorHex,
-          instance_id,
-          focus: true,
-        };
-      });
-    }
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
-  }
-
-  private async updateMolstarModifications(mod: ProcessedLigandOrMod | undefined) {
-    if (!mod) {
-      this.selectionData = [];
-      const ligandsSelectionData = this.allModificationsQueryParam();
-      this.selectionData = ligandsSelectionData;
-      this.nonSelectionColor = '#FEFEFE';
-    } else {
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-      const instance = this._molstarComponent?.getInstance() ?? undefined;
-      const hasModifications = await componentExistsInMolstar(instance, 'non-standard');
-      this.selectionData = molstarSelection.map((eachSelection) => {
-        return {
-          ...eachSelection,
-          color: mod.molstarColorHex,
-          focus: true,
-          ...(hasModifications === false && {
-            representation: 'ball-and-stick',
-            representationColor: mod.molstarColorHex,
-          }),
-        };
-      });
-    }
-
-    const durationMs = this._molstarComponent ? this.zoomOutDuration : 0;
-    await this.onZoomOut(durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await this.onZoomInAndSelect();
-    });
   }
 }

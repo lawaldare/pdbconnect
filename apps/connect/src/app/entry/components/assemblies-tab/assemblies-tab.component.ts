@@ -2,22 +2,25 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { Component, computed, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
+import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
+import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
+import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
+import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
+import { MVSHandler } from '../../helpers/mvs-handler';
+import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
-import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
-import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { filter, firstValueFrom, take, timer } from 'rxjs';
-import { Molstar370DefaultParams } from '../../helpers/molstar-helpers';
-import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
-import { environment } from '../../../../environments/environment';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -45,12 +48,7 @@ export class AssembliesTabComponent {
       this.molstarReady.set(true);
     }
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -97,6 +95,10 @@ export class AssembliesTabComponent {
     return rows;
   });
 
+  private readonly procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private readonly procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
+
   private previousAssemblyDatumIdx?: number;
   public currentAssemblyDatum = computed(() => {
     const selectedIdx = this.selectedAssemblyIdx() ?? 0;
@@ -108,12 +110,13 @@ export class AssembliesTabComponent {
     if (selectedIdx === this.previousAssemblyDatumIdx) return datum;
     this.previousAssemblyDatumIdx = selectedIdx;
 
-    // could be an effect also
-    if (datum) {
-      this.triggerMolstarSideEffect();
-    }
+    // // could be an effect also
+    // if (datum) {
+    //   this.triggerMolstarSideEffect();
+    // }
     return datum;
   });
+  private currentAssemblyDatum$ = toObservable(this.currentAssemblyDatum);
 
   public selectionStats = computed(() => {
     const assemblySummaryDict = this.assemblySummaryDict();
@@ -138,35 +141,10 @@ export class AssembliesTabComponent {
     return undefined;
   });
 
-  public readonly configForMolstar = computed(() => {
-    const assembly = this.currentAssemblyDatum();
-    const entryId = this.entryId();
-    // const chainSelection = this.chainSelection();
-
-    if (!assembly || !entryId) return undefined;
-    const assemblyId = assembly.assemblyId ? assembly.assemblyId : '1';
-
-    // Check InitParams and DefaultParams at:
-    // https://github.com/molstar/pdbe-molstar/blob/v3.7.2/src/app/spec.ts
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId: assemblyId,
-      bgColor: { r: 255, g: 255, b: 255 },
-      subscribeEvents: true,
-      granularity: 'chain',
-      hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'entity-id',
-        },
-      },
-      sequencePanel: true,
-    };
-
-    return configForMolstar;
-  });
+  public readonly configForMolstar = computed(() => ({
+    ...EntryPageTabsCommonMolstarParams,
+    granularity: 'chain',
+  }));
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
   public readonly popService = inject(PopupWindowService);
@@ -178,26 +156,27 @@ export class AssembliesTabComponent {
     }
   }
 
-  private resetCamera() {
-    const plugin = this._molstarComponent?.getInstance()?.plugin ?? null;
-    if (!plugin) return;
-    plugin.managers.camera.reset(undefined, 100);
-  }
-
-  async triggerMolstarSideEffect() {
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true), // proceed when true
-        take(1)
-      )
-    );
-
-    // reset camera after loaded
-    timer(800).subscribe(() => {
-      this.resetCamera();
+  constructor() {
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
   }
+
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    const complex = this.currentAssemblyDatum();
+    if (!entryId || !complex) return;
+
+    const assemblyId = complex.assemblyId;
+    return {
+      name: `Complex ${assemblyId}`,
+      kind: 'pdbconnect_complex',
+      params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: false },
+    };
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   public getAdditionalData(name: string) {
     // this function is used to get specific data shown in Assembly dashboard view

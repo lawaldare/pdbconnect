@@ -404,7 +404,7 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
     const molstarSelection: QueryParamForHelpers[] = [];
     if (macromolecule.molecule_type.includes('carbohydrate') === false) {
       molstarSelection.push({
-        entity_id: macromolecule.entity_id + '',
+        label_entity_id: String(macromolecule.entity_id),
         auth_asym_id: chainId,
       });
       selectionNames.push(`Chain ${chainId}`);
@@ -414,10 +414,10 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
         // const carbStructAsymId = carbChain.struct_asym_id;
         for (const carbResidue of carbChain.residues) {
           molstarSelection.push({
-            entity_id: macromolecule.entity_id + '',
+            label_entity_id: String(macromolecule.entity_id),
             auth_asym_id: chainId,
-            auth_residue_number: carbResidue.author_residue_number,
-            auth_ins_code_id: carbResidue.author_insertion_code || undefined,
+            auth_seq_id: carbResidue.author_residue_number,
+            pdbx_PDB_ins_code: carbResidue.author_insertion_code || undefined,
             // struct_asym_id: carbStructAsymId,
             // residue_number: carbResidue.residue_number,
           });

@@ -372,7 +372,9 @@ export const INTX_NAME_COLORS: Record<string, string> = {
   AMIDERING: '#C0BD7F',
   weak_polar: '#96CDE6',
   weak_hbond: '#96CDE6',
-  mixed: '#7F7E80',
+  // Special values:
+  mixed: '#808080',
+  default: '#ffffff',
 };
 
 export const ENTRY_PAGES_LINKS = [
@@ -407,6 +409,12 @@ export const ENTRY_PAGES_LINKS = [
     sizes: '180x180',
   },
 ];
+
+/** Color for highlighting domains on Domains tab */
+export const DEFAULT_DOMAIN_HIGHLIGHT_COLOR = '#B5CB93'; // Higher-contrast version of '#D0DEBB' from left panel UI
+
+/** Color for marking annotations on Text Annotations tab */
+export const TEXT_ANNOTATION_HIGHLIGHT_COLOR = '#4F81C3';
 
 export const labelGroups = {
   Popular: ['mmCIF file (Updated)', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)', 'Validation data (mmCIF)'],

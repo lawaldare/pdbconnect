@@ -1,16 +1,17 @@
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
-import type { AnyColor } from 'pdbe-molstar/lib/spec';
+import type { AnyColor, InitParams } from 'pdbe-molstar/lib/spec';
 
 // Check InitParams and DefaultParams at:
 // https://github.com/molstar/pdbe-molstar/blob/v3.7.2/src/app/spec.ts
 
 export type QueryParamForHelpers = QueryParam & { color?: AnyColor; sideChain?: boolean; representation?: string; representationColor?: any; focus?: boolean };
 
-export const Molstar370DefaultParams = {
+export const Molstar370DefaultParams: InitParams = {
   moleculeId: undefined,
   customData: undefined,
   assemblyId: undefined,
+  modelId: undefined,
   defaultPreset: 'default',
   ligandView: undefined,
   alphafoldView: false,
@@ -23,7 +24,7 @@ export const Molstar370DefaultParams = {
   hideStructure: [],
   loadMaps: false,
   mapSettings: undefined,
-  bgColor: { r: 0, g: 0, b: 0 },
+  bgColor: 'white',
   highlightColor: undefined,
   selectColor: undefined,
   lighting: undefined,
@@ -52,6 +53,18 @@ export const Molstar370DefaultParams = {
   landscape: false,
   reactive: false,
   tabs: 'pdbe',
+};
+
+/** PDBe Molstar initialization params shared across all Entry Page tabs */
+export const EntryPageTabsCommonMolstarParams: InitParams = {
+  ...Molstar370DefaultParams,
+  bgColor: 'white',
+  granularity: 'residue',
+  subscribeEvents: true,
+  hideCanvasControls: ['snapshotControls', 'snapshotDescription'],
+  sequencePanel: true,
+  pdbeLink: false,
+  loadingOverlay: true,
 };
 
 export async function drawSelectionInMolstar(

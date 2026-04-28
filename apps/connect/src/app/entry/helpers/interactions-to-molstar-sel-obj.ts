@@ -1,27 +1,34 @@
-import { INTX_NAME_COLORS } from '../entry-constant';
+import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { INTX_NAME_STANDARDIZER } from '../components/ligands-tab/interaction-type.component';
 import { Interaction } from '../data-models/interaction.model';
-import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
+import { INTX_NAME_COLORS } from '../entry-constant';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
-import { QueryParamForHelpers } from './molstar-helpers';
+import { unique } from './mvs-views/helpers';
+
+export interface MVSAtomInteraction {
+  start: ComponentExpressionT[];
+  end: ComponentExpressionT[];
+  color?: string;
+  tooltip?: string;
+}
 
 export function interactionsToMolstar(
   ligand: ProcessedLigandOrMod,
-  ligandMolstarSelection: QueryParamForHelpers[],
+  ligandMolstarSelection: QueryParam[],
   interactions: Interaction[],
   instance_id: string | undefined
-  // chainToEntityId: { [key: string]: string }
 ) {
-  const chainId = ligandMolstarSelection[0].auth_asym_id!;
-  const residueId = ligandMolstarSelection[0].auth_residue_number!;
-  const resIns = ligandMolstarSelection[0].auth_ins_code_id;
+  const chainId = ligandMolstarSelection[0].auth_asym_id;
+  const residueId = ligandMolstarSelection[0].auth_seq_id;
+  const resIns = ligandMolstarSelection[0].pdbx_PDB_ins_code;
 
-  const residuesMolstarSelections: QueryParamForHelpers[] = [];
-  const interactionsMolstarSelections: PDBeMolstarInteraction[] = [];
+  const residuesMolstarSelections: ComponentExpressionT[] = [];
+  const interactionsMolstarSelections: MVSAtomInteraction[] = [];
   const residToInstanceId: { [key: string]: string | undefined } = {};
 
   for (const int of interactions) {
-    const dist = int.distance;
+    const dist = int.distance.toFixed(2);
     const details = int.interaction_details;
     const tooltipHeader =
       details.length === 1
@@ -32,7 +39,7 @@ export function interactionsToMolstar(
       int.end.author_insertion_code?.trim() ?? ''
     }</strong> | ${int.end.atom_names.join(', ')}`;
     const tooltip = `${tooltipHeader}<br>${tooltipPartner1} - ${tooltipPartner2}`;
-    const color = details.length === 1 ? INTX_NAME_COLORS[details[0]] : INTX_NAME_COLORS['mixed'];
+    const color = details.length === 1 ? INTX_NAME_COLORS[details[0]] ?? INTX_NAME_COLORS['default'] : INTX_NAME_COLORS['mixed'];
 
     const atomAsymId = instance_id ? instance_id : undefined;
     const residueChain = int.end.chain_id.split('_')[0];
@@ -43,51 +50,46 @@ export function interactionsToMolstar(
     const residueIns = normalizeInsertionCode(int.end.author_insertion_code);
 
     interactionsMolstarSelections.push({
-      start: {
-        auth_asym_id: chainId,
-        auth_seq_id: residueId,
-        auth_ins_code_id: normalizeInsertionCode(resIns),
-        atoms: int.ligand_atoms,
-        instance_id: atomAsymId,
-      },
-      end: {
-        auth_asym_id: residueChain,
-        auth_seq_id: residueNum,
-        auth_ins_code_id: residueIns,
-        atoms: int.end.atom_names,
-        instance_id: residueSymOp,
-      },
+      start: int.ligand_atoms.map(
+        (atom) =>
+          ({
+            auth_asym_id: chainId,
+            auth_seq_id: residueId,
+            pdbx_PDB_ins_code: normalizeInsertionCode(resIns),
+            auth_atom_id: atom,
+            instance_id: atomAsymId,
+          }) satisfies ComponentExpressionT
+      ),
+      end: int.end.atom_names.map(
+        (atom) =>
+          ({
+            auth_asym_id: residueChain,
+            auth_seq_id: residueNum,
+            pdbx_PDB_ins_code: residueIns,
+            auth_atom_id: atom,
+            instance_id: residueSymOp,
+          }) satisfies ComponentExpressionT
+      ),
       color,
       tooltip,
     });
-    const residObj: QueryParamForHelpers = {
-      // entity_id: chainToEntityId[int.end.chain_id],
+    residuesMolstarSelections.push({
       auth_asym_id: residueChain,
-      auth_residue_number: residueNum,
-      auth_ins_code_id: residueIns,
+      auth_seq_id: residueNum,
+      pdbx_PDB_ins_code: residueIns,
       instance_id: residueSymOp,
-    };
-
-    residToInstanceId[`${residueChain}|${residueNum}|${residueIns}`] = residueSymOp;
-
-    const sameResidues = residuesMolstarSelections.filter((sel) => {
-      return (
-        // sel.entity_id === residObj.entity_id &&
-        sel.auth_asym_id === residObj.auth_asym_id && sel.auth_residue_number === residObj.auth_residue_number && sel.auth_ins_code_id === residObj.auth_ins_code_id
-        // sel.instance_id === residObj.instance_id
-      );
     });
-    if (sameResidues.length === 0) {
-      residuesMolstarSelections.push(residObj);
-    }
+    residToInstanceId[`${residueChain}|${residueNum}|${residueIns}`] = residueSymOp;
   }
-  return { residuesMolstarSelections, interactionsMolstarSelections, residToInstanceId };
+  return {
+    residuesMolstarSelections: unique(residuesMolstarSelections, JSON.stringify),
+    interactionsMolstarSelections,
+    residToInstanceId,
+  };
 }
 
 function formatInteractionType(interactionType: string) {
-  if (interactionType === 'mixed') return;
-  const interactionTypeName = INTX_NAME_STANDARDIZER[interactionType as keyof typeof INTX_NAME_STANDARDIZER];
-  return interactionTypeName;
+  return INTX_NAME_STANDARDIZER[interactionType as keyof typeof INTX_NAME_STANDARDIZER] ?? interactionType;
 }
 
 export function normalizeInsertionCode(insCode: string | undefined) {

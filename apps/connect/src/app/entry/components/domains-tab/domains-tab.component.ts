@@ -4,32 +4,37 @@
 
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
-import { ComponentCommunicationService } from '../../services/component-comm.service';
-import { getCleanMoleculeName, getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { EntrySelectors } from '../../store/entry.selectors';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
-import { entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
-import { combineLatest, debounceTime, distinctUntilChanged, filter, first, firstValueFrom, take, timer } from 'rxjs';
-import { createAuthAlternateNumbering, generateSeqViewerDomainAnnotation, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { EntryActions } from '../../store/entry.actions';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { drawSelectionInMolstar, Molstar370DefaultParams, QueryParamForHelpers, zoomOutStructureInMolstar } from '../../helpers/molstar-helpers';
-import { SequenceDetail } from '../../store/data-processing/models/other-models';
-import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
-import { Molecule } from '../../data-models/molecule.model';
-import { ProcessedDomain } from '../../store/data-processing/models/processed-entities.model';
-import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
-import { PvDataProcessingFacade } from '../shared/entry-pv-nightingale/pv-entry-api.facade';
 import { FixedSelectionInput, ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
+import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
+import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
+import { Molecule } from '../../data-models/molecule.model';
+import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
+import { whenSignalFirstTrue } from '../../helpers/misc';
+import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { MVSHandler } from '../../helpers/mvs-handler';
+import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
+import { createAuthAlternateNumbering, generateSeqViewerDomainAnnotation, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
+import { getCleanMoleculeName, getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
+import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
+import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
+import { SequenceDetail } from '../../store/data-processing/models/other-models';
+import { ProcessedDomain } from '../../store/data-processing/models/processed-entities.model';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntryActions } from '../../store/entry.actions';
+import { EntrySelectors } from '../../store/entry.selectors';
+import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { PvDataProcessingFacade } from '../shared/entry-pv-nightingale/pv-entry-api.facade';
+import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+
 @Component({
   selector: 'pdbc-domains-tab',
   standalone: true,
@@ -187,7 +192,7 @@ export class DomainsTabComponent {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
   public readonly residueListingObs = this.globalStore.select(EntrySelectors.residueListing);
-  public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
 
   public readonly tabDataLoaded = computed(() => this.processedDomains() !== undefined);
@@ -199,6 +204,10 @@ export class DomainsTabComponent {
 
   public symmetryDropdownSelected?: string;
   public symmetryDropdownOptions: DownloadOption[] = [];
+  private getSelectedInstanceId() {
+    if (this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All') return this.symmetryDropdownSelected;
+    else return undefined;
+  }
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
@@ -214,12 +223,7 @@ export class DomainsTabComponent {
       this.molstarReady.set(true);
     }
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -243,37 +247,15 @@ export class DomainsTabComponent {
   public inPrefAssembly = signal(true);
   public inPrefAssemblyForChain = signal(true);
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summaryData();
-    const entryId = this.entryId();
-    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
+  private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
 
-    if (!summary || !entryId) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const assemblyId = inPrefAssemblyForChain ? preferredAssemblyId : undefined;
+  // private getPreferredAssemblyId(): string | undefined {
+  //   return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
+  // }
 
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      bgColor: { r: 255, g: 255, b: 255 },
-      subscribeEvents: true,
-      granularity: 'residue',
-      hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'uniform',
-          colorParams: { value: 0xfefefe },
-        },
-      },
-      sequencePanel: true,
-    };
-
-    return configForMolstar;
-  });
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   public sequenceDetails = signal<SequenceDetail[]>([]);
 
@@ -315,7 +297,15 @@ export class DomainsTabComponent {
       const nonObservedResidues = getNonObserved(residueListing);
       this.nonObserved.set(nonObservedResidues);
     });
+
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
+      // run after molstar rendered
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+    });
   }
+
+  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
 
@@ -337,46 +327,14 @@ export class DomainsTabComponent {
     }
   }
 
-  private async updateConfigAssemblyAndSyncMolstar(domain: ProcessedDomain, chainId: string) {
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
+  private async updateInPrefAssemblyForChain(domain: ProcessedDomain, chainId: string) {
     // check if domain segments are in pref assembly based on chainId
-    const inPrefAssemblyForChain = this.inPrefAssemblyForChain();
     const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
     // get list of segments for selected chain by idx
     const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
     // check whether all segments in preferred assembly
     const allSegmentsInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
-    const changedDisplayedAssembly = inPrefAssemblyForChain !== allSegmentsInPrefAssembly;
-
-    // setting inPrefAssemblyForChain may trigger update on configForMolstar
     this.inPrefAssemblyForChain.set(allSegmentsInPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMolstar$.pipe(take(1)));
-
-      const newCfg = await firstValueFrom(
-        this.configForMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this._molstarComponent!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
   }
 
   async triggerDomainUpdateSideEffects(domain: ProcessedDomain) {
@@ -390,8 +348,8 @@ export class DomainsTabComponent {
     // get chainId
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(domain, chainId);
+    // check whether chain is in pref assembly
+    await this.updateInPrefAssemblyForChain(domain, chainId);
     // check whether any segment not in pref assembly for this domain
     const allDomainInPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
     this.inPrefAssembly.set(allDomainInPrefAssembly);
@@ -478,8 +436,8 @@ export class DomainsTabComponent {
     // get chainId
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
 
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    await this.updateConfigAssemblyAndSyncMolstar(domain, chainId);
+    // check whether chain is in pref assembly
+    await this.updateInPrefAssemblyForChain(domain, chainId);
 
     // get macromolecules for domain
     const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
@@ -501,20 +459,20 @@ export class DomainsTabComponent {
     this.renderVisualisations(domain, chainId);
   }
 
-  public async onSymmetryDropdownSelect(event: string) {
+  public onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdownSelected = event;
 
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.getSelectedInstanceId();
     this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
 
     const domain = this.currentDomainsDatum();
     if (!domain) return;
     const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-    await this.renderVisualisations(domain, chainId);
+    this.renderVisualisations(domain, chainId);
   }
 
   private renderVisualisations(domain: ProcessedDomain, chainId: string) {
-    this.renderInMolstar(domain, chainId);
+    this.renderInMolstar(domain);
     this.initOrRefreshProtvista(domain, chainId);
   }
 
@@ -530,40 +488,44 @@ export class DomainsTabComponent {
     });
   }
 
-  public selectionData?: QueryParamForHelpers[];
-
   public getCleanSelectionName = getCleanSelectionName;
 
-  private async renderInMolstar(domain: ProcessedDomain, chainId: string) {
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.molstarFirstRenderFinished$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const domainColor = '#B5CB93'; // domain.molstarColorHex;
+  private async renderInMolstar(domain: ProcessedDomain) {
+    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(domain));
+  }
 
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-    this.selectionData = molstarSelection.map((eachSelection) => {
-      return {
-        ...eachSelection,
-        instance_id,
-        color: domainColor,
+  private getMvsSnapshotSpec(domain: ProcessedDomain): SnapshotSpec | undefined {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
+
+    const assemblyId = this.displayedAssemblyId();
+    const instanceId = this.getSelectedInstanceId();
+
+    return {
+      name: 'Domain',
+      kind: 'pdbconnect_domains',
+      params: {
+        entry: entryId,
+        assemblyId,
+        domains: [
+          {
+            name: domain.additionalData.accession,
+            color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
+            selector: domain.additionalData.boundaries.map(
+              (segment) =>
+                ({
+                  auth_asym_id: segment.chain,
+                  beg_label_seq_id: segment.start,
+                  end_label_seq_id: segment.end,
+                  instance_id: instanceId,
+                }) satisfies ComponentExpressionT
+            ),
+          },
+        ],
         focus: true,
-      };
-    });
-    this.visInteractivity.currentSelectionData.set(this.selectionData);
-
-    const durationMs = this._molstarComponent ? 1200 : 0;
-    const instance = this._molstarComponent?.getInstance() ?? null;
-    if (!instance) return;
-    await zoomOutStructureInMolstar(instance, durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await drawSelectionInMolstar(instance, this.selectionData);
-    });
+        volumeStreaming: true,
+      },
+    };
   }
 
   private initOrRefreshProtvista(domain: ProcessedDomain, chainId: string) {
@@ -602,7 +564,7 @@ export class DomainsTabComponent {
     this.currentDomainsFeature.set([
       {
         accession: 'custom-domain',
-        color: '#D0DFBB',
+        color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
         locations: [{ fragments }],
         label: 'Custom data',
       },
