@@ -116,13 +116,7 @@ export class MbMacromoleculeComponent implements OnInit {
     return filteredIsoformsMapping;
   });
 
-  public sequenceDetails = signal<
-    | {
-        title: string;
-        fullSequence: string;
-      }
-    | undefined
-  >(undefined);
+  public sequenceDetails = signal<{ title: string; fullSequence: string } | undefined>(undefined);
 
   public currentViewState = signal<ViewState>(ViewState.List);
   public viewStates = ViewState;

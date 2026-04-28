@@ -1,17 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, take } from 'rxjs';
+import { take } from 'rxjs';
 import { whenSignalFirstTrue } from '../../../helpers/misc';
-import { Molstar370DefaultParams } from '../../../helpers/molstar-helpers';
+import { EntryPageTabsCommonMolstarParams } from '../../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
 import { MVSHandler } from '../../../helpers/mvs-handler';
-import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MobileTabChips } from '../../../store/data-processing/models/other-models';
 import { EntryStoreState } from '../../../store/entry-store.model';
@@ -104,39 +103,39 @@ export class MbMolstarTabComponent implements AfterViewInit {
   private preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
 
   public readonly configForMolstar = computed(() => {
-    const summary = this.summary();
-    const entryId = this.entryId();
-    const inPrefAssembly = this.inPrefAssembly();
+    return EntryPageTabsCommonMolstarParams;
+    // const summary = this.summary();
+    // const entryId = this.entryId();
+    // const inPrefAssembly = this.inPrefAssembly();
 
-    if (!summary || !entryId) return undefined;
-    const preferredAssemblyId = this.preferredAssemblyId();
-    const assemblyId = inPrefAssembly ? preferredAssemblyId : undefined;
+    // if (!summary || !entryId) return undefined;
+    // const preferredAssemblyId = this.preferredAssemblyId();
+    // const assemblyId = inPrefAssembly ? preferredAssemblyId : undefined;
 
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      landscape: false,
-      subscribeEvents: true,
-      granularity: 'residue',
-      hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'entity-id',
-          // color: 'uniform',
-          // colorParams: { value: Color(0xd4d5d4) },
-        },
-      },
-      bgColor: 'white',
-      hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-    };
-    return configForMolstar;
+    // const configForMolstar = {
+    //   ...Molstar370DefaultParams,
+    //   moleculeId: this.entryId(),
+    //   assemblyId,
+    //   landscape: false,
+    //   subscribeEvents: true,
+    //   granularity: 'residue',
+    //   hideControls: false,
+    //   visualStyle: {
+    //     polymer: {
+    //       type: 'cartoon',
+    //       color: 'entity-id',
+    //       // color: 'uniform',
+    //       // colorParams: { value: Color(0xd4d5d4) },
+    //     },
+    //   },
+    //   bgColor: 'white',
+    //   hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
+    //   loadMaps: true,
+    //   mapSettings: { defaultView: 'selection-box' },
+    //   sequencePanel: true,
+    // };
+    // return configForMolstar;
   });
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
 
   constructor() {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(async () => {
@@ -144,18 +143,30 @@ export class MbMolstarTabComponent implements AfterViewInit {
       this.compCommunication.mobileMolstarLoaded$.next(true);
 
       const mvsHandler = MVSHandler(this._molstarComponent);
-      this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+      this.compCommunication.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
 
       // once molstar has rendered, initializes mutation observer for NMR model Id
       initializeModelIdTracking(this.compCommunication.mobileModelIdx$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
     });
-
-    this.configForMolstar$.subscribe((cfg) => {
-      this.compCommunication.configForMobileMolstar.set(cfg);
-    });
   }
 
-  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
+  // ngOnInit() {
+  //   this.applicationApiDispatcher.dispatchForList([
+  //     // stuff for this.processedMacromolecules:
+  //     EntryActions.getAssemblies,
+  //     EntryActions.getEntryMolecules,
+  //     EntryActions.getCarbohydrates,
+  //     EntryActions.getProcessedMacromolecules,
+  //     // stuff for this.processedLigands:
+  //     EntryActions.getBoundMolecules,
+  //     EntryActions.getEntryLigandMonomers,
+  //     EntryActions.getModifications,
+  //     EntryActions.getProcessedLigands,
+  //   ]);
+  // }
+  // private readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  // private readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  // private readonly entityColors = computed(() => makeEntityColors(this.processedMacromolecules(), this.processedLigands()));
 
   ngAfterViewInit(): void {
     // Angular materials body style patch

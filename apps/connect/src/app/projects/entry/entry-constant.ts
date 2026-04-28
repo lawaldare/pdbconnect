@@ -212,6 +212,25 @@ export const OUTLIER_TYPE_LABELS: Record<string, string> = {
   pucker_outliers: 'RNA Pucker Outliers',
 };
 
+export const VALIDATION_LEGENDS_AND_COLORS = [
+  {
+    label: '0 outliers',
+    color: '#F0F0F0',
+  },
+  {
+    label: '1 outlier',
+    color: '#E5E501',
+  },
+  {
+    label: '2 outliers',
+    color: '#DA6E03',
+  },
+  {
+    label: '3 and more outliers',
+    color: '#B2182B',
+  },
+];
+
 // https://web.archive.org/web/20250209115645/https://personal.sron.nl/~pault/
 export const PAUL_TOL_COLORBLIND_SCALE: string[] = ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'];
 
