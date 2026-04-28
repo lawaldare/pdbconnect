@@ -1,6 +1,9 @@
-FROM node:20-alpine3.20 AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
+
+ARG APP_BASE_HREF
+ENV APP_BASE_HREF=$APP_BASE_HREF
 
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
@@ -10,15 +13,18 @@ COPY . .
 RUN npx nx build complexes --configuration=production
 
 
-# ---------- RUNTIME STAGE ----------
-FROM node:20-alpine3.20
+FROM node:22-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app/dist/apps/complexes ./dist
+ENV NODE_ENV=production
+ENV PORT=80
 
-RUN npm install express xhr2 --omit=dev
+COPY package*.json ./
+RUN npm ci --omit=dev --legacy-peer-deps
+
+COPY --from=builder /app/dist/apps/complexes ./dist
 
 EXPOSE 80
 
-CMD ["node", "dist/server/main.js"]
+CMD ["node", "dist/server/server.mjs"]
