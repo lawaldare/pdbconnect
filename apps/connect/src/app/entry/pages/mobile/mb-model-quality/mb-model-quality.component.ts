@@ -39,7 +39,6 @@ export class MbModelQualityComponent implements OnInit {
   public readonly summary = toSignal(this.summaryObs);
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   private readonly modelId = toSignal(this.compCommunication.mobileModelIdx$);
-  // TODO: @adam Change modelId to toSignal also in desktop
 
   public expanded = signal<boolean>(false);
 

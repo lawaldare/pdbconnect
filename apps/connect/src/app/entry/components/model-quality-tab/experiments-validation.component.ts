@@ -161,9 +161,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public selectedSpecificIssueKind = new FormControl('', { nonNullable: true });
 
-  /** Signal for dynamic model index (default to 1) */
-  public modelId = signal<string>('1');
-
   public molstarModelQualityRendered = signal(false);
 
   public isXray = linkedSignal({
@@ -217,7 +214,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
-  public currentModelId$ = new BehaviorSubject<string>('1');
+  public readonly currentModelId$ = new BehaviorSubject<string>('1');
+  public readonly modelId = toSignal(this.currentModelId$);
 
   constructor() {
     effect(() => {
@@ -245,11 +243,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    /* 2b. Every time NMR model Id updates, data for smart seq viewer is refreshed */
-    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      this.modelId.set(newModelId);
-    });
-
     /* 3. (TODO: Refactor) Data processing for tab */
     combineLatest([
       this.globalStore.select(EntrySelectors.modelQualityXray),
