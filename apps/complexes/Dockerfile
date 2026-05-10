@@ -13,8 +13,6 @@ RUN npm ci --omit=dev --legacy-peer-deps --ignore-scripts && npm install @angula
 COPY dist/apps/complexes/server /app/server
 COPY dist/apps/complexes/browser /app/browser
 
-RUN test -f /app/browser/index.html && sed -i "s|\\$APP_BASE_HREF|${APP_BASE_HREF}|g" /app/browser/index.html
-
 EXPOSE 80
 
 CMD ["node", "/app/server/server.mjs"]
