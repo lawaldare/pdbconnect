@@ -1,7 +1,8 @@
 export interface SurveyQuestion {
   id: string;
-  type: 'rating' | 'text' | 'multiple';
+  type: 'rating' | 'text' | 'multiple' | 'multiple-check';
   title: string;
+  subtitle?: string;
   skip: boolean;
   choices?: string[]; // Only for multiple-choice
 }
