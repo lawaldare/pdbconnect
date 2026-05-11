@@ -1,7 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { ɵsetAngularAppEngineManifest } from '@angular/ssr';
 import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// @ts-ignore Angular generates this manifest next to the built server bundle.
+import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
+
+ɵsetAngularAppEngineManifest(angularAppEngineManifest);
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
