@@ -107,7 +107,8 @@ export class SurveyService {
     this.answers.update((a) => ({ ...a, [questionId]: value }));
   }
 
-  async submit() {
+  async submit(answersOverride?: Record<string, any>) {
+    const payload = answersOverride ?? this.answers();
     const cfg = this.config();
     if (!cfg) return;
 
@@ -118,7 +119,7 @@ export class SurveyService {
     // 2. skipped but user answered anyway
     const questions = cfg?.questions ?? [];
     for (const q of questions) {
-      const value = this.answers()[q.id];
+      const value = payload[q.id];
 
       // If skip = true and user didn’t answer, omit
       if (q.skip && (value === undefined || value === null || value === '')) {
