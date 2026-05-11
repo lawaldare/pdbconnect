@@ -575,7 +575,7 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], pref
   if ((<any>carbohydrates).empty === true) carbohydrates = [];
   const processedMacromolecules: ProcessedMacromolecule[] = [];
   for (const molecule of macromolecules) {
-    let moleculeLength = molecule.length;
+    let moleculeLength = molecule.length ?? 0;
     let carbohydrate: CarbohydrateMolecule | undefined = undefined;
 
     if (molecule.molecule_type.includes('carbohydrate')) {

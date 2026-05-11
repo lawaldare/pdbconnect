@@ -82,8 +82,8 @@
       } @if(card.isModified){
       <p class="annotation modification" [pdbcRichTooltip]="annotationsTooltips['modification']">Modification</p>
       }
-      <p class="card-text" style="font-size: 13px"><b>X {{ card.prefAssemblyCount }} </b> in pref complex</p>
-      <p class="card-text" style="font-size: 13px"><b>X {{ card.entryInstancesCount }} </b> in model file</p>
+      <p class="card-text" style="font-size: 13px"><b>&times; {{ card.prefAssemblyCount }} </b> in pref complex</p>
+      <p class="card-text" style="font-size: 13px"><b>&times; {{ card.entryInstancesCount }} </b> in model file</p>
     </div>
   </div>
   } @if(rowCards().length > 10){

@@ -1,14 +1,14 @@
+import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX } from '@pdbe-lib/molstar-for-apps';
 import { AssemblyData } from '../../data-models/assembly.model';
+import { BoundMolecule } from '../../data-models/bound-molecule.model';
 import { LigandMonomer } from '../../data-models/ligand-monomers.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
-import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX } from '@pdbe-lib/molstar-for-apps';
 import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
-import { Filter } from './models/other-models';
-import { BoundMolecule } from '../../data-models/bound-molecule.model';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
 import { sortByBooleanFlag } from './domain-processing';
+import { Filter } from './models/other-models';
 
 export function filterLigandsByPreferredAssembly(ligands: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
   const entityMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
@@ -374,8 +374,8 @@ export function generateLigandsAndModsTableFilters(ligands: Molecule[], ligandMo
   return newFilters;
 }
 
-export interface ProcessedLigandOrMod {
-  type: string;
+interface _ProcessedLigandOrMod<TType extends string, TSourceData> {
+  type: TType;
   id: string;
   codeAndName: {
     name: string;
@@ -386,13 +386,17 @@ export interface ProcessedLigandOrMod {
   allInstancesInPrefAssembly: boolean;
   symmOpListForEachLigOrMod: string[][];
   additionalData: {
-    source: Molecule | ModifiedResidue[];
+    source: TSourceData;
     selections: QueryParamForHelpers[][];
     selectionNames: string[];
     selectionsInPrefAssembly: boolean[];
   };
   molstarColorHex?: string;
 }
+
+export type ProcessedLigand = _ProcessedLigandOrMod<'ligand', Molecule>;
+export type ProcessedModification = _ProcessedLigandOrMod<'modification', ModifiedResidue[]>;
+export type ProcessedLigandOrMod = ProcessedLigand | ProcessedModification;
 
 export function generateSymmetryOperatorsListForLigand(entityId: number, ligandMonomersForEntity: LigandMonomer[], preferredAssembly: AssemblyData) {
   const ligandsSymmOperators: string[][] = [];

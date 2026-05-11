@@ -61,7 +61,7 @@ export function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecu
 
 export function getMacromoleculeSequenceDetails(entryId: string, datum: ProcessedMacromolecule, chainId: string) {
   const entity = datum.additionalData.molecule;
-  const seq = entity.sequence;
+  const seq = entity.sequence ?? '';
   return {
     title: `>FASTA pdb|${entryId}|${getCleanMoleculeName(entity)}; Chain ${chainId}`,
     fullSequence: seq,
@@ -95,7 +95,7 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
 
   const sequenceDetail: SequenceDetail = {
     title: `>FASTA pdb|${entryId}|${moleculeName}; Chain ${chainId}; ${domainDescription}${otherChains}`,
-    fullSequence: macromolecule.sequence,
+    fullSequence: macromolecule.sequence ?? '',
     segments: [],
   };
 

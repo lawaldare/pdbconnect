@@ -1,5 +1,5 @@
 <section>
-  @if(LigandTableRows().length){
+  @if(ligandTableRows().length){
   <header>
     @if(currentViewState() === viewStates.Detail){
     <nav>
@@ -8,11 +8,7 @@
     </nav>
     }
     <section class="header">
-      <h2>
-        {{title()}} @if(currentViewState() === viewStates.List){
-        <span>({{LigandTableRows().length}})</span>
-        }
-      </h2>
+      <h2>@if(currentViewState() === viewStates.List){ Ligands ({{ligandTableRows().length}}) } @else { {{selectedLigand()?.id ?? '?'}} }</h2>
       <div class="controls">
         <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
         <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
@@ -21,13 +17,11 @@
   </header>
 
   <!-- 1st Level Overlay -->
-  @if(currentViewState() === viewStates.List){ @for(row of LigandTableRows(); track row.id){
-  <div class="row" (click)="navigateToDetail(row)">
+  @if(currentViewState() === viewStates.List){ @for(row of ligandTableRows(); track row.id){
+  <div class="row" (click)="navigateToDetail(row)" [style]="row.molstarColorHex ? `border-left-color: ${row.molstarColorHex};` : undefined">
     <div class="row__header">
       <p class="row__header__name">
-        {{row.id}} @if (anyNonPrefAssembly(row)) {
-        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
-        }
+        {{row.id}} @if (anyNonPrefAssembly(row)) { <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" /> }
       </p>
       <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
     </div>
@@ -39,18 +33,18 @@
     } @if(row.type === 'modification'){
     <span class="row__annotation modification">Modification</span>
     }
-    <p class="row__content" style="font-size: 15px"><b>X {{ row.codeAndName.prefAssemblyCount }} </b> in preferred complex</p>
-    <p class="row__content" style="font-size: 15px"><b>X {{ row.codeAndName.entryInstancesCount }} </b> in model file</p>
+    <p class="row__content" style="font-size: 15px"><b>&times; {{ row.codeAndName.prefAssemblyCount }} </b> in preferred complex</p>
+    <p class="row__content" style="font-size: 15px"><b>&times; {{ row.codeAndName.entryInstancesCount }} </b> in model file</p>
   </div>
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){ @if(selectedLigands().type !== 'modification' && selectedLigands().annotations.length){ @for(annotation of
-  selectedLigands().annotations; track annotation){
+  @if(currentViewState() === viewStates.Detail){ @if(selectedLigand()?.type !== 'modification' && selectedLigand()?.annotations?.length){ @for(annotation of
+  selectedLigand()?.annotations; track annotation){
   <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
-  } } @if(selectedLigands().type !== 'modification' && selectedLigands().annotations.length === 0){
+  } } @if(selectedLigand()?.type !== 'modification' && selectedLigand()?.annotations?.length === 0){
   <span class="row__annotation unannotated">Unannotated</span>
-  } @if(selectedLigands().type === 'modification'){
+  } @if(selectedLigand()?.type === 'modification'){
   <span class="row__annotation modification">Modification</span>
   }
   <div class="chains">
@@ -62,14 +56,14 @@
         [downloadable]="false"
         [islink]="false"
         [options]="dropdownOptions"
-        [title]="dropdownSelected"
+        [title]="dropdownSelected()"
         (optionClickedEvent)="onDropdownSelect($event)"
       >
       </pdbc-entry-dropdown>
     </div>
     }@else if(dropdownOptions.length === 1){
     <p [innerHTML]="dropdownOptions[0].name"></p>
-    } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+    } @if (symmetryDropdownSelected() && symmetryDropdownOptions.length > 1) {
     <p class="title">Symmetry Operation Id</p>
     <pdbc-entry-dropdown
       [searchable]="false"
@@ -77,7 +71,7 @@
       [downloadable]="false"
       [islink]="false"
       [options]="symmetryDropdownOptions"
-      [title]="symmetryDropdownSelected"
+      [title]="symmetryDropdownSelected() ?? 'All'"
       (optionClickedEvent)="onSymmetryDropdownSelect($event)"
     ></pdbc-entry-dropdown>
     } @else if(symmetryDropdownOptions.length === 1){
@@ -86,21 +80,21 @@
     }
   </div>
   <p class="title">Ligand name</p>
-  <p class="content">{{selectedLigands().codeAndName.name | truncate:40}}</p>
-  @let boundDetails = selectedLigands()?.additionalData?.source?.bound_details ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
+  <p class="content">{{selectedLigand()?.codeAndName?.name ?? '' | truncate:40}}</p>
+  @let boundDetails = ligandBoundDetails(); @if(boundDetails?.[0]?.synonyms?.length){
   <p class="title">Synonyms</p>
-  <p class="content" libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53"></p>
-  } @if(boundDetails && boundDetails.length){
+  <p class="content" libTruncateText [truncateText]="mapSynonyms(boundDetails?.[0]?.synonyms ?? [])" [limit]="53"></p>
+  } @if(boundDetails?.[0]?.formula){
   <p class="title">Formula</p>
-  <p class="content formula">{{ boundDetails[0]?.formula }}</p>
+  <p class="content formula">{{ boundDetails?.[0]?.formula }}</p>
   }
   <p class="title">Instances</p>
   <p class="content">
-    {{ selectedLigands().codeAndName.prefAssemblyCount }} in preferred assembly/complex<br />
-    {{ selectedLigands().codeAndName.entryInstancesCount }} in asymmetric unit
+    {{ selectedLigand()?.codeAndName?.prefAssemblyCount }} in preferred assembly/complex<br />
+    {{ selectedLigand()?.codeAndName?.entryInstancesCount }} in asymmetric unit
   </p>
   <p class="title">Molecular weight</p>
-  <p class="content">{{selectedLigands().additionalData.source.weight}} KDa</p>
+  <p class="content">{{molecularWeight() ?? '?'}} Da</p>
   }} @else {
   <header>
     <section class="header">

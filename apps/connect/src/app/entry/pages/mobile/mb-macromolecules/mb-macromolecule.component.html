@@ -22,7 +22,7 @@
 
   <!-- 1st Level Overlay -->
   @if(currentViewState() === viewStates.List){ @for(row of macromoleculeTableRows(); track row.name.molecule){
-  <div class="row" (click)="navigateToDetail(row)">
+  <div class="row" (click)="navigateToDetail(row)" [style]="row.molstarColorHex ? `border-left-color: ${row.molstarColorHex};` : undefined">
     <div class="row__header">
       <p class="row__header__name">{{row.name.molecule}}</p>
       <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
@@ -182,7 +182,7 @@
             [downloadable]="false"
             [islink]="false"
             [options]="dropdownOptions"
-            [title]="dropdownSelected"
+            [title]="dropdownSelected()"
             (optionClickedEvent)="onDropdownSelect($event)"
           >
           </pdbc-entry-dropdown>

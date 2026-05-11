@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
@@ -11,9 +11,11 @@ import { whenSignalFirstTrue } from '../../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
 import { MVSHandler } from '../../../helpers/mvs-handler';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MobileTabChips } from '../../../store/data-processing/models/other-models';
 import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntryActions } from '../../../store/entry.actions';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MbAssembliesComponent } from '../mb-assemblies/mb-assemblies.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
@@ -38,7 +40,7 @@ const MOBILE_COMPONENT_MAP = {
   templateUrl: './mb-molstar-tab.component.html',
   styleUrl: './mb-molstar-tab.component.scss',
 })
-export class MbMolstarTabComponent implements AfterViewInit {
+export class MbMolstarTabComponent implements AfterViewInit, OnInit {
   private bottomSheet = inject(MatBottomSheet);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly state = inject(MobileStateService);
@@ -54,6 +56,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
   @ViewChildren('chipEl') chipElements!: QueryList<ElementRef<HTMLElement>>;
 
   public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   private readonly destroyRef = inject(DestroyRef);
 
   public readonly mobileTabChips = [
@@ -102,6 +105,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
 
   private preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
 
+  // TODO: @adam Also migrate Structure Overview (consider using low-quality coords there)
   public readonly configForMolstar = computed(() => {
     return EntryPageTabsCommonMolstarParams;
     // const summary = this.summary();
@@ -150,20 +154,20 @@ export class MbMolstarTabComponent implements AfterViewInit {
     });
   }
 
-  // ngOnInit() {
-  //   this.applicationApiDispatcher.dispatchForList([
-  //     // stuff for this.processedMacromolecules:
-  //     EntryActions.getAssemblies,
-  //     EntryActions.getEntryMolecules,
-  //     EntryActions.getCarbohydrates,
-  //     EntryActions.getProcessedMacromolecules,
-  //     // stuff for this.processedLigands:
-  //     EntryActions.getBoundMolecules,
-  //     EntryActions.getEntryLigandMonomers,
-  //     EntryActions.getModifications,
-  //     EntryActions.getProcessedLigands,
-  //   ]);
-  // }
+  ngOnInit() {
+    this.applicationApiDispatcher.dispatchForList([
+      // stuff for this.processedMacromolecules:
+      EntryActions.getAssemblies,
+      EntryActions.getEntryMolecules,
+      EntryActions.getCarbohydrates,
+      EntryActions.getProcessedMacromolecules,
+      // stuff for this.processedLigands:
+      EntryActions.getBoundMolecules,
+      EntryActions.getEntryLigandMonomers,
+      EntryActions.getModifications,
+      EntryActions.getProcessedLigands,
+    ]);
+  }
   // private readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
   // private readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
   // private readonly entityColors = computed(() => makeEntityColors(this.processedMacromolecules(), this.processedLigands()));

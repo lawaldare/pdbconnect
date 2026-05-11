@@ -198,6 +198,13 @@ export class MVSSnapshotProvider {
         .representation({ type: 'spacefill' })
         .color({ color: entityColor });
     }
+    // Add and color spacefill representation for modified residues
+    if (params.modifications) {
+      const modresSpacefill = ctx.components.nonstandard?.representation({ type: 'spacefill' });
+      for (const mod of params.modifications) {
+        modresSpacefill?.color({ selector: { label_comp_id: mod.labelCompId }, color: mod.color as ColorT });
+      }
+    }
 
     const description: string[] = [`## All ligands`, `This is overview of all ligands in ${assemblyText(params.entry, params.assemblyId)}.`];
 

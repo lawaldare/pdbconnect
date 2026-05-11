@@ -761,14 +761,14 @@ export class Summary3DSectionComponent {
           name: 'Preferred complex',
           kind: 'pdbconnect_complex',
           params: { entry: entryId, assemblyId, volumeStreaming: true, entityColors },
-        };
+        } satisfies SnapshotSpec;
       case 'Macromolecules':
         if (!viewItem.item) {
           return {
             name: 'All macromolecules',
             kind: 'pdbconnect_complex',
             params: { entry: entryId, assemblyId, volumeStreaming: true, entityColors },
-          };
+          } satisfies SnapshotSpec;
         } else {
           const entityData = viewItem.item.additionalData;
           const entityId = String(entityData.molecule.entity_id);
@@ -780,7 +780,7 @@ export class Summary3DSectionComponent {
             name: 'Macromolecule',
             kind: 'pdbconnect_macromolecule',
             params: { entry: entryId, assemblyId, entityId, labelAsymId, authAsymId, instanceId, focus, volumeStreaming: true, color: entityColors[entityId] },
-          };
+          } satisfies SnapshotSpec;
         }
       case 'Ligands':
         if (!viewItem.item) {
@@ -788,8 +788,8 @@ export class Summary3DSectionComponent {
           return {
             name: 'All ligands',
             kind: 'pdbconnect_all_ligands',
-            params: { entry: entryId, assemblyId, volumeStreaming: true, ligandEntityIds, entityColors },
-          };
+            params: { entry: entryId, assemblyId, volumeStreaming: true, ligandEntityIds, modifications: undefined, entityColors },
+          } satisfies SnapshotSpec;
         } else {
           const ligandData = viewItem.item.additionalData;
           const moleculeData = ligandData.source as Molecule;
@@ -802,7 +802,7 @@ export class Summary3DSectionComponent {
             name: 'Ligand',
             kind: 'pdbconnect_ligand',
             params: { entry: entryId, assemblyId, entityId, labelAsymId, instanceId, focus, volumeStreaming: true, entityColors },
-          };
+          } satisfies SnapshotSpec;
         }
       case 'Domains': {
         const selectedResource = this.currentDomainResource();
@@ -831,7 +831,7 @@ export class Summary3DSectionComponent {
             focus,
             volumeStreaming: true,
           },
-        };
+        } satisfies SnapshotSpec;
         // TODO: fix every domain appearing twice in the list (entry 1bvy)
       }
       case 'Modifications': {

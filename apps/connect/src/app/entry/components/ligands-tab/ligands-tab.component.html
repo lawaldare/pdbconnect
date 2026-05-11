@@ -59,10 +59,10 @@
             <span class="micro-title"> Ligand name </span>
             <article>{{ currentLigandDatum()!.codeAndName.name }}</article>
           </div>
-          @let boundDetails = ligandBoundDetails() ?? undefined; @if(boundDetails && boundDetails?.[0]?.synonyms.length){
+          @let boundDetails = ligandBoundDetails(); @if(boundDetails?.[0]?.synonyms?.length){
           <div class="info-row">
             <span class="micro-title"> Synonyms </span>
-            <article libTruncateText [truncateText]="mapSynonyms(boundDetails[0].synonyms)" [limit]="53">
+            <article libTruncateText [truncateText]="mapSynonyms(boundDetails?.[0]?.synonyms ?? [])" [limit]="53">
               <!-- @for(synonym of boundDetails[0].synonyms; track synonym.value; let islast = $last){
             <span>{{synonym.value }}</span>{{ islast ? '' : ',' }} } -->
             </article>

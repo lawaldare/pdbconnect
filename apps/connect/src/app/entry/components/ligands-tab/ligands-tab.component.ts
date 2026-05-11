@@ -231,8 +231,8 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public ligandBoundDetails = computed(() => {
     const datum = this.currentLigandDatum();
-    if (datum && datum.type === 'ligand') {
-      return (datum.additionalData.source as any).bound_details;
+    if (datum?.type === 'ligand') {
+      return datum.additionalData.source.bound_details;
     }
     return undefined;
   });
