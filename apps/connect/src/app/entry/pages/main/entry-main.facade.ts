@@ -120,14 +120,43 @@ export class EntryMainFacade {
 
   public launchSurveyForEntryPage(entryId: string, isDesktop: boolean) {
     const surveyConfig: SurveyConfig = {
-      identifier: 'entrypage_satisfaction_v1',
+      identifier: 'entrypage_ai-annotations_v1',
       title: 'Help us improve the PDBe Entry Pages',
-      expiresAt: '01/03/2026',
+      expiresAt: '01/06/2026',
       webhookUrl: environment.epSurveyWebhookUrl1,
 
       questions: [
-        { id: 'q1', type: 'rating', title: 'How would you rate this page?', skip: false },
-        { id: 'q2', type: 'text', title: 'What is the reason for your score?', skip: true },
+        {
+          id: 'q1',
+          type: 'multiple',
+          title: 'Have you used Text annotations (AI)?',
+          choices: ['Frequently', 'A few times', 'Once', 'Not yet', 'I’m not sure what this is'],
+          skip: false,
+        },
+        {
+          id: 'q2',
+          type: 'multiple-check',
+          title: 'Which best describes your experience with Text annotations (AI)?',
+          choices: [
+            'Very helpful',
+            'Sometimes helpful',
+            'Difficult to understand',
+            'I don’t trust the AI-generated data',
+            'Not relevant to my work',
+            'Not available for the viewed entries',
+            'I stopped using it',
+            "I've never used it",
+          ],
+          skip: false,
+        },
+        {
+          id: 'q3',
+          type: 'text',
+          title: 'If you would like to participate in a 30-minute call to talk about your experience with PDBe, please leave your email.',
+          subtitle:
+            'We will not pass your data to anyone outside PDBe and will delete your data within six month. See our <a href="https://www.ebi.ac.uk/pdbe/entry/assets/data-privacy/entry-pages-data-privacy.pdf" target="_blank">Privacy notice</a> and <a href="https://www.ebi.ac.uk/about/terms-of-use/" target="_blank">Terms of Use</a>',
+          skip: true,
+        },
       ],
 
       extraParams: {
