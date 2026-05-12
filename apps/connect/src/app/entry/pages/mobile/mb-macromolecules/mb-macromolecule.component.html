@@ -30,7 +30,7 @@
     <p class="row__content">
       Chain @for(chain of row.name.chains; track chain; let islast = $last){
       <span>{{chain[chain.length - 1]}}</span>{{ islast ? '' : ',' }} } @if (anyNonPrefAssembly(row)) {
-      <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+      <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
       }
     </p>
   </div>

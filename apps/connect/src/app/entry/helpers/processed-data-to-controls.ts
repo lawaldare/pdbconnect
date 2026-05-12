@@ -28,7 +28,7 @@ export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?
       if (allChains) dropdownOptionsToMolstar['All chains'].push({ ...segment });
       const selectionKey = inPrefAssembly
         ? `Chain ${segment.auth_asym_id!}`
-        : `Chain ${segment.auth_asym_id!} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+        : `Chain ${segment.auth_asym_id!} <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px;" />`;
       const allChainsInObj = Object.keys(dropdownOptionsToMolstar);
       if (allChainsInObj.indexOf(selectionKey) > -1) {
         dropdownOptionsToMolstar[selectionKey].push({ ...segment });
@@ -53,7 +53,7 @@ export function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecu
     const inPrefAssembly = selectionsInPrefAssembly[selectionIdx];
     const selectionKey = inPrefAssembly
       ? `Chain ${selection[0].auth_asym_id!}`
-      : `Chain ${selection[0].auth_asym_id!} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+      : `Chain ${selection[0].auth_asym_id!} <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px;" />`;
     dropdownOptionsToMolstar[selectionKey] = selection;
   }
   return dropdownOptionsToMolstar;
@@ -134,7 +134,7 @@ function convertLigandDatumToString(id: string, selectedLigandInstance: QueryPar
   const chainId = selectedLigandInstance[0].auth_asym_id;
   const ligandString = inPrefAssembly
     ? `${id} ${resNum}${insCode} in chain ${chainId}`
-    : `${id} ${resNum}${insCode} in chain ${chainId} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+    : `${id} ${resNum}${insCode} in chain ${chainId} <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px;" />`;
   return ligandString;
 }
 

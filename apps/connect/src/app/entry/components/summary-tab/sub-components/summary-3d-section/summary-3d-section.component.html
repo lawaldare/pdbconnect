@@ -71,7 +71,7 @@
     <section class="info-banner">
       <button class="close-btn" (click)="hasClosedMessage.set(true)">✖</button>
       <p>
-        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
         Current selection is <b>not</b> included in the
         <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
           >preferred complex</a
@@ -191,7 +191,7 @@
               <button class="select-entity-btn">
                 {{ getCleanMoleculeName(listItem.additionalData.molecule) }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'Macromolecule not included in the preferred assembly/complex.'"
@@ -254,7 +254,7 @@
               <button class="select-entity-btn">
                 {{ listItem.codeAndName.name }} - {{ listItem.id }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'Ligand not included in the preferred assembly/complex.'"
@@ -342,7 +342,7 @@
                 <span>{{ listItem.segmentsAsText }}</span>
                 @if (hasNonPrefAssemblySelection(listItem, 'any')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'One or more segments not included in the preferred assembly/complex.'"
@@ -404,7 +404,7 @@
               <button class="select-entity-btn">
                 {{ listItem.codeAndName.name }} - {{ listItem.id }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'Modification not included in the preferred assembly/complex.'"

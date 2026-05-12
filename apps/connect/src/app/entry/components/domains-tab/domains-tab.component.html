@@ -19,7 +19,7 @@
       @if (inPrefAssembly() === false) {
       <section class="info-banner">
         <p>
-          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
           One or more of this domain's segments has a chain <b>not</b> included in the
           <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
             >preferred assembly/complex</a
@@ -128,7 +128,7 @@
       @if (dropdownSelected && inPrefAssemblyForChain() === false) { @let chainName = dropdownSelected!.split(' <')![0];
       <section class="info-banner">
         <p>
-          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
           {{ chainName }} is <b>not</b> included in the
           <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
             >preferred assembly/complex</a
