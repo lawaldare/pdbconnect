@@ -1,9 +1,9 @@
 import { AfterViewInit, Component, effect, ElementRef, input, OnDestroy, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { generateRandomAlternativeNumberings, generateRandomAnnotations } from './viewer/smart-generator';
-import { AlternativeNumbering, SmartSequenceAnnotation, SmartSequenceVisOptions } from './viewer/seq-viewer-models';
+import { AlternativeNumbering, SmartSequenceAnnotation, SmartSequenceVisOptions } from './viewer/data-processing/seq-viewer-models';
 import { SmartSequenceVisualisation } from './viewer/sequence-visualisation';
-import { validateAlternativeNumberings, validateAnnotations, validateNonObserved } from './viewer/seq-viewer-validation';
+import { validateAlternativeNumberings, validateAnnotations, validateNonObserved } from './viewer/data-processing/seq-viewer-validation';
 
 @Component({
   selector: 'lib-smart-seq-viewer',
@@ -24,6 +24,14 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
   public readonly backgroundDataInput = input<SmartSequenceAnnotation | undefined>(undefined);
   public readonly underlineDataInput = input<SmartSequenceAnnotation | undefined>(undefined);
   public readonly circleAboveDataInput = input<SmartSequenceAnnotation | undefined>(undefined);
+  public readonly indexWithMultipleResidues = input<{
+    [key: string]: {
+      three_letter_code: string;
+      one_letter_code: string;
+      parent_chem_comp_ids: string[];
+    };
+  }>({});
+
   public readonly options = input<SmartSequenceVisOptions | undefined>({
     grouping: true,
     groupingLineBreak: false,
@@ -40,6 +48,13 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
   private circleAboveData = signal<SmartSequenceAnnotation | undefined>(undefined);
   private altSequencesData = signal<AlternativeNumbering[]>([]);
   private nonObservedData = signal<number[]>([]);
+  private indexWithMultipleResiduesData = signal<{
+    [key: string]: {
+      three_letter_code: string;
+      one_letter_code: string;
+      parent_chem_comp_ids: string[];
+    };
+  }>({});
 
   // Instance reference to cleanup
   private visInstance?: SmartSequenceVisualisation;
@@ -71,6 +86,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
     this.backgroundData.set(this.backgroundDataInput());
     this.underlineData.set(this.underlineDataInput());
     this.circleAboveData.set(this.circleAboveDataInput());
+    this.indexWithMultipleResiduesData.set(this.indexWithMultipleResidues());
 
     const validAlt = validateAlternativeNumberings(this.sequence(), this.altSequences(), true).valid;
     const validNonObs = validateNonObserved(this.sequence(), this.nonObserved(), true).valid;
@@ -99,6 +115,7 @@ export class SmartSeqViewerComponent implements AfterViewInit, OnDestroy {
       this.altSequencesData(),
       this.nonObservedData(),
       annotations,
+      this.indexWithMultipleResiduesData(),
       this.entityId(),
       this.chainId(),
       options

@@ -221,7 +221,14 @@ export class LLMTabComponent implements OnInit {
     return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
   });
 
-  public macromoleculeSequence = computed(() => this.sequenceDetails()?.fullSequence);
+  public macromoleculeSequence = computed(() => {
+    return this.sequenceDetails()?.sequenceForViewer;
+  });
+
+  public indexWithMultipleResidues = computed(() => {
+    return this.sequenceDetails()?.indexWithMultipleResidues;
+  });
+
   public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
   public llmAnnotationForSeq = signal<SmartSequenceAnnotation | undefined>(undefined);
   public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
@@ -381,6 +388,14 @@ export class LLMTabComponent implements OnInit {
     | {
         title: string;
         fullSequence: string;
+        sequenceForViewer: string;
+        indexWithMultipleResidues: {
+          [key: string]: {
+            three_letter_code: string;
+            one_letter_code: string;
+            parent_chem_comp_ids: string[];
+          };
+        };
       }
     | undefined
   >(undefined);

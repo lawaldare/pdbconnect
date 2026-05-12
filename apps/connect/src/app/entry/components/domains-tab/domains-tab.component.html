@@ -146,12 +146,13 @@
         <lib-smart-seq-viewer
           [containerId]="'smart-seq-viewer-domains'+(i+1)"
           class="sequence"
-          [sequence]="sequenceDetail.fullSequence"
+          [sequence]="sequenceDetail.sequenceForViewer"
           [entityId]="currentSelectionEntityId()!"
           [chainId]="currentSelectionChainId()!"
           [backgroundDataInput]="backgroundAnnotation()"
           [altSequences]="altSequences()"
           [nonObserved]="nonObserved()!"
+          [indexWithMultipleResidues]="sequenceDetail.indexWithMultipleResidues"
         ></lib-smart-seq-viewer>
         }
       </div>
