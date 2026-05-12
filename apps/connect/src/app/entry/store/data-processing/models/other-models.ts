@@ -44,6 +44,14 @@ export interface SequenceDetail {
     sequence: string;
     color?: string;
   }[];
+  sequenceForViewer: string;
+  indexWithMultipleResidues: {
+    [key: string]: {
+      three_letter_code: string;
+      one_letter_code: string;
+      parent_chem_comp_ids: string[];
+    };
+  };
 }
 
 export interface LabelUniProtMappingRows {

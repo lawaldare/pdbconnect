@@ -59,12 +59,36 @@ export function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecu
   return dropdownOptionsToMolstar;
 }
 
+function getViewerSequenceForIndexWithMultipleResidues(
+  sequence: string,
+  indexWithMultipleResidues: { [key: string]: { three_letter_code: string; one_letter_code: string; parent_chem_comp_ids: string[] } }
+) {
+  let sequenceForViewer = sequence;
+  for (const [_seqIdx, residue] of Object.entries(indexWithMultipleResidues)) {
+    // See https://www.ebi.ac.uk/pdbe/api/v2/pdb/entry/molecules/1trn for case with 1 residue in the same position, and how they are represented in the pdb_sequence and sequence
+    // See https://www.ebi.ac.uk/pdbe/api/v2/pdb/entry/molecules/1gkt for case with 0 and 2 residues in the same position, and how they are represented in the pdb_sequence and sequence
+    if (residue.one_letter_code.length > 1 && residue.parent_chem_comp_ids.length > 1) {
+      sequenceForViewer = sequenceForViewer.replace(`(${residue.three_letter_code})`, '*');
+    } else if (residue.one_letter_code.length === 1 && residue.parent_chem_comp_ids.length === 1) {
+      sequenceForViewer = sequenceForViewer.replace(`(${residue.three_letter_code})`, residue.one_letter_code);
+    }
+  }
+  return sequenceForViewer;
+}
+
 export function getMacromoleculeSequenceDetails(entryId: string, datum: ProcessedMacromolecule, chainId: string) {
   const entity = datum.additionalData.molecule;
   const seq = entity.sequence;
+  let seqForViewer = entity.pdb_sequence;
+  const index_with_multiple_residues = datum.additionalData.molecule.pdb_sequence_indices_with_multiple_residues;
+  if (index_with_multiple_residues) {
+    seqForViewer = getViewerSequenceForIndexWithMultipleResidues(seqForViewer, index_with_multiple_residues);
+  }
   return {
     title: `>FASTA pdb|${entryId}|${getCleanMoleculeName(entity)}; Chain ${chainId}`,
     fullSequence: seq,
+    sequenceForViewer: seqForViewer,
+    indexWithMultipleResidues: index_with_multiple_residues,
   };
 }
 
@@ -93,10 +117,18 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
   const domainDescription = `${datum.resource} domain: ${datum.domain}; Segments: ${segmentsStringsForChainId.join(', ')} (Auth: ${segmentsForChainId.join(', ')})`;
   const otherChains = segmentsForOtherChains.length > 0 ? `; Other auth segments: ${segmentsForOtherChains.join(', ')})` : '';
 
+  let seqForViewer = macromolecule.pdb_sequence;
+  const index_with_multiple_residues = macromolecule.pdb_sequence_indices_with_multiple_residues;
+  if (index_with_multiple_residues) {
+    seqForViewer = getViewerSequenceForIndexWithMultipleResidues(seqForViewer, index_with_multiple_residues);
+  }
+
   const sequenceDetail: SequenceDetail = {
     title: `>FASTA pdb|${entryId}|${moleculeName}; Chain ${chainId}; ${domainDescription}${otherChains}`,
     fullSequence: macromolecule.sequence,
     segments: [],
+    sequenceForViewer: seqForViewer,
+    indexWithMultipleResidues: index_with_multiple_residues,
   };
 
   let currentCharIndex = 0;
