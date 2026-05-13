@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, EventEmitter, inject, input, linkedSignal, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '@pdbc/core';
-import Clarity from '@microsoft/clarity';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { map } from 'rxjs';
+import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, inject, input, linkedSignal, OnInit, Output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { EntryDropdownFacade } from './entry-dropdown.facade';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import Clarity from '@microsoft/clarity';
+import { MaterialModule } from '@pdbc/core';
+import { map } from 'rxjs';
+import { EntryDropdownFacade } from './entry-dropdown.facade';
 
 @Component({
   selector: 'pdbc-entry-dropdown',
@@ -53,11 +53,6 @@ export class EntryDropdownComponent implements OnInit {
     source: this.options,
     computation: () => this.options() ?? [],
   });
-
-  constructor() {
-    effect(() => console.log('options:', this.options()));
-    effect(() => console.log('filteredOptions:', this.filteredOptions()));
-  }
 
   ngOnInit(): void {
     this.searchTerm.valueChanges

@@ -171,7 +171,6 @@
       <div class="chains">
         @if(dropdown.options.length > 1){
         <div class="dropdown-container">
-          <!-- <span class="dropdown-title">{{ dropdownTitle }}</span> -->
           <pdbc-entry-dropdown
             [searchable]="false"
             searchTitle="''"
@@ -185,7 +184,21 @@
         </div>
         }@else if(dropdown.options.length === 1){
         <p>{{dropdown.options[0].name}}</p>
-        } @else {}
+        } @else {} @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
+        <p class="title">Symmetry Operation Id</p>
+        <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
+          [downloadable]="false"
+          [islink]="false"
+          [options]="symmetryDropdown.options"
+          [title]="symmetryDropdown.selectedOption()?.name ?? 'All'"
+          (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+        ></pdbc-entry-dropdown>
+        } @else if(symmetryDropdown.options.length === 1){
+        <p class="title">Symmetry Operation Id</p>
+        <p class="content" [innerHTML]="symmetryDropdown.options[0].name"></p>
+        }
       </div>
       @if (sequenceDetails()) {
       <div class="sequence-container">

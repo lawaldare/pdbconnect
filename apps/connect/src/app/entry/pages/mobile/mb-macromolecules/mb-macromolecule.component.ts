@@ -72,7 +72,11 @@ export class MbMacromoleculeComponent implements OnInit {
   public readonly util = inject(UtilService);
 
   public dropdown = new Dropdown<{ molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    defaultOption: (options) => options.find((opt) => opt.data.instanceId !== undefined) ?? options[0],
+  });
 
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
   private inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No macromolecule selected -> true (no warning to display)
 
   @ViewChild('macroMoleculeTitle') macroMoleculeTitle!: ElementRef;
@@ -380,25 +384,46 @@ export class MbMacromoleculeComponent implements OnInit {
   private async setCurrentMacromolecule(macromolecule: ProcessedMacromolecule | undefined): Promise<void> {
     this.selectedMacromolecule.set(macromolecule);
     this.updateDropdownOptions(macromolecule);
+    this.updateSymmetryDropdownOptions();
   }
 
   private updateDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
     if (macromolecule) {
       const options = getMacromoleculeChainDropdownOptions(macromolecule);
+      console.log('updateDropdownOptions:', options, macromolecule.chainSymmOperators);
       this.dropdown.updateOptions(
-        Object.keys(options).map((name, idx) => ({
-          name: name,
-          url: `macro-${idx + 1}`,
-          downloadable: false,
-          data: {
-            molstarSelection: options[name],
-            inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-            symmOperators: [],
-          },
-        }))
+        Object.keys(options).map((name, idx) => {
+          const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
+          return {
+            name: name,
+            url: `macro-${idx + 1}`,
+            downloadable: false,
+            data: {
+              molstarSelection: options[name],
+              inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
+              symmOperators: authAsymId !== undefined ? macromolecule.chainSymmOperators[authAsymId] : [],
+            },
+          };
+        })
       );
     } else {
       this.dropdown.updateOptions([]);
+    }
+  }
+
+  private updateSymmetryDropdownOptions() {
+    const symmOperators = this.dropdown.selectedOption()?.data.symmOperators;
+    if (symmOperators) {
+      this.symmetryDropdown.updateOptions(
+        symmOperators.map((op, idx) => ({
+          name: op,
+          url: `macro-0-symop-${idx + 1}`,
+          downloadable: false,
+          data: { instanceId: op !== 'All' ? op : undefined },
+        })) ?? []
+      );
+    } else {
+      this.symmetryDropdown.updateOptions([]);
     }
   }
 
@@ -443,6 +468,11 @@ export class MbMacromoleculeComponent implements OnInit {
 
   public onDropdownSelect(event: string) {
     this.dropdown.select(event);
+    this.updateSymmetryDropdownOptions();
+  }
+
+  public async onSymmetryDropdownSelect(event: string) {
+    this.symmetryDropdown.select(event);
   }
 
   public copySequence(sequenceDetail?: { title: string; fullSequence: string }) {
@@ -471,7 +501,7 @@ export class MbMacromoleculeComponent implements OnInit {
     const labelAsymId = molstarSelection[0].label_asym_id;
     const authAsymId = molstarSelection[0].auth_asym_id;
     const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined;
-    const instanceId = undefined; // symmetry instance switching currently not available in mobile UI
+    const instanceId = this.selectedInstanceId();
 
     return {
       name: `Macromolecule ${entityId}`,

@@ -162,17 +162,19 @@ export class MbLigandsComponent implements OnInit {
   }
 
   private updateSymmetryDropdownOptions() {
-    const ligandSymmOperators = this.dropdown.selectedOption()?.data.symmOperators;
-    this.symmetryDropdown.updateOptions(
-      ligandSymmOperators?.map((op, idx) => {
-        return {
+    const symmOperators = this.dropdown.selectedOption()?.data.symmOperators;
+    if (symmOperators) {
+      this.symmetryDropdown.updateOptions(
+        symmOperators.map((op, idx) => ({
           name: op,
           url: `lig-0-symop-${idx + 1}`,
           downloadable: false,
           data: { instanceId: op },
-        };
-      }) ?? []
-    );
+        }))
+      );
+    } else {
+      this.symmetryDropdown.updateOptions([]);
+    }
   }
 
   public toggleBottomsheetHeight() {

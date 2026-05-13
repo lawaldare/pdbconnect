@@ -68,6 +68,13 @@ export class Dropdown<TData> {
   private _optionMap: { [name: string]: DownloadOptionWithData<TData> } = {};
   private _selected = signal<string | undefined>(undefined);
 
+  constructor(
+    private readonly settings?: {
+      /** Function which returns default option given a set of available options (if not provided, default option is the first one) */
+      defaultOption?: (options: DownloadOptionWithData<TData>[]) => DownloadOptionWithData<TData> | undefined;
+    }
+  ) {}
+
   public get options() {
     return this._options;
   }
@@ -75,8 +82,8 @@ export class Dropdown<TData> {
   public updateOptions(options: DownloadOptionWithData<TData>[]) {
     this._options = options;
     this._optionMap = Object.fromEntries(options.map((opt) => [opt.name, opt]));
-    // this.selected.set(options[0]?.name ?? '');
-    this._selected.set(options[0]?.name);
+    const defaultOption = this.settings?.defaultOption ? this.settings.defaultOption(options) : options[0];
+    this._selected.set(defaultOption?.name);
   }
 
   /** Set current selected value */
