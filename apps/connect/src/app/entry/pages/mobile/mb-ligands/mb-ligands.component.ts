@@ -5,7 +5,6 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
 import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
-import { DownloadOption, DownloadOptionWithData } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
@@ -19,7 +18,6 @@ import { ProcessedLigandOrMod } from '../../../store/data-processing/ligand-proc
 import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntryActions } from '../../../store/entry.actions';
 import { EntrySelectors } from '../../../store/entry.selectors';
-import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
 import { MobileStateService } from '../mobile-state.service';
 
 @Component({
@@ -43,16 +41,13 @@ export class MbLigandsComponent implements OnInit {
 
   public readonly annotationsTooltips: any = annotationsTooltips;
 
-  public currentViewState = signal<ViewState>(ViewState.List);
-  public viewStates = ViewState;
+  public currentViewState = computed<'list' | 'detail'>(() => (this.selectedLigand() ? 'detail' : 'list'));
   public selectedLigand = signal<ProcessedLigandOrMod | undefined>(undefined);
   public expanded = signal<boolean>(false);
 
   public readonly ligandBoundDetails = computed(() => {
-    const ligand = this.selectedLigand()!;
-    if (ligand.type === 'ligand') {
-      return ligand.additionalData.source.bound_details;
-    }
+    const ligand = this.selectedLigand();
+    if (ligand?.type === 'ligand') return ligand.additionalData.source.bound_details;
     return undefined;
   });
 
@@ -64,16 +59,10 @@ export class MbLigandsComponent implements OnInit {
 
   // TODO: @adam Refactor the dropdowns
   public dropdown = new Dropdown<{ molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
-  public symmetryDropdownSelected = signal<string | undefined>(undefined);
-  public symmetryDropdownOptions: DownloadOption[] = [];
-  private selectedInstanceId = computed(() => {
-    const symmetryDropdownSelected = this.symmetryDropdownSelected();
-    if (symmetryDropdownSelected && symmetryDropdownSelected !== 'All') return symmetryDropdownSelected;
-    else return undefined;
-  });
-
-  public inPrefAssemblyForInstance = computed<boolean>(() => !this.selectedLigand() || this.dropdown.selectedOption().data.inPrefAssembly); // No ligand selected -> true (no warning to display)
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+  public inPrefAssemblyForInstance = computed<boolean>(() => !this.selectedLigand() || (this.dropdown.selectedOption()?.data.inPrefAssembly ?? true)); // No ligand selected -> true (no warning to display)
 
   public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
   public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
@@ -115,7 +104,8 @@ export class MbLigandsComponent implements OnInit {
     // Fetch interaction data when needed
     effect(() => {
       if (!this.inPrefAssemblyForInstance()) return;
-      const molstarSelection = this.dropdown.selectedOption().data.molstarSelection;
+      const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
+      if (!molstarSelection) return;
       const { auth_asym_id, auth_seq_id } = molstarSelection[0];
       if (auth_asym_id === undefined) throw new Error('auth_asym_id is undefined');
       if (auth_seq_id === undefined) throw new Error('auth_seq_id is undefined');
@@ -141,50 +131,48 @@ export class MbLigandsComponent implements OnInit {
     ]);
   }
 
-  private async updateCurrentLigand() {
-    const ligand = this.selectedLigand();
-    if (!ligand) return;
+  private async setCurrentLigand(ligand: ProcessedLigandOrMod | undefined) {
+    this.selectedLigand.set(ligand);
     this.updateDropdownOptions(ligand);
-    this.updateSymmetryDropdownOptions(ligand);
+    this.updateSymmetryDropdownOptions();
   }
+
   public mapSynonyms(synonyms: any[]): string {
     return synonyms.map((synonym) => synonym.value).join(', ');
   }
 
-  private updateDropdownOptions(ligand: ProcessedLigandOrMod) {
-    const options = getLigandsDropdownOptions(ligand);
-    this.dropdown.updateOptions(
-      Object.keys(options).map((name, idx) => ({
-        name: name,
-        url: `lig-${idx + 1}`,
-        downloadable: false,
-        data: {
-          molstarSelection: options[name],
-          inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
-          symmOperators: ligand.symmOpListForEachLigOrMod[idx],
-        },
-      }))
-    );
+  private updateDropdownOptions(ligand: ProcessedLigandOrMod | undefined) {
+    if (ligand) {
+      const options = getLigandsDropdownOptions(ligand);
+      this.dropdown.updateOptions(
+        Object.keys(options).map((name, idx) => ({
+          name: name,
+          url: `lig-${idx + 1}`,
+          downloadable: false,
+          data: {
+            molstarSelection: options[name],
+            inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
+            symmOperators: ligand.symmOpListForEachLigOrMod[idx],
+          },
+        }))
+      );
+    } else {
+      this.dropdown.updateOptions([]);
+    }
   }
 
-  private updateSymmetryDropdownOptions(ligand: ProcessedLigandOrMod) {
-    // update for symmetry operations dropdown
-    const ligandSymmOperators: string[] | undefined = this.dropdown.selectedOption()?.data.symmOperators;
-
-    if (ligandSymmOperators) {
-      this.symmetryDropdownOptions = ligandSymmOperators.map((op, idx) => {
+  private updateSymmetryDropdownOptions() {
+    const ligandSymmOperators = this.dropdown.selectedOption()?.data.symmOperators;
+    this.symmetryDropdown.updateOptions(
+      ligandSymmOperators?.map((op, idx) => {
         return {
           name: op,
-          url: `domain-0-symop-${idx + 1}`,
+          url: `lig-0-symop-${idx + 1}`,
           downloadable: false,
+          data: { instanceId: op },
         };
-      });
-      const defaultOption = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
-      this.symmetryDropdownSelected.set(defaultOption);
-    } else {
-      this.symmetryDropdownSelected.set(undefined);
-      this.symmetryDropdownOptions = [];
-    }
+      }) ?? []
+    );
   }
 
   public toggleBottomsheetHeight() {
@@ -201,16 +189,13 @@ export class MbLigandsComponent implements OnInit {
     this.state.updateSelectedTabName('');
   }
 
-  public navigateToDetail(data: ProcessedLigandOrMod) {
-    this.currentViewState.set(ViewState.Detail);
-    this.selectedLigand.set(data);
-    this.updateCurrentLigand();
+  public navigateToDetail(ligand: ProcessedLigandOrMod) {
+    this.setCurrentLigand(ligand);
     this.scrollTabToTop();
   }
 
   public async goBackToList() {
-    this.currentViewState.set(ViewState.List);
-    this.selectedLigand.set(undefined);
+    this.setCurrentLigand(undefined);
     this.scrollTabToTop();
   }
 
@@ -226,13 +211,12 @@ export class MbLigandsComponent implements OnInit {
   }
 
   public async onDropdownSelect(event: string) {
-    this.dropdown.selected.set(event);
-    const ligand = this.selectedLigand();
-    if (ligand) this.updateSymmetryDropdownOptions(ligand);
+    this.dropdown.select(event);
+    this.updateSymmetryDropdownOptions();
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected.set(event);
+    this.symmetryDropdown.select(event);
   }
 
   private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
@@ -261,7 +245,7 @@ export class MbLigandsComponent implements OnInit {
         },
       } satisfies SnapshotSpec;
     } else {
-      const { molstarSelection, inPrefAssembly } = this.dropdown.selectedOption().data;
+      const { molstarSelection, inPrefAssembly } = this.dropdown.selectedOption()!.data;
       if (!molstarSelection) return undefined;
       const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined; // undefined = deposited model
 

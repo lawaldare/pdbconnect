@@ -1,7 +1,7 @@
 <section>
   @if(macromoleculeTableRows().length){
   <header>
-    @if(currentViewState() === viewStates.Detail){
+    @if(currentViewState() === 'detail'){
     <nav>
       <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
       <span (click)="goBackToList()">Go to Macromolecules list </span>
@@ -9,7 +9,7 @@
     }
     <section class="header">
       <h2 #macroMoleculeTitle>
-        {{title()}} @if(currentViewState() === viewStates.List){
+        {{title()}} @if(currentViewState() === 'list'){
         <span>({{macromoleculeTableRows().length}})</span>
         }
       </h2>
@@ -21,7 +21,7 @@
   </header>
 
   <!-- 1st Level Overlay -->
-  @if(currentViewState() === viewStates.List){ @for(row of macromoleculeTableRows(); track row.name.molecule){
+  @if(currentViewState() === 'list'){ @for(row of macromoleculeTableRows(); track row.name.molecule){
   <div class="row" (click)="navigateToDetail(row)" [style]="row.molstarColorHex ? `border-left-color: ${row.molstarColorHex};` : undefined">
     <div class="row__header">
       <p class="row__header__name">{{row.name.molecule}}</p>
@@ -37,7 +37,7 @@
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){
+  @if(currentViewState() === 'detail'){
 
   <mat-tab-group class="mb-macromolecule">
     <!-- Information Tab -->

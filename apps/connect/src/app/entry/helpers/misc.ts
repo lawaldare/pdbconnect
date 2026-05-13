@@ -64,21 +64,35 @@ export function sortBy<T, K>(items: T[], key: (item: T) => K): T[] {
 }
 
 export class Dropdown<TData> {
-  public selected = signal<string>('');
-
   private _options: DownloadOptionWithData<TData>[] = [];
   private _optionMap: { [name: string]: DownloadOptionWithData<TData> } = {};
+  private _selected = signal<string | undefined>(undefined);
+
   public get options() {
     return this._options;
   }
-  /** Update options and reset `selected` to the first listed option */
+  /** Update options and reset `selected` to the first listed option (or to `undefined` if there are no options) */
   public updateOptions(options: DownloadOptionWithData<TData>[]) {
     this._options = options;
     this._optionMap = Object.fromEntries(options.map((opt) => [opt.name, opt]));
-    this.selected.set(options[0]?.name ?? '');
+    // this.selected.set(options[0]?.name ?? '');
+    this._selected.set(options[0]?.name);
   }
 
-  public selectedOption = computed(() => this._optionMap[this.selected()]);
+  /** Set current selected value */
+  public select(optionName: string | undefined) {
+    if (optionName !== undefined && !(optionName in this._optionMap))
+      throw new Error(`Trying to select invalid option "${optionName}" (available options: ${this.options})`);
+    this._selected.set(optionName);
+  }
+
+  public selectedOption = computed<DownloadOptionWithData<TData> | undefined>(() => {
+    const selected = this._selected();
+    if (selected === undefined) return undefined;
+    return this._optionMap[selected];
+  });
+
+  public selectedName = computed(() => this._selected());
 
   // public optionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {}; // TODO: @adam get rid of this
 }

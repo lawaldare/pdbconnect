@@ -1,14 +1,14 @@
 <section>
   @if(ligandTableRows().length){
   <header>
-    @if(currentViewState() === viewStates.Detail){
+    @if(currentViewState() === 'detail'){
     <nav>
       <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
       <span (click)="goBackToList()">Go to Ligands list </span>
     </nav>
     }
     <section class="header">
-      <h2>@if(currentViewState() === viewStates.List){ Ligands ({{ligandTableRows().length}}) } @else { {{selectedLigand()?.id ?? '?'}} }</h2>
+      <h2>@if(currentViewState() === 'list'){ Ligands ({{ligandTableRows().length}}) } @else { {{selectedLigand()?.id ?? '?'}} }</h2>
       <div class="controls">
         <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
         <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
@@ -17,7 +17,7 @@
   </header>
 
   <!-- 1st Level Overlay -->
-  @if(currentViewState() === viewStates.List){ @for(row of ligandTableRows(); track row.id){
+  @if(currentViewState() === 'list'){ @for(row of ligandTableRows(); track row.id){
   <div class="row" (click)="navigateToDetail(row)" [style]="row.molstarColorHex ? `border-left-color: ${row.molstarColorHex};` : undefined">
     <div class="row__header">
       <p class="row__header__name">
@@ -39,7 +39,7 @@
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){ @if(selectedLigand()?.type !== 'modification' && selectedLigand()?.annotations?.length){ @for(annotation of
+  @if(currentViewState() === 'detail'){ @if(selectedLigand()?.type !== 'modification' && selectedLigand()?.annotations?.length){ @for(annotation of
   selectedLigand()?.annotations; track annotation){
   <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
   } } @if(selectedLigand()?.type !== 'modification' && selectedLigand()?.annotations?.length === 0){
@@ -56,27 +56,27 @@
         [downloadable]="false"
         [islink]="false"
         [options]="dropdown.options"
-        [title]="dropdown.selected()"
+        [title]="dropdown.selectedOption()?.name ?? ''"
         (optionClickedEvent)="onDropdownSelect($event)"
       >
       </pdbc-entry-dropdown>
     </div>
     }@else if(dropdown.options.length === 1){
     <p [innerHTML]="dropdown.options[0].name"></p>
-    } @if (symmetryDropdownSelected() && symmetryDropdownOptions.length > 1) {
+    } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
     <p class="title">Symmetry Operation Id</p>
     <pdbc-entry-dropdown
       [searchable]="false"
       [searchTitle]="''"
       [downloadable]="false"
       [islink]="false"
-      [options]="symmetryDropdownOptions"
-      [title]="symmetryDropdownSelected() ?? 'All'"
+      [options]="symmetryDropdown.options"
+      [title]="symmetryDropdown.selectedOption()?.name ?? 'All'"
       (optionClickedEvent)="onSymmetryDropdownSelect($event)"
     ></pdbc-entry-dropdown>
-    } @else if(symmetryDropdownOptions.length === 1){
+    } @else if(symmetryDropdown.options.length === 1){
     <p class="title">Symmetry Operation Id</p>
-    <p class="content" [innerHTML]="symmetryDropdownOptions[0].name"></p>
+    <p class="content" [innerHTML]="symmetryDropdown.options[0].name"></p>
     }
   </div>
   <p class="title">Ligand name</p>

@@ -24,11 +24,6 @@ import { EntryActions } from '../../../store/entry.actions';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MobileStateService } from '../mobile-state.service';
 
-export enum ViewState {
-  List = 'list',
-  Detail = 'detail',
-}
-
 interface GoMapped {
   names: string[];
   count: number;
@@ -121,8 +116,7 @@ export class MbMacromoleculeComponent implements OnInit {
 
   public sequenceDetails = signal<{ title: string; fullSequence: string } | undefined>(undefined);
 
-  public currentViewState = signal<ViewState>(ViewState.List);
-  public viewStates = ViewState;
+  public currentViewState = signal<'list' | 'detail'>('list');
 
   public selectedMacromolecule = signal<ProcessedMacromolecule | undefined>(undefined);
 
@@ -401,7 +395,7 @@ export class MbMacromoleculeComponent implements OnInit {
   }
 
   public navigateToDetail(data: ProcessedMacromolecule) {
-    this.currentViewState.set(ViewState.Detail);
+    this.currentViewState.set('detail');
     const titleElement = this.macroMoleculeTitle.nativeElement;
     const { bestFit, isTruncated } = truncateText(titleElement, data.name.molecule, 3);
     const moleculeName = isTruncated ? bestFit : data.name.molecule;
@@ -412,7 +406,7 @@ export class MbMacromoleculeComponent implements OnInit {
   }
 
   public async goBackToList() {
-    this.currentViewState.set(ViewState.List);
+    this.currentViewState.set('list');
     this.state.updateSelectedMacromoleculeTitle('Macromolecules');
     this.selectedMacromolecule.set(undefined);
     this.scrollTabToTop();

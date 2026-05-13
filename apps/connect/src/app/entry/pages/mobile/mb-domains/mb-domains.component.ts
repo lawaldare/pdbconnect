@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, resourceUrls } from '../../../entry-constant';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
@@ -38,8 +37,7 @@ export class MbDomainsComponent implements OnInit {
 
   public readonly resourceUrls = resourceUrls;
 
-  public currentViewState = signal<ViewState>(ViewState.List);
-  public viewStates = ViewState;
+  public currentViewState = signal<'list' | 'detail'>('list');
   public selectedDomain = signal<any>({});
   public expanded = signal<boolean>(false);
   public title = this.state.domainTitle;
@@ -113,7 +111,7 @@ export class MbDomainsComponent implements OnInit {
   }
 
   public navigateToDetail(data: ProcessedDomain) {
-    this.currentViewState.set(ViewState.Detail);
+    this.currentViewState.set('detail');
     this.selectedDomain.set(data);
     this.state.updateSelectedDomainTitle(data.accessionName);
     this.updateCurrentDomain();
@@ -160,7 +158,7 @@ export class MbDomainsComponent implements OnInit {
   }
 
   public async goBackToList() {
-    this.currentViewState.set(ViewState.List);
+    this.currentViewState.set('list');
     this.state.updateSelectedDomainTitle('Domains');
     this.renderInMolstar(undefined);
     this.scrollTabToTop();

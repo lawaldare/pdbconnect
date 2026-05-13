@@ -1,7 +1,7 @@
 <section>
   @if(domainTableRows().length){
   <header>
-    @if(currentViewState() === viewStates.Detail){
+    @if(currentViewState() === 'detail'){
     <nav>
       <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
       <span (click)="goBackToList()">Go to Domains list </span>
@@ -9,7 +9,7 @@
     }
     <section class="header">
       <h2>
-        {{title()}} @if(currentViewState() === viewStates.List){
+        {{title()}} @if(currentViewState() === 'list'){
         <span>({{domainTableRows().length}})</span>
         }
       </h2>
@@ -21,7 +21,7 @@
   </header>
 
   <!-- 1st Level Overlay -->
-  @if(currentViewState() === viewStates.List){ @for(row of domainTableRows(); track row.domain){
+  @if(currentViewState() === 'list'){ @for(row of domainTableRows(); track row.domain){
   <div class="row" (click)="navigateToDetail(row)">
     <div class="row__header">
       <p class="row__header__name">
@@ -37,7 +37,7 @@
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){
+  @if(currentViewState() === 'detail'){
   <!-- <p class="sub-header">Chain {{selectedDomain()?.segments?.join(', ')}}</p> -->
   <div class="chains">
     @if(dropdownOptions.length > 1){
