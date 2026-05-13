@@ -5,11 +5,11 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
 import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { DownloadOption, DownloadOptionWithData } from '@pdbe-lib/dropdown-menu';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
-import { makeEntityColors } from '../../../helpers/misc';
+import { Dropdown, makeEntityColors } from '../../../helpers/misc';
 import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
@@ -63,9 +63,7 @@ export class MbLigandsComponent implements OnInit {
   });
 
   // TODO: @adam Refactor the dropdowns
-  public dropdownSelected = signal<string>('');
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+  public dropdown = new Dropdown<{ molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
 
   public symmetryDropdownSelected = signal<string | undefined>(undefined);
   public symmetryDropdownOptions: DownloadOption[] = [];
@@ -75,12 +73,7 @@ export class MbLigandsComponent implements OnInit {
     else return undefined;
   });
 
-  public inPrefAssemblyForInstance = computed<boolean>(() => {
-    const ligand = this.selectedLigand();
-    if (!ligand) return true; // No ligand selected -> no warning to display
-    const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected());
-    return ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
-  });
+  public inPrefAssemblyForInstance = computed<boolean>(() => !this.selectedLigand() || this.dropdown.selectedOption().data.inPrefAssembly); // No ligand selected -> true (no warning to display)
 
   public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
   public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
@@ -122,7 +115,7 @@ export class MbLigandsComponent implements OnInit {
     // Fetch interaction data when needed
     effect(() => {
       if (!this.inPrefAssemblyForInstance()) return;
-      const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected()];
+      const molstarSelection = this.dropdown.selectedOption().data.molstarSelection;
       const { auth_asym_id, auth_seq_id } = molstarSelection[0];
       if (auth_asym_id === undefined) throw new Error('auth_asym_id is undefined');
       if (auth_seq_id === undefined) throw new Error('auth_seq_id is undefined');
@@ -159,22 +152,24 @@ export class MbLigandsComponent implements OnInit {
   }
 
   private updateDropdownOptions(ligand: ProcessedLigandOrMod) {
-    this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
+    const options = getLigandsDropdownOptions(ligand);
+    this.dropdown.updateOptions(
+      Object.keys(options).map((name, idx) => ({
+        name: name,
         url: `lig-${idx + 1}`,
         downloadable: false,
-      };
-    });
-    const defaultOption = Object.keys(this.dropdownOptionsToMolstar)[0];
-    this.dropdownSelected.set(defaultOption);
+        data: {
+          molstarSelection: options[name],
+          inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
+          symmOperators: ligand.symmOpListForEachLigOrMod[idx],
+        },
+      }))
+    );
   }
 
   private updateSymmetryDropdownOptions(ligand: ProcessedLigandOrMod) {
     // update for symmetry operations dropdown
-    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected());
-    const ligandSymmOperators = idxOfSelection > -1 ? ligand.symmOpListForEachLigOrMod[idxOfSelection] : undefined;
+    const ligandSymmOperators: string[] | undefined = this.dropdown.selectedOption()?.data.symmOperators;
 
     if (ligandSymmOperators) {
       this.symmetryDropdownOptions = ligandSymmOperators.map((op, idx) => {
@@ -231,7 +226,7 @@ export class MbLigandsComponent implements OnInit {
   }
 
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected.set(event);
+    this.dropdown.selected.set(event);
     const ligand = this.selectedLigand();
     if (ligand) this.updateSymmetryDropdownOptions(ligand);
   }
@@ -266,12 +261,9 @@ export class MbLigandsComponent implements OnInit {
         },
       } satisfies SnapshotSpec;
     } else {
-      const dropdownSelected = this.dropdownSelected();
-      const molstarSelection = this.dropdownOptionsToMolstar[dropdownSelected];
+      const { molstarSelection, inPrefAssembly } = this.dropdown.selectedOption().data;
       if (!molstarSelection) return undefined;
-      const molstarSelectionIndex = Object.keys(this.dropdownOptionsToMolstar).indexOf(dropdownSelected);
-      const isSelectionInPrefAssembly = selectedLigand.additionalData.selectionsInPrefAssembly[molstarSelectionIndex];
-      const assemblyId = isSelectionInPrefAssembly ? this.preferredAssemblyId() : undefined; // undefined = deposited model
+      const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined; // undefined = deposited model
 
       const authAsymId = molstarSelection[0].auth_asym_id;
       const authSeqId = molstarSelection[0].auth_seq_id;

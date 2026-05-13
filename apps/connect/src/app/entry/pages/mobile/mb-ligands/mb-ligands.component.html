@@ -48,21 +48,21 @@
   <span class="row__annotation modification">Modification</span>
   }
   <div class="chains">
-    @if(dropdownOptions.length > 1){
+    @if(dropdown.options.length > 1){
     <div class="dropdown-container">
       <pdbc-entry-dropdown
         [searchable]="false"
         searchTitle="''"
         [downloadable]="false"
         [islink]="false"
-        [options]="dropdownOptions"
-        [title]="dropdownSelected()"
+        [options]="dropdown.options"
+        [title]="dropdown.selected()"
         (optionClickedEvent)="onDropdownSelect($event)"
       >
       </pdbc-entry-dropdown>
     </div>
-    }@else if(dropdownOptions.length === 1){
-    <p [innerHTML]="dropdownOptions[0].name"></p>
+    }@else if(dropdown.options.length === 1){
+    <p [innerHTML]="dropdown.options[0].name"></p>
     } @if (symmetryDropdownSelected() && symmetryDropdownOptions.length > 1) {
     <p class="title">Symmetry Operation Id</p>
     <pdbc-entry-dropdown

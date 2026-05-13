@@ -8,6 +8,10 @@ export interface DownloadOption {
   downloadable: boolean;
 }
 
+export interface DownloadOptionWithData<TCustomData> extends DownloadOption {
+  data: TCustomData;
+}
+
 @Component({
   selector: 'lib-dropdown-menu',
   standalone: true,

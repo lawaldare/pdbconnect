@@ -1,9 +1,11 @@
-import { effect, Signal } from '@angular/core';
+import { computed, effect, signal, Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, filter, Observable, take } from 'rxjs';
 import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
+import { DownloadOptionWithData } from '@pdbe-lib/dropdown-menu';
+import { QueryParamForHelpers } from './molstar-helpers';
 
 export function makeEntityColors(macromolecules: ProcessedMacromolecule[] | undefined, ligands: ProcessedLigandOrMod[] | undefined) {
   const DEFAULT_ENTITY_COLOR = 'gray';
@@ -59,4 +61,24 @@ export function sortBy<T, K>(items: T[], key: (item: T) => K): T[] {
     if (keyA < keyB) return -1;
     return 0;
   });
+}
+
+export class Dropdown<TData> {
+  public selected = signal<string>('');
+
+  private _options: DownloadOptionWithData<TData>[] = [];
+  private _optionMap: { [name: string]: DownloadOptionWithData<TData> } = {};
+  public get options() {
+    return this._options;
+  }
+  /** Update options and reset `selected` to the first listed option */
+  public updateOptions(options: DownloadOptionWithData<TData>[]) {
+    this._options = options;
+    this._optionMap = Object.fromEntries(options.map((opt) => [opt.name, opt]));
+    this.selected.set(options[0]?.name ?? '');
+  }
+
+  public selectedOption = computed(() => this._optionMap[this.selected()]);
+
+  // public optionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {}; // TODO: @adam get rid of this
 }

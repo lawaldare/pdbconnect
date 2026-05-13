@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, inject, input, linkedSignal, OnInit, Output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, EventEmitter, inject, input, linkedSignal, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import Clarity from '@microsoft/clarity';
@@ -53,6 +53,11 @@ export class EntryDropdownComponent implements OnInit {
     source: this.options,
     computation: () => this.options() ?? [],
   });
+
+  constructor() {
+    effect(() => console.log('options:', this.options()));
+    effect(() => console.log('filteredOptions:', this.filteredOptions()));
+  }
 
   ngOnInit(): void {
     this.searchTerm.valueChanges
