@@ -8,11 +8,7 @@
     </nav>
     }
     <section class="header">
-      <h2 #macroMoleculeTitle>
-        {{title()}} @if(currentViewState() === 'list'){
-        <span>({{macromoleculeTableRows().length}})</span>
-        }
-      </h2>
+      <h2 #macroMoleculeTitle>{{title()}}</h2>
       <div class="controls">
         <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
         <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
@@ -173,7 +169,7 @@
     <mat-tab label="Sequence">
       <p class="title" style="margin-bottom: 4px">Select chain</p>
       <div class="chains">
-        @if(dropdownOptions.length > 1){
+        @if(dropdown.options.length > 1){
         <div class="dropdown-container">
           <!-- <span class="dropdown-title">{{ dropdownTitle }}</span> -->
           <pdbc-entry-dropdown
@@ -181,14 +177,14 @@
             searchTitle="''"
             [downloadable]="false"
             [islink]="false"
-            [options]="dropdownOptions"
-            [title]="dropdownSelected()"
+            [options]="dropdown.options"
+            [title]="dropdown.selectedName() ?? ''"
             (optionClickedEvent)="onDropdownSelect($event)"
           >
           </pdbc-entry-dropdown>
         </div>
-        }@else if(dropdownOptions.length === 1){
-        <p>{{dropdownOptions[0].name}}</p>
+        }@else if(dropdown.options.length === 1){
+        <p>{{dropdown.options[0].name}}</p>
         } @else {}
       </div>
       @if (sequenceDetails()) {

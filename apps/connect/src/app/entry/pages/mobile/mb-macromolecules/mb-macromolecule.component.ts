@@ -4,12 +4,11 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { distinctUntilChanged, filter } from 'rxjs';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
 import { baseUrl } from '../../../entry-constant';
-import { makeEntityColors } from '../../../helpers/misc';
+import { Dropdown, makeEntityColors } from '../../../helpers/misc';
 import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
@@ -72,9 +71,9 @@ export class MbMacromoleculeComponent implements OnInit {
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
 
-  public dropdownSelected = signal<string>('');
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+  public dropdown = new Dropdown<{ molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
+
+  private inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No macromolecule selected -> true (no warning to display)
 
   @ViewChild('macroMoleculeTitle') macroMoleculeTitle!: ElementRef;
 
@@ -114,9 +113,15 @@ export class MbMacromoleculeComponent implements OnInit {
     return filteredIsoformsMapping;
   });
 
-  public sequenceDetails = signal<{ title: string; fullSequence: string } | undefined>(undefined);
+  public sequenceDetails = computed<{ title: string; fullSequence: string } | undefined>(() => {
+    const macromolecule = this.selectedMacromolecule();
+    if (!macromolecule) return undefined;
+    const chain = this.dropdown.selectedOption()?.name;
+    if (!chain) return undefined;
+    return getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chain);
+  });
 
-  public currentViewState = signal<'list' | 'detail'>('list');
+  public currentViewState = computed<'list' | 'detail'>(() => (this.selectedMacromolecule() ? 'detail' : 'list'));
 
   public selectedMacromolecule = signal<ProcessedMacromolecule | undefined>(undefined);
 
@@ -175,7 +180,17 @@ export class MbMacromoleculeComponent implements OnInit {
     return mappingsForChains;
   });
 
-  public title = this.state.macromoleculeTitle; // TODO: @adam Remove this monstrosity if title can be computed (all tabs)
+  public title = computed(() => {
+    const macromolecule = this.selectedMacromolecule();
+    if (macromolecule) {
+      const fullTitle = macromolecule.name.molecule;
+      const titleElement = this.macroMoleculeTitle.nativeElement;
+      const { bestFit, isTruncated } = truncateText(titleElement, fullTitle, 3);
+      return isTruncated ? bestFit : fullTitle;
+    } else {
+      return `Macromolecules (${this.macromoleculeTableRows().length})`;
+    }
+  });
 
   public structureDomains = computed(() => {
     const cath = this.cathMapping() ?? {};
@@ -297,7 +312,11 @@ export class MbMacromoleculeComponent implements OnInit {
   public numOfStructuresDict = signal<{ [key: string]: number } | undefined>(undefined);
 
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbMacromoleculeComponent>) {
+    // Update MVS snapshot when needed
     effect(() => this.compCommunication.mvsSnapshotSpec$.next(this.mvsSnapshotSpec()));
+
+    // Update global mobileIsPrefAssembly (for warning display)
+    effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForInstance()));
   }
 
   ngOnInit(): void {
@@ -358,25 +377,28 @@ export class MbMacromoleculeComponent implements OnInit {
     this.initialGoTermsCount.update((prev) => (prev === 5 ? total : 5));
   }
 
-  private async updateMacromoleculeData(): Promise<void> {
-    const macromolecule = this.selectedMacromolecule();
+  private async setCurrentMacromolecule(macromolecule: ProcessedMacromolecule | undefined): Promise<void> {
+    this.selectedMacromolecule.set(macromolecule);
+    this.updateDropdownOptions(macromolecule);
+  }
+
+  private updateDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
     if (macromolecule) {
-      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
-      this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-        return {
-          name: eachString,
+      const options = getMacromoleculeChainDropdownOptions(macromolecule);
+      this.dropdown.updateOptions(
+        Object.keys(options).map((name, idx) => ({
+          name: name,
           url: `macro-${idx + 1}`,
           downloadable: false,
-        };
-      });
-      const defaultOption = Object.keys(this.dropdownOptionsToMolstar)[0];
-      this.dropdownSelected.set(defaultOption);
-    }
-
-    this.sequenceDetails.set(undefined);
-    if (macromolecule) {
-      const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, this.dropdownSelected());
-      this.sequenceDetails.set(sequenceDetails);
+          data: {
+            molstarSelection: options[name],
+            inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
+            symmOperators: [],
+          },
+        }))
+      );
+    } else {
+      this.dropdown.updateOptions([]);
     }
   }
 
@@ -394,21 +416,13 @@ export class MbMacromoleculeComponent implements OnInit {
     this.state.updateSelectedTabName('');
   }
 
-  public navigateToDetail(data: ProcessedMacromolecule) {
-    this.currentViewState.set('detail');
-    const titleElement = this.macroMoleculeTitle.nativeElement;
-    const { bestFit, isTruncated } = truncateText(titleElement, data.name.molecule, 3);
-    const moleculeName = isTruncated ? bestFit : data.name.molecule;
-    this.state.updateSelectedMacromoleculeTitle(moleculeName);
-    this.selectedMacromolecule.set(data);
-    this.updateMacromoleculeData();
+  public navigateToDetail(macromolecule: ProcessedMacromolecule) {
+    this.setCurrentMacromolecule(macromolecule);
     this.scrollTabToTop();
   }
 
   public async goBackToList() {
-    this.currentViewState.set('list');
-    this.state.updateSelectedMacromoleculeTitle('Macromolecules');
-    this.selectedMacromolecule.set(undefined);
+    this.setCurrentMacromolecule(undefined);
     this.scrollTabToTop();
   }
 
@@ -428,7 +442,7 @@ export class MbMacromoleculeComponent implements OnInit {
   }
 
   public onDropdownSelect(event: string) {
-    this.dropdownSelected.set(event);
+    this.dropdown.select(event);
   }
 
   public copySequence(sequenceDetail?: { title: string; fullSequence: string }) {
@@ -451,14 +465,12 @@ export class MbMacromoleculeComponent implements OnInit {
     }
 
     const entityId = `${macromolecule.additionalData.molecule.entity_id}`;
-    const dropdownSelected = this.dropdownSelected();
-    const molstarSelection = this.dropdownOptionsToMolstar[dropdownSelected];
+    const dropdownSelected = this.dropdown.selectedOption();
+    if (!dropdownSelected) return undefined;
+    const { molstarSelection, inPrefAssembly } = dropdownSelected.data;
     const labelAsymId = molstarSelection[0].label_asym_id;
     const authAsymId = molstarSelection[0].auth_asym_id;
-
-    const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(dropdownSelected);
-    const isSelectionInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
-    const assemblyId = isSelectionInPrefAssembly ? this.preferredAssemblyId() : undefined;
+    const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined;
     const instanceId = undefined; // symmetry instance switching currently not available in mobile UI
 
     return {

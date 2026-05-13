@@ -62,7 +62,7 @@ export class MbLigandsComponent implements OnInit {
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
-  public inPrefAssemblyForInstance = computed<boolean>(() => !this.selectedLigand() || (this.dropdown.selectedOption()?.data.inPrefAssembly ?? true)); // No ligand selected -> true (no warning to display)
+  public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
 
   public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
   public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
@@ -245,8 +245,9 @@ export class MbLigandsComponent implements OnInit {
         },
       } satisfies SnapshotSpec;
     } else {
-      const { molstarSelection, inPrefAssembly } = this.dropdown.selectedOption()!.data;
-      if (!molstarSelection) return undefined;
+      const dropdownSelected = this.dropdown.selectedOption();
+      if (!dropdownSelected) return undefined;
+      const { molstarSelection, inPrefAssembly } = dropdownSelected.data;
       const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined; // undefined = deposited model
 
       const authAsymId = molstarSelection[0].auth_asym_id;
