@@ -13,7 +13,7 @@ import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
 import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
@@ -354,17 +354,26 @@ export class DomainsTabComponent {
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
 
+    // Update Protvista data when entity changes
     effect(() => {
       const currentEntityId = this.currentSelectionEntityId();
       if (currentEntityId !== undefined) {
         untracked(() => this.protvistaDataFacade.processNewData(currentEntityId, false)); // When called without `untracked`, `processNewData` enters an infinite loop
       }
     });
+
+    // Get author numbering  when chain changes
+    effect(() => {
+      const chainId = this.currentSelectionChainId();
+      if (chainId !== undefined) {
+        this.getAuthorNumberingForChain(chainId);
+      }
+    });
+
     effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
     effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
+    effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
   }
-
-  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   @ViewChild('popoutWrapper') popoutWrapper!: ElementRef;
 
@@ -393,16 +402,6 @@ export class DomainsTabComponent {
     // refreshes dropdown options on new macromolecule
     this.updateDropdownOptions(domain);
     this.updateSymmetryDropdownOptions();
-
-    // get chainId
-    const chainId = this.currentSelectionChainId();
-    if (chainId === undefined) return;
-
-    // get author numbering
-    this.getAuthorNumberingForChain(chainId);
-
-    // update visualisations with data
-    this.renderVisualisations(domain, chainId);
   }
 
   private updateDropdownOptions(domain: ProcessedDomain) {
@@ -443,11 +442,7 @@ export class DomainsTabComponent {
   }
 
   private getAuthorNumberingForChain(chainId: string) {
-    this.globalStore.dispatch(
-      EntryActions.getResidueListing({
-        chainId: chainId,
-      })
-    );
+    this.globalStore.dispatch(EntryActions.getResidueListing({ chainId: chainId }));
   }
 
   public async onDropdownSelect(event: string) {
@@ -456,36 +451,10 @@ export class DomainsTabComponent {
 
     // reset alt sequences
     this.altSequences.set([]);
-
-    const domain = this.currentDomainsDatum();
-    if (!domain) return;
-
-    // get chainId
-    const chainId = this.currentSelectionChainId();
-    if (chainId === undefined) return;
-
-    // get author numbering for chain
-    this.getAuthorNumberingForChain(chainId);
-
-    this.renderVisualisations(domain, chainId);
   }
 
   public onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdown.select(event);
-
-    const instance_id = this.selectedInstanceId();
-    this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
-
-    const domain = this.currentDomainsDatum();
-    if (!domain) return;
-    const chainId = this.currentSelectionChainId();
-    if (chainId === undefined) return;
-    this.renderVisualisations(domain, chainId);
-  }
-
-  private renderVisualisations(domain: ProcessedDomain, chainId: string) {
-    this.renderInMolstar(domain);
-    // this.initOrRefreshProtvista(domain, chainId);
   }
 
   public toggleSidebar() {
@@ -502,14 +471,11 @@ export class DomainsTabComponent {
 
   public getCleanSelectionName = getCleanSelectionName;
 
-  private async renderInMolstar(domain: ProcessedDomain) {
-    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(domain));
-  }
-
-  private getMvsSnapshotSpec(domain: ProcessedDomain): SnapshotSpec | undefined {
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
-
+    const domain = this.currentDomainsDatum();
+    if (!domain) return undefined;
     const assemblyId = this.displayedAssemblyId();
     const instanceId = this.selectedInstanceId();
 
@@ -538,7 +504,8 @@ export class DomainsTabComponent {
         volumeStreaming: true,
       },
     };
-  }
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   openedAddCustomTrack() {
     this.gAS.logPageEvents('ep_map_data', {
