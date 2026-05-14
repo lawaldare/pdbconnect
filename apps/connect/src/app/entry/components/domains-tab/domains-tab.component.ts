@@ -8,7 +8,6 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { FixedSelectionInput, ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
@@ -17,12 +16,12 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
-import { whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { createAuthAlternateNumbering, generateSeqViewerDomainAnnotation, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { getCleanMoleculeName, getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetails } from '../../helpers/processed-data-to-controls';
+import { getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetail } from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
@@ -198,21 +197,29 @@ export class DomainsTabComponent {
   public readonly tabDataLoaded = computed(() => this.processedDomains() !== undefined);
   public selectedChains?: string;
 
-  public dropdownSelected!: string;
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+  public dropdown = new Dropdown<{ authAsymId: string; molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
-  public symmetryDropdownSelected?: string;
-  public symmetryDropdownOptions: DownloadOption[] = [];
-  private getSelectedInstanceId() {
-    if (this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All') return this.symmetryDropdownSelected;
-    else return undefined;
-  }
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+
+  public inPrefAssembly = computed(() => {
+    const domain = this.currentDomainsDatum();
+    if (!domain) return true;
+    return domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly);
+  });
+
+  public inPrefAssemblyForChain = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No chain selected -> true (no warning to display)
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
-  public currentSelectionChainId = signal<string | undefined>(undefined);
+  public currentSelectionChainId = signal<string | undefined>(undefined); // TODO: to computed?
   public protvistaDomainSelection = signal<FixedSelectionInput | undefined>(undefined);
-  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public backgroundAnnotation = computed<SmartSequenceAnnotation | undefined>(() => {
+    const domain = this.currentDomainsDatum();
+    if (!domain) return undefined;
+    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    if (!chainId) return undefined;
+    return generateSeqViewerDomainAnnotation(this.entryId() ?? '', domain, chainId);
+  });
 
   private molstarReady = signal(false);
   public _molstarComponent?: MolstarComponent;
@@ -244,20 +251,32 @@ export class DomainsTabComponent {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
-  public inPrefAssembly = signal(true);
-  public inPrefAssemblyForChain = signal(true);
-
   private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
   /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
   private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
 
-  // private getPreferredAssemblyId(): string | undefined {
-  //   return this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id;
-  // }
-
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
-  public sequenceDetails = signal<SequenceDetail[]>([]);
+  private authAsymIdToMacromolecule = computed(() => {
+    const out: { [authAsymId: string]: Molecule } = {};
+    for (const macromolecule of this.macromolecules() ?? []) {
+      for (const authAsymId of macromolecule.in_chains) {
+        out[authAsymId] = macromolecule;
+      }
+    }
+    return out;
+  });
+
+  public sequenceDetail = computed<SequenceDetail | undefined>(() => {
+    const domain = this.currentDomainsDatum();
+    if (!domain) return undefined;
+    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    if (!chainId) return undefined;
+    const macromolecule = this.authAsymIdToMacromolecule()?.[chainId];
+    if (!macromolecule) return undefined;
+
+    return getDomainSequenceDetail(this.entryId() ?? '', macromolecule, domain, chainId);
+  });
 
   public readonly resourceUrls = resourceUrls;
   public readonly entryDomainsTooltips = entryDomainsTooltips;
@@ -327,79 +346,60 @@ export class DomainsTabComponent {
     }
   }
 
-  private async updateInPrefAssemblyForChain(domain: ProcessedDomain, chainId: string) {
-    // check if domain segments are in pref assembly based on chainId
-    const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
-    // get list of segments for selected chain by idx
-    const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
-    // check whether all segments in preferred assembly
-    const allSegmentsInPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
-    this.inPrefAssemblyForChain.set(allSegmentsInPrefAssembly);
-  }
-
   async triggerDomainUpdateSideEffects(domain: ProcessedDomain) {
     // reset alt sequences
     this.altSequences.set([]);
 
     // refreshes dropdown options on new macromolecule
     this.updateDropdownOptions(domain);
-    this.updateSymmetryDropdownOptions(domain);
+    this.updateSymmetryDropdownOptions();
 
     // get chainId
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-
-    // check whether chain is in pref assembly
-    await this.updateInPrefAssemblyForChain(domain, chainId);
-    // check whether any segment not in pref assembly for this domain
-    const allDomainInPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
-    this.inPrefAssembly.set(allDomainInPrefAssembly);
-
-    // get macromolecule
-    const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => domain.moleculeNames[0] === getCleanMoleculeName(eachMacromolecule));
+    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    if (chainId === undefined) return;
 
     // get author numbering
     this.getAuthorNumberingForChain(chainId);
-
-    // updates background annotations for smart sequence viewer
-    this.updateBackgroundAnnotation(domain, chainId);
-
-    // updates sequence details
-    this.updateSequenceDetails(domain, macromoleculesOfDomain, chainId);
 
     // update visualisations with data
     this.renderVisualisations(domain, chainId);
   }
 
   private updateDropdownOptions(domain: ProcessedDomain) {
-    this.dropdownOptionsToMolstar = getDomainChainDropdownOptions(domain);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
-        url: `domain-${idx + 1}`,
-        downloadable: false,
-      };
-    });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    const options = getDomainChainDropdownOptions(domain);
+    type DropdownOption = DomainsTabComponent['dropdown']['options'][number]; // TODO: @adam type like this in all tabs
+    this.dropdown.updateOptions(
+      Object.keys(options).map((name, idx): DropdownOption => {
+        const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
+        if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+        return {
+          name: name,
+          url: `domain-${idx + 1}`,
+          downloadable: false,
+          data: {
+            authAsymId,
+            molstarSelection: options[name],
+            inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
+            symmOperators: domain.symmOpListForSegments[idx],
+          },
+        };
+      })
+    );
   }
 
-  private updateSymmetryDropdownOptions(domain: ProcessedDomain) {
-    // update for symmetry operations dropdown
-    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const segmentSymmOperators = idxOfSelection > -1 ? domain.symmOpListForSegments[idxOfSelection] : undefined;
-
-    if (segmentSymmOperators) {
-      this.symmetryDropdownOptions = segmentSymmOperators.map((op, idx) => {
-        return {
+  private updateSymmetryDropdownOptions() {
+    const segmentSymmOperators = this.dropdown.selectedOption()?.data.symmOperators ?? [];
+    type SymmetryDropdownOption = DomainsTabComponent['symmetryDropdown']['options'][number];
+    this.symmetryDropdown.updateOptions(
+      segmentSymmOperators.map(
+        (op, idx): SymmetryDropdownOption => ({
           name: op,
           url: `domain-0-symop-${idx + 1}`,
           downloadable: false,
-        };
-      });
-      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
-    } else {
-      this.symmetryDropdownSelected = undefined;
-      this.symmetryDropdownOptions = [];
-    }
+          data: { instanceId: op !== 'All' ? op : undefined },
+        })
+      )
+    );
   }
 
   private getAuthorNumberingForChain(chainId: string) {
@@ -410,34 +410,19 @@ export class DomainsTabComponent {
     );
   }
 
-  private updateBackgroundAnnotation(domain: ProcessedDomain, chainId: string) {
-    this.backgroundAnnotation.set(undefined);
-
-    const annotation = generateSeqViewerDomainAnnotation(this.entryId() ?? '', domain, chainId);
-
-    this.backgroundAnnotation.set(annotation);
-  }
-
-  private updateSequenceDetails(domain: ProcessedDomain, macromoleculesOfDomain: Molecule[], chainId: string) {
-    // update displayed domain sequence
-    this.sequenceDetails.set(getDomainSequenceDetails(this.entryId() ?? '', macromoleculesOfDomain, domain, chainId));
-  }
-
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected = event;
+    this.dropdown.select(event);
+    this.updateSymmetryDropdownOptions();
 
     // reset alt sequences
     this.altSequences.set([]);
 
     const domain = this.currentDomainsDatum();
     if (!domain) return;
-    this.updateSymmetryDropdownOptions(domain);
 
     // get chainId
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-
-    // check whether chain is in pref assembly
-    await this.updateInPrefAssemblyForChain(domain, chainId);
+    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    if (chainId === undefined) return;
 
     // get macromolecules for domain
     const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
@@ -450,24 +435,19 @@ export class DomainsTabComponent {
     // get author numbering for chain
     this.getAuthorNumberingForChain(chainId);
 
-    // updates background annotations for smart sequence viewer
-    this.updateBackgroundAnnotation(domain, chainId);
-
-    // updates sequence details
-    this.updateSequenceDetails(domain, macromoleculesOfDomain, chainId);
-
     this.renderVisualisations(domain, chainId);
   }
 
   public onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
+    this.symmetryDropdown.select(event);
 
-    const instance_id = this.getSelectedInstanceId();
+    const instance_id = this.selectedInstanceId();
     this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
 
     const domain = this.currentDomainsDatum();
     if (!domain) return;
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    if (chainId === undefined) return;
     this.renderVisualisations(domain, chainId);
   }
 
@@ -499,7 +479,7 @@ export class DomainsTabComponent {
     if (!entryId) return undefined;
 
     const assemblyId = this.displayedAssemblyId();
-    const instanceId = this.getSelectedInstanceId();
+    const instanceId = this.selectedInstanceId();
 
     return {
       name: 'Domain',

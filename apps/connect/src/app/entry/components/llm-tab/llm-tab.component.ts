@@ -85,7 +85,7 @@ export class LLMTabComponent implements OnInit {
     return macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly);
   });
 
-  public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
+  public inPrefAssemblyForChain = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No chain selected -> true (no warning to display)
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -242,7 +242,7 @@ export class LLMTabComponent implements OnInit {
 
   private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
   /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
-  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined));
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
 
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
@@ -392,7 +392,6 @@ export class LLMTabComponent implements OnInit {
 
   private updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
     const options = getMacromoleculeChainDropdownOptions(macromolecule);
-    console.log('options:', options);
     this.dropdown.updateOptions(
       Object.keys(options).map((name, idx) => {
         const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
@@ -414,19 +413,18 @@ export class LLMTabComponent implements OnInit {
 
   /** TODO: @adam Repeats in many tabs, factor out? */
   private updateSymmetryDropdownOptions() {
-    const symmOperators = this.dropdown.selectedOption()?.data.symmOperators;
-    if (symmOperators) {
-      this.symmetryDropdown.updateOptions(
-        symmOperators.map((op, idx) => ({
+    const symmOperators = this.dropdown.selectedOption()?.data.symmOperators ?? [];
+    type SymmetryDropdownOption = LLMTabComponent['symmetryDropdown']['options'][number];
+    this.symmetryDropdown.updateOptions(
+      symmOperators.map(
+        (op, idx): SymmetryDropdownOption => ({
           name: op,
           url: `macro-0-symop-${idx + 1}`,
           downloadable: false,
           data: { instanceId: op !== 'All' ? op : undefined },
-        })) ?? []
-      );
-    } else {
-      this.symmetryDropdown.updateOptions([]);
-    }
+        })
+      )
+    );
   }
 
   private async updateBackgroundAnnotation() {

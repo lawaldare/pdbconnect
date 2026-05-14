@@ -68,33 +68,22 @@ export function getMacromoleculeSequenceDetails(entryId: string, datum: Processe
   };
 }
 
-export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain: Molecule[], datum: ProcessedDomain, chainId: string): SequenceDetail[] {
-  const sequenceDetails: SequenceDetail[] = [];
-
-  const macromoleculesOfDomainForChain = macromoleculesOfDomain.filter((mm) => mm.in_chains.indexOf(chainId) > -1);
-  if (macromoleculesOfDomainForChain.length > 1) {
-    const allEntityIds = macromoleculesOfDomainForChain.map((mm) => mm.entity_id).join("', '");
-    console.warn(`Multiple entity_id's (${allEntityIds}) mapped to this ${datum.domain}`);
-  }
-
-  const macromolecule = macromoleculesOfDomainForChain[0];
-  const moleculeName = getCleanMoleculeName(macromolecule);
-
-  const boundariesForDomain = datum.additionalData.boundaries;
+export function getDomainSequenceDetail(entryId: string, macromolecule: Molecule, domain: ProcessedDomain, chainId: string): SequenceDetail | undefined {
+  const boundariesForDomain = domain.additionalData.boundaries;
   const boundariesForChainId = boundariesForDomain.filter((boundary) => boundary.chain === chainId);
-  if (boundariesForChainId.length === 0) return [];
-  const segmentsStringsForDomains = datum.additionalData.segmentsResidNumbers;
+  if (boundariesForChainId.length === 0) return undefined;
+  const segmentsStringsForDomains = domain.additionalData.segmentsResidNumbers;
   const segmentsStringsForChainId = segmentsStringsForDomains.filter((segment) => segment[0] === chainId);
 
-  const segmentsForDomains = datum.segments;
+  const segmentsForDomains = domain.segments;
   const segmentsForChainId = segmentsForDomains.filter((_segment, i) => boundariesForDomain[i].chain === chainId);
   const segmentsForOtherChains = segmentsForDomains.filter((_segment, i) => boundariesForDomain[i].chain !== chainId);
 
-  const domainDescription = `${datum.resource} domain: ${datum.domain}; Segments: ${segmentsStringsForChainId.join(', ')} (Auth: ${segmentsForChainId.join(', ')})`;
+  const domainDescription = `${domain.resource} domain: ${domain.domain}; Segments: ${segmentsStringsForChainId.join(', ')} (Auth: ${segmentsForChainId.join(', ')})`;
   const otherChains = segmentsForOtherChains.length > 0 ? `; Other auth segments: ${segmentsForOtherChains.join(', ')})` : '';
 
   const sequenceDetail: SequenceDetail = {
-    title: `>FASTA pdb|${entryId}|${moleculeName}; Chain ${chainId}; ${domainDescription}${otherChains}`,
+    title: `>FASTA pdb|${entryId}|${getCleanMoleculeName(macromolecule)}; Chain ${chainId}; ${domainDescription}${otherChains}`,
     fullSequence: macromolecule.sequence ?? '',
     segments: [],
   };
@@ -124,8 +113,7 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
       sequence: sequenceDetail.fullSequence.substring(currentCharIndex),
     });
   }
-  sequenceDetails.push(sequenceDetail);
-  return sequenceDetails;
+  return sequenceDetail;
 }
 
 function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParamForHelpers[], inPrefAssembly: boolean) {
