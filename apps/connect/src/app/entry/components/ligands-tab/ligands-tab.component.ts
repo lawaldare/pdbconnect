@@ -19,24 +19,23 @@ import {
   UtilService,
 } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { AgGridAngular } from 'ag-grid-angular';
 import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, take, timer } from 'rxjs';
-import { EntryApiService } from '../../services/entry-api.service';
 import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
 import { interactionsToMolstar, MVSAtomInteraction, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
-import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, makeEntityColors, updateSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { EntryApiService } from '../../services/entry-api.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -70,18 +69,16 @@ import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
 export class LigandsTabComponent implements AfterViewInit {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  private readonly molstarPluginService = inject(MolstarPluginService);
   private readonly scriptLoader = inject(ScriptLoaderService);
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   public readonly symmOperatorTooltip = symmOperatorTooltip;
 
-  public dropdownSelected!: string;
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+  public dropdown = new Dropdown<{ molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
-  public symmetryDropdownSelected?: string;
-  public symmetryDropdownOptions: DownloadOption[] = [];
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+  public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
 
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
@@ -170,8 +167,11 @@ export class LigandsTabComponent implements AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
-  public inPrefAssembly = signal(true);
-  public inPrefAssemblyForInstance = signal(true);
+  public inPrefAssembly = computed(() => {
+    const ligand = this.currentLigandDatum();
+    if (!ligand) return true;
+    return ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly);
+  });
 
   public messageNoInteractions = computed(() => {
     const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
@@ -209,7 +209,6 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
-  // public selectionStats: { [key: string]: any } | undefined;
   public selectionStats = computed(() => {
     const ligandSummaryList = this.ligandSummaryList();
     const currentLig = this.currentLigandDatum();
@@ -254,28 +253,16 @@ export class LigandsTabComponent implements AfterViewInit {
     }));
   }
 
-  private async updateInPrefAssemblyForInstance(ligand: ProcessedLigandOrMod) {
-    // check if ligand instance is in pref assembly based on idx of ligand instance
-    const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const isSelectionPrefAssembly = ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
-    this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
-  }
-
   async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
     // update ligand dropdown options
     this.updateDropdownOptions(ligand);
-    this.updateSymmetryDropdownOptions(ligand);
+    this.updateSymmetryDropdownOptions();
 
     // used in template for dashboard stats
     this.selectionIdentifier = ligand.id;
 
     // update whether we show the env viewer or not
     await this.updateVisualsDisplayed(ligand);
-
-    // check if molstar config needs update and wait for it
-    await this.updateInPrefAssemblyForInstance(ligand);
-    const allLigandsInPrefAssembly = ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
-    this.inPrefAssembly.set(allLigandsInPrefAssembly);
 
     // update visualisations with data
     // get interactions data, create ligand selection, zoom in ligand
@@ -289,35 +276,27 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   updateDropdownOptions(ligand: ProcessedLigandOrMod) {
-    this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
-        url: `lig-${idx + 1}`,
-        downloadable: false,
-      };
-    });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
+    const options = getLigandsDropdownOptions(ligand);
+    type DropdownOption = LigandsTabComponent['dropdown']['options'][number];
+
+    this.dropdown.updateOptions(
+      Object.keys(options).map(
+        (name, idx): DropdownOption => ({
+          name: name,
+          url: `lig-${idx + 1}`,
+          downloadable: false,
+          data: {
+            molstarSelection: options[name],
+            inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
+            symmOperators: ligand.symmOpListForEachLigOrMod[idx],
+          },
+        })
+      )
+    );
   }
 
-  updateSymmetryDropdownOptions(ligand: ProcessedLigandOrMod) {
-    // update for symmetry operations dropdown
-    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const ligandSymmOperators = idxOfSelection > -1 ? ligand.symmOpListForEachLigOrMod[idxOfSelection] : undefined;
-
-    if (ligandSymmOperators) {
-      this.symmetryDropdownOptions = ligandSymmOperators.map((op, idx) => {
-        return {
-          name: op,
-          url: `domain-0-symop-${idx + 1}`,
-          downloadable: false,
-        };
-      });
-      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
-    } else {
-      this.symmetryDropdownSelected = undefined;
-      this.symmetryDropdownOptions = [];
-    }
+  updateSymmetryDropdownOptions() {
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'lig-0-symop-');
   }
 
   async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {
@@ -336,7 +315,7 @@ export class LigandsTabComponent implements AfterViewInit {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
     if (!molstarSelection) return undefined;
 
     const authAsymId = molstarSelection[0].auth_asym_id;
@@ -354,7 +333,7 @@ export class LigandsTabComponent implements AfterViewInit {
         authAsymId,
         authSeqId,
         authInsCode,
-        instanceId: this.symmetryDropdownSelected || undefined,
+        instanceId: this.selectedInstanceId(),
         atomInteractions: mvsAtomInteractions ?? 'builtin',
         // atomInteractions: mvsAtomInteractions ?? 'none',
         volumeStreaming: true,
@@ -368,12 +347,12 @@ export class LigandsTabComponent implements AfterViewInit {
     if (!interactions) return;
     const ligand = this.currentLigandDatum();
     if (!ligand) return;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
     if (!molstarSelection) return;
 
     if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
 
-    const instanceId = this.symmetryDropdownSelected || undefined;
+    const instanceId = this.selectedInstanceId();
     const mvsInteractions = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId);
 
     this.residToInstanceId = mvsInteractions.residToInstanceId;
@@ -432,10 +411,8 @@ export class LigandsTabComponent implements AfterViewInit {
     this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
       const chainId = this.currentChainId();
       const residueId = this.currentResidueId();
-      const symOpForInteractions =
-        this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
-      const chainForInteractions = `${chainId}${symOpForInteractions}`;
       if (!chainId || !residueId) return;
+      const chainForInteractions = chainNameForInteractionsApi(chainId, this.selectedInstanceId());
       const interactionsFromApi = allInteractions[chainForInteractions][residueId];
       // only update if no search term
       if (!this.searchTerm.value) {
@@ -487,7 +464,9 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async renderInMolstar(ligand: ProcessedLigandOrMod) {
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    // const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
+    if (!molstarSelection) return;
 
     const chainId = molstarSelection[0].auth_asym_id;
     const residueId = molstarSelection[0].auth_seq_id;
@@ -501,8 +480,8 @@ export class LigandsTabComponent implements AfterViewInit {
     this.interactionsRowData.set([]);
 
     const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
-    const symOpForInteractions = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
-    const chainForInteractions = `${chainId}${symOpForInteractions}`;
+    const chainForInteractions = chainNameForInteractionsApi(chainId ?? '', this.selectedInstanceId());
+
     if (inPrefAssemblyForInstance) {
       this.globalStore.dispatch(
         EntryActions.getInteractions({
@@ -520,15 +499,12 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected = event;
+    this.dropdown.select(event);
+    this.updateSymmetryDropdownOptions();
 
     // all possible rendering functions are called for a dashboard
     const ligand = this.currentLigandDatum();
     if (!ligand) return;
-    this.updateSymmetryDropdownOptions(ligand);
-
-    // check if molstar config needs update and wait for it
-    await this.updateInPrefAssemblyForInstance(ligand);
 
     // get interactions data, create ligand selection, zoom in ligand
     this.renderInMolstar(ligand);
@@ -539,7 +515,7 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
+    this.symmetryDropdown.select(event);
 
     const ligand = this.currentLigandDatum();
     if (!ligand) return;
@@ -553,7 +529,8 @@ export class LigandsTabComponent implements AfterViewInit {
   private async initOrRefreshLigandEnvViewer(ligand: ProcessedLigandOrMod, interactionsRawData?: InteractionFromAPI) {
     const ligandId = ligand.id;
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
+    if (!molstarSelection) return;
     const resId = molstarSelection[0].auth_seq_id;
     const chainId = molstarSelection[0].auth_asym_id!;
 
@@ -673,12 +650,13 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async _handleCellMouseOver(event: CellMouseOverEvent<Interaction>) {
-    const int = event.data; // fully typed
+    const int = event.data;
     if (!int) return;
 
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
+    if (!molstarSelection) return;
     const entityId = molstarSelection[0].label_entity_id;
     const chainId = molstarSelection[0].auth_asym_id;
     const residueId = molstarSelection[0].auth_seq_id;
@@ -688,7 +666,7 @@ export class LigandsTabComponent implements AfterViewInit {
     if (!chainToEntityId) return;
     const residEntityId = chainToEntityId[int.end.chain_id];
 
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
+    const instance_id = this.selectedInstanceId();
 
     const residueChain = int.end.chain_id.split('_')[0];
     const residueNum = int.end.author_residue_number;
@@ -759,4 +737,10 @@ export class LigandsTabComponent implements AfterViewInit {
   public mapSynonyms(synonyms: any[]): string {
     return synonyms.map((synonym) => synonym.value).join(', ');
   }
+}
+
+// TODO: Fix mapping of instance_id vs API chain numbering
+function chainNameForInteractionsApi(authAsymId: string, instanceId: string | undefined) {
+  const symOpForInteractions = instanceId && instanceId !== 'ASM-1' ? '_' + instanceId.split('-')[1] : '';
+  return `${authAsymId}${symOpForInteractions}`;
 }
