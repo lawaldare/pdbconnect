@@ -3,13 +3,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, signal, untracked, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import { FixedSelectionInput, ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
+import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -62,8 +62,34 @@ export class DomainsTabComponent {
   public macromolSequence = this.protvistaDataFacade.sequence;
   public loadingStatus = this.protvistaDataFacade.loadingStatus;
 
-  public readonly currentDomainsFeatureId = signal<string | undefined>(undefined);
-  public readonly currentDomainsFeature = signal<any[] | undefined>(undefined);
+  public readonly currentDomainsFeatureId = computed<string | undefined>(() => {
+    const entityId = this.currentSelectionEntityId();
+    const chainId = this.currentSelectionChainId();
+    const segmentsName = this.segmentsForCurrentChain()
+      ?.map((boundary) => `${boundary.start}-${boundary.end}`)
+      .join('_');
+    if (entityId === undefined || chainId === undefined || segmentsName === undefined) return undefined;
+    return `fixed-custom-${entityId}-${chainId}-${segmentsName}`;
+  });
+
+  public readonly currentDomainsFeature = computed(() => {
+    const segments = this.segmentsForCurrentChain();
+    if (!segments) return undefined;
+    const fragments = segments.map((boundary) => ({
+      tooltipContent: `Custom data: ${boundary.start} - ${boundary.end}`,
+      start: boundary.start,
+      end: boundary.end,
+    }));
+    return [
+      {
+        accession: 'custom-domain',
+        color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
+        locations: [{ fragments }],
+        label: 'Custom data',
+      },
+    ];
+  });
+
   public readonly protvistaTooltips = computed(() => this.protvistaDataFacade.tooltips());
   public readonly protvistaData = computed(() => {
     const domainsByResource = this.protvistaDataFacade.domainsByResource();
@@ -210,13 +236,18 @@ export class DomainsTabComponent {
 
   public inPrefAssemblyForChain = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No chain selected -> true (no warning to display)
 
-  public currentSelectionEntityId = signal<string | undefined>(undefined);
-  public currentSelectionChainId = signal<string | undefined>(undefined); // TODO: to computed?
-  public protvistaDomainSelection = signal<FixedSelectionInput | undefined>(undefined);
+  public currentSelectionChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
+  private segmentsForCurrentChain = computed(() => {
+    const chainId = this.currentSelectionChainId();
+    if (!chainId) return [];
+    return this.currentDomainsDatum()?.additionalData.boundaries.filter((boundary) => boundary.chain === chainId);
+  });
+  public currentSelectionEntityId = computed<string | undefined>(() => String(this.segmentsForCurrentChain()?.[0].entity));
+
   public backgroundAnnotation = computed<SmartSequenceAnnotation | undefined>(() => {
     const domain = this.currentDomainsDatum();
     if (!domain) return undefined;
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    const chainId = this.currentSelectionChainId();
     if (!chainId) return undefined;
     return generateSeqViewerDomainAnnotation(this.entryId() ?? '', domain, chainId);
   });
@@ -270,7 +301,7 @@ export class DomainsTabComponent {
   public sequenceDetail = computed<SequenceDetail | undefined>(() => {
     const domain = this.currentDomainsDatum();
     if (!domain) return undefined;
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    const chainId = this.currentSelectionChainId();
     if (!chainId) return undefined;
     const macromolecule = this.authAsymIdToMacromolecule()?.[chainId];
     if (!macromolecule) return undefined;
@@ -322,6 +353,15 @@ export class DomainsTabComponent {
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
+
+    effect(() => {
+      const currentEntityId = this.currentSelectionEntityId();
+      if (currentEntityId !== undefined) {
+        untracked(() => this.protvistaDataFacade.processNewData(currentEntityId, false)); // When called without `untracked`, `processNewData` enters an infinite loop
+      }
+    });
+    effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
+    effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
   }
 
   private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
@@ -355,7 +395,7 @@ export class DomainsTabComponent {
     this.updateSymmetryDropdownOptions();
 
     // get chainId
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    const chainId = this.currentSelectionChainId();
     if (chainId === undefined) return;
 
     // get author numbering
@@ -421,16 +461,8 @@ export class DomainsTabComponent {
     if (!domain) return;
 
     // get chainId
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    const chainId = this.currentSelectionChainId();
     if (chainId === undefined) return;
-
-    // get macromolecules for domain
-    const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
-    const chainsOfDomain = chainsOfDomainSegments.filter((v, i, arr) => arr.indexOf(v) === i);
-    const macromoleculesOfDomain = this.macromolecules()!.filter((eachMacromolecule) => {
-      const chainsOfMacromolecule = eachMacromolecule.in_chains;
-      return chainsOfDomain.some((ch) => chainsOfMacromolecule.includes(ch));
-    });
 
     // get author numbering for chain
     this.getAuthorNumberingForChain(chainId);
@@ -446,14 +478,14 @@ export class DomainsTabComponent {
 
     const domain = this.currentDomainsDatum();
     if (!domain) return;
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    const chainId = this.currentSelectionChainId();
     if (chainId === undefined) return;
     this.renderVisualisations(domain, chainId);
   }
 
   private renderVisualisations(domain: ProcessedDomain, chainId: string) {
     this.renderInMolstar(domain);
-    this.initOrRefreshProtvista(domain, chainId);
+    // this.initOrRefreshProtvista(domain, chainId);
   }
 
   public toggleSidebar() {
@@ -508,49 +540,6 @@ export class DomainsTabComponent {
     };
   }
 
-  private initOrRefreshProtvista(domain: ProcessedDomain, chainId: string) {
-    // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
-    const segmentsForChainId = domain.additionalData.boundaries.filter((boundary) => boundary.chain === chainId);
-
-    const segments = segmentsForChainId
-      .map((boundary) => {
-        return `${boundary.start}-${boundary.end}`;
-      })
-      .join(',');
-
-    const entityId = segmentsForChainId[0].entity;
-
-    this.currentSelectionEntityId.set(`${entityId}`);
-    this.currentSelectionChainId.set(chainId);
-    this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
-    this.visInteractivity.currentSelectionChainId.set(chainId);
-    this.protvistaDomainSelection.set({
-      trackName: 'Current Domain',
-      trackSegments: segments,
-      trackTooltip: 'Current Domain',
-    });
-
-    const fragments = segmentsForChainId.map((boundary) => {
-      return { tooltipContent: `Custom data: ${boundary.start} - ${boundary.end}`, start: boundary.start, end: boundary.end };
-    });
-
-    const segmentsName = segmentsForChainId
-      .map((boundary) => {
-        return `${boundary.start}-${boundary.end}`;
-      })
-      .join('_');
-
-    this.currentDomainsFeatureId.set(`fixed-custom-${entityId}-${chainId}-${segmentsName}`);
-    this.currentDomainsFeature.set([
-      {
-        accession: 'custom-domain',
-        color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
-        locations: [{ fragments }],
-        label: 'Custom data',
-      },
-    ]);
-    this.protvistaDataFacade.processNewData(`${entityId}`, false);
-  }
   openedAddCustomTrack() {
     this.gAS.logPageEvents('ep_map_data', {
       tab: this.compCommunication.currentTabName() ?? '',
