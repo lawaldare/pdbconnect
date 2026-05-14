@@ -205,7 +205,7 @@ export class LigandsTabComponent implements AfterViewInit {
   public readonly colDefs = colDefs;
 
   public interactionsRawData = signal<InteractionFromAPI | undefined>(undefined);
-  public interactionsRowData = signal<Interaction[] | undefined>(undefined);
+  public interactionsRowData = computed<Interaction[] | undefined>(() => this.interactionsRawData()?.interactions);
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
@@ -310,8 +310,7 @@ export class LigandsTabComponent implements AfterViewInit {
       await this.destroyLigandEnv();
     }
   }
-
-  private getMvsSnapshotSpec(mvsAtomInteractions: MVSAtomInteraction[] | undefined): SnapshotSpec | undefined {
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
@@ -323,6 +322,12 @@ export class LigandsTabComponent implements AfterViewInit {
     const authInsCode = molstarSelection[0].pdbx_PDB_ins_code ?? '';
     if (authAsymId === undefined) throw new Error('authAsymId is undefined');
     if (authSeqId === undefined) throw new Error('authSeqId is undefined');
+    const instanceId = this.selectedInstanceId();
+
+    const ligand = this.currentLigandDatum();
+    const interactions = this.interactionsRowData();
+    const mvsAtomInteractions =
+      ligand && interactions ? interactionsToMolstar(ligand, molstarSelection, interactions, instanceId).interactionsMolstarSelections : undefined;
 
     return {
       name: 'Ligand environment',
@@ -333,14 +338,15 @@ export class LigandsTabComponent implements AfterViewInit {
         authAsymId,
         authSeqId,
         authInsCode,
-        instanceId: this.selectedInstanceId(),
+        instanceId,
         atomInteractions: mvsAtomInteractions ?? 'builtin',
         // atomInteractions: mvsAtomInteractions ?? 'none',
         volumeStreaming: true,
         entityColors: this.entityColors(),
       },
     };
-  }
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   async triggerLigandInteractionsSideEffects(rawInteractions: InteractionFromAPI | undefined) {
     const interactions = rawInteractions?.interactions;
@@ -356,8 +362,6 @@ export class LigandsTabComponent implements AfterViewInit {
     const mvsInteractions = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId);
 
     this.residToInstanceId = mvsInteractions.residToInstanceId;
-
-    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
 
     // TODO: Refactor use of residToInstanceId
     // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
@@ -394,8 +398,6 @@ export class LigandsTabComponent implements AfterViewInit {
    */
   private viewReady = signal(false);
 
-  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
-
   ngAfterViewInit(): void {
     this.viewReady.set(true);
 
@@ -418,9 +420,7 @@ export class LigandsTabComponent implements AfterViewInit {
       if (!this.searchTerm.value) {
         this.triggerLigandInteractionsSideEffects(interactionsFromApi);
       }
-      const interactions = interactionsFromApi.interactions;
       this.interactionsRawData.set(interactionsFromApi);
-      this.interactionsRowData.set(interactions);
     });
 
     this.searchTerm.valueChanges
@@ -452,7 +452,6 @@ export class LigandsTabComponent implements AfterViewInit {
         if (this.noTermFiltering() === false) {
           this.interactionsRawData.set(interactionsFromApiFiltered);
           this.triggerLigandInteractionsSideEffects(interactionsFromApiFiltered);
-          this.interactionsRowData.set(interactionsFromApiFiltered?.interactions);
         }
         this.noTermFiltering.set(false);
       });
@@ -464,7 +463,6 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async renderInMolstar(ligand: ProcessedLigandOrMod) {
-    // const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
     const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
     if (!molstarSelection) return;
 
@@ -477,7 +475,6 @@ export class LigandsTabComponent implements AfterViewInit {
     this.noTermFiltering.set(true);
     this.searchTerm.setValue('');
     this.interactionsRawData.set(undefined);
-    this.interactionsRowData.set([]);
 
     const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
     const chainForInteractions = chainNameForInteractionsApi(chainId ?? '', this.selectedInstanceId());
@@ -492,10 +489,7 @@ export class LigandsTabComponent implements AfterViewInit {
     }
     if (ligand.type === 'modification') {
       this.interactionsRawData.set(undefined);
-      this.interactionsRowData.set(undefined);
     }
-
-    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(undefined));
   }
 
   public async onDropdownSelect(event: string) {
