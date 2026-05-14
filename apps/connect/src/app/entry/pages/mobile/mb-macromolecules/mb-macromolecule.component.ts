@@ -8,7 +8,7 @@ import { distinctUntilChanged, filter } from 'rxjs';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
 import { baseUrl } from '../../../entry-constant';
-import { Dropdown, makeEntityColors } from '../../../helpers/misc';
+import { Dropdown, makeEntityColors, updateSymmetryDropdownOptions } from '../../../helpers/misc';
 import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
@@ -390,9 +390,9 @@ export class MbMacromoleculeComponent implements OnInit {
   private updateDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
     if (macromolecule) {
       const options = getMacromoleculeChainDropdownOptions(macromolecule);
-      console.log('updateDropdownOptions:', options, macromolecule.chainSymmOperators);
+      type DropdownOption = MbMacromoleculeComponent['dropdown']['options'][number];
       this.dropdown.updateOptions(
-        Object.keys(options).map((name, idx) => {
+        Object.keys(options).map((name, idx): DropdownOption => {
           const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
           return {
             name: name,
@@ -412,19 +412,7 @@ export class MbMacromoleculeComponent implements OnInit {
   }
 
   private updateSymmetryDropdownOptions() {
-    const symmOperators = this.dropdown.selectedOption()?.data.symmOperators;
-    if (symmOperators) {
-      this.symmetryDropdown.updateOptions(
-        symmOperators.map((op, idx) => ({
-          name: op,
-          url: `macro-0-symop-${idx + 1}`,
-          downloadable: false,
-          data: { instanceId: op !== 'All' ? op : undefined },
-        })) ?? []
-      );
-    } else {
-      this.symmetryDropdown.updateOptions([]);
-    }
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'macro-0-symop-');
   }
 
   public toggleBottomsheetHeight() {

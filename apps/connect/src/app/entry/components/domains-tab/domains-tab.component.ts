@@ -16,7 +16,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
-import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, updateSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
@@ -406,7 +406,7 @@ export class DomainsTabComponent {
 
   private updateDropdownOptions(domain: ProcessedDomain) {
     const options = getDomainChainDropdownOptions(domain);
-    type DropdownOption = DomainsTabComponent['dropdown']['options'][number]; // TODO: @adam type like this in all tabs
+    type DropdownOption = DomainsTabComponent['dropdown']['options'][number];
     this.dropdown.updateOptions(
       Object.keys(options).map((name, idx): DropdownOption => {
         const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
@@ -427,18 +427,7 @@ export class DomainsTabComponent {
   }
 
   private updateSymmetryDropdownOptions() {
-    const segmentSymmOperators = this.dropdown.selectedOption()?.data.symmOperators ?? [];
-    type SymmetryDropdownOption = DomainsTabComponent['symmetryDropdown']['options'][number];
-    this.symmetryDropdown.updateOptions(
-      segmentSymmOperators.map(
-        (op, idx): SymmetryDropdownOption => ({
-          name: op,
-          url: `domain-0-symop-${idx + 1}`,
-          downloadable: false,
-          data: { instanceId: op !== 'All' ? op : undefined },
-        })
-      )
-    );
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'domain-0-symop-');
   }
 
   private getAuthorNumberingForChain(chainId: string) {

@@ -103,3 +103,20 @@ export class Dropdown<TData> {
 
   // public optionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {}; // TODO: @adam get rid of this
 }
+
+export function updateSymmetryDropdownOptions(
+  symmetryDropdown: Dropdown<{ instanceId: string | undefined }>,
+  symmOperators: string[] | undefined,
+  urlPrefix: string
+) {
+  type SymmetryDropdownOption = (typeof symmetryDropdown)['options'][number];
+  const options = (symmOperators ?? []).map(
+    (op, idx): SymmetryDropdownOption => ({
+      name: op,
+      url: `${urlPrefix}${idx + 1}`, // not sure if this is really necessary
+      downloadable: false,
+      data: { instanceId: op !== 'All' ? op : undefined },
+    })
+  );
+  symmetryDropdown.updateOptions(options);
+}

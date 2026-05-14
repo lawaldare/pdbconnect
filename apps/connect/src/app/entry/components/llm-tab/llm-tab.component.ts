@@ -18,7 +18,7 @@ import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, fil
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { CitationDetail } from '../../data-models/publication.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
-import { Dropdown, groupBy, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, groupBy, updateSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
@@ -392,8 +392,9 @@ export class LLMTabComponent implements OnInit {
 
   private updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
     const options = getMacromoleculeChainDropdownOptions(macromolecule);
+    type DropdownOption = LLMTabComponent['dropdown']['options'][number];
     this.dropdown.updateOptions(
-      Object.keys(options).map((name, idx) => {
+      Object.keys(options).map((name, idx): DropdownOption => {
         const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
         if (authAsymId === undefined) throw new Error('authAsymId is undefined');
         return {
@@ -411,20 +412,8 @@ export class LLMTabComponent implements OnInit {
     );
   }
 
-  /** TODO: @adam Repeats in many tabs, factor out? */
   private updateSymmetryDropdownOptions() {
-    const symmOperators = this.dropdown.selectedOption()?.data.symmOperators ?? [];
-    type SymmetryDropdownOption = LLMTabComponent['symmetryDropdown']['options'][number];
-    this.symmetryDropdown.updateOptions(
-      symmOperators.map(
-        (op, idx): SymmetryDropdownOption => ({
-          name: op,
-          url: `macro-0-symop-${idx + 1}`,
-          downloadable: false,
-          data: { instanceId: op !== 'All' ? op : undefined },
-        })
-      )
-    );
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'macro-0-symop-');
   }
 
   private async updateBackgroundAnnotation() {
