@@ -242,7 +242,11 @@ export class DomainsTabComponent {
     if (!chainId) return [];
     return this.currentDomainsDatum()?.additionalData.boundaries.filter((boundary) => boundary.chain === chainId);
   });
-  public currentSelectionEntityId = computed<string | undefined>(() => String(this.segmentsForCurrentChain()?.[0].entity));
+  public currentSelectionEntityId = computed<string | undefined>(() => {
+    const segment = this.segmentsForCurrentChain()?.[0];
+    if (!segment) return undefined;
+    return String(segment.entity);
+  });
 
   public backgroundAnnotation = computed<SmartSequenceAnnotation | undefined>(() => {
     const domain = this.currentDomainsDatum();

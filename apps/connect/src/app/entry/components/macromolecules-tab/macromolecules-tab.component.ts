@@ -3,7 +3,7 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, OnInit, signal, untracked, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -95,7 +95,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   private protvistaDataFacade = inject(PvDataProcessingFacade);
   public macromolSequence = this.protvistaDataFacade.sequence;
   public loadingStatus = this.protvistaDataFacade.loadingStatus;
-  public macromolIsNucleic = signal(false);
+  public macromolIsNucleic = computed<boolean>(() => this.currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type.includes('nucleotide') ?? false);
 
   public readonly protvistaTooltips = computed(() => this.protvistaDataFacade.tooltips());
   public readonly protvistaData = computed(() => {
@@ -228,7 +228,11 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public inPrefAssemblyForChain = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No chain selected -> true (no warning to display)
 
   public currentSelectionChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
-  public currentSelectionEntityId = computed<string | undefined>(() => String(this.currentMacromoleculeDatum()?.additionalData.molecule.entity_id));
+  public currentSelectionEntityId = computed<string | undefined>(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    return String(macromolecule.additionalData.molecule.entity_id);
+  });
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -520,6 +524,15 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
 
+    // Update Protvista data when entity changes
+    effect(() => {
+      const currentEntityId = this.currentSelectionEntityId();
+      const isNucleic = this.macromolIsNucleic();
+      if (currentEntityId !== undefined) {
+        untracked(() => this.protvistaDataFacade.processNewData(currentEntityId, isNucleic)); // When called without `untracked`, `processNewData` enters an infinite loop
+      }
+    });
+
     effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
     effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
     effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
@@ -791,7 +804,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
     this.renderInMolstar(macromolecule);
-    await this.initOrRefreshProtvista(macromolecule);
+    // await this.initOrRefreshProtvista(macromolecule);
     setTimeout(async () => {
       await this.initOrRefreshTopologyViewer(macromolecule);
       await this.initOrRNATopologyViewer(macromolecule);
@@ -833,17 +846,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
         color: macromolecule.molstarColorHex,
       },
     };
-  }
-
-  private async initOrRefreshProtvista(macromolecule: ProcessedMacromolecule) {
-    // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
-    if (!this.hasProtvista) return;
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.currentSelectionChainId();
-
-    const isNucleic = macromolecule?.additionalData?.molecule?.molecule_type.includes('nucleotide');
-    this.macromolIsNucleic.set(isNucleic);
-    this.protvistaDataFacade.processNewData(`${entityId}`, isNucleic);
   }
 
   private async initOrRefreshTopologyViewer(macromolecule: ProcessedMacromolecule) {
