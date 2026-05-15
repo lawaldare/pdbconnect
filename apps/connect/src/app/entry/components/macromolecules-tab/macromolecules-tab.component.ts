@@ -515,8 +515,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return rows.length > 0;
   });
 
-  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
-
   constructor() {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
@@ -803,7 +801,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
-    this.renderInMolstar(macromolecule);
+    // this.renderInMolstar(macromolecule);
     // await this.initOrRefreshProtvista(macromolecule);
     setTimeout(async () => {
       await this.initOrRefreshTopologyViewer(macromolecule);
@@ -813,15 +811,14 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public selectionData?: QueryParamForHelpers[];
 
-  private renderInMolstar(macromolecule: ProcessedMacromolecule) {
-    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(macromolecule));
-  }
-
-  private getMvsSnapshotSpec(macromolecule: ProcessedMacromolecule): SnapshotSpec | undefined {
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
-    const entityId = `${macromolecule.additionalData.molecule.entity_id}`;
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    const entityId = String(macromolecule.additionalData.molecule.entity_id);
+
     const dropdownSelected = this.dropdown.selectedOption();
     if (!dropdownSelected) return undefined;
     const { molstarSelection, inPrefAssembly } = dropdownSelected.data;
@@ -846,7 +843,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
         color: macromolecule.molstarColorHex,
       },
     };
-  }
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   private async initOrRefreshTopologyViewer(macromolecule: ProcessedMacromolecule) {
     this.topolViewerMutex.run(async () => {
