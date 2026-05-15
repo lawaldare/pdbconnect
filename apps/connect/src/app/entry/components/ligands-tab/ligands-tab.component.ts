@@ -296,7 +296,7 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'lig-0-symop-');
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
   }
 
   async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {

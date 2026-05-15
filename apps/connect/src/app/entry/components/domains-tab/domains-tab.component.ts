@@ -431,7 +431,7 @@ export class DomainsTabComponent {
   }
 
   private updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'domain-0-symop-');
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
   }
 
   private getAuthorNumberingForChain(chainId: string) {

@@ -1,11 +1,10 @@
 import { computed, effect, signal, Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { DownloadOptionWithData } from '@pdbe-lib/dropdown-menu';
 import { BehaviorSubject, filter, Observable, take } from 'rxjs';
 import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
-import { DownloadOptionWithData } from '@pdbe-lib/dropdown-menu';
-import { QueryParamForHelpers } from './molstar-helpers';
 
 export function makeEntityColors(macromolecules: ProcessedMacromolecule[] | undefined, ligands: ProcessedLigandOrMod[] | undefined) {
   const DEFAULT_ENTITY_COLOR = 'gray';
@@ -100,20 +99,14 @@ export class Dropdown<TData> {
   });
 
   public selectedName = computed(() => this._selected());
-
-  // public optionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {}; // TODO: @adam get rid of this
 }
 
-export function updateSymmetryDropdownOptions(
-  symmetryDropdown: Dropdown<{ instanceId: string | undefined }>,
-  symmOperators: string[] | undefined,
-  urlPrefix: string
-) {
+export function updateSymmetryDropdownOptions(symmetryDropdown: Dropdown<{ instanceId: string | undefined }>, symmOperators: string[] | undefined) {
   type SymmetryDropdownOption = (typeof symmetryDropdown)['options'][number];
   const options = (symmOperators ?? []).map(
-    (op, idx): SymmetryDropdownOption => ({
+    (op): SymmetryDropdownOption => ({
       name: op,
-      url: `${urlPrefix}${idx + 1}`, // not sure if this is really necessary
+      url: `symop-${op}`, // not sure if this is really necessary
       downloadable: false,
       data: { instanceId: op !== 'All' ? op : undefined },
     })

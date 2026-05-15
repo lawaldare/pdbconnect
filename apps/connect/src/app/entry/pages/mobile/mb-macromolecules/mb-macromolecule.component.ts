@@ -412,7 +412,7 @@ export class MbMacromoleculeComponent implements OnInit {
   }
 
   private updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'macro-0-symop-');
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
   }
 
   public toggleBottomsheetHeight() {

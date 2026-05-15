@@ -165,7 +165,7 @@ export class MbLigandsComponent implements OnInit {
   }
 
   private updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, 'lig-0-symop-');
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
   }
 
   public toggleBottomsheetHeight() {

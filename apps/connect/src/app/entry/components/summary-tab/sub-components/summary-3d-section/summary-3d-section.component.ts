@@ -549,7 +549,7 @@ export class Summary3DSectionComponent {
   private updateView(tabName: string, resetDropdown: boolean) {
     const listViewItem = this.lastSelection[tabName];
     this.updateDropdownOptions(listViewItem, tabName);
-    this.updateSymmetryDropdownOptions(tabName);
+    this.updateSymmetryDropdownOptions();
     this.viewItem.set({ kind: tabName as any, item: listViewItem });
     this.zoomed.set(true);
   }
@@ -634,23 +634,15 @@ export class Summary3DSectionComponent {
     }
   }
 
-  private updateSymmetryDropdownOptions(selectionType: string) {
-    const prefix =
-      selectionType === 'Macromolecules'
-        ? `macro-${this.dropdown.selectedOption()?.data.authAsymId}-symop-`
-        : selectionType === 'Ligands' || selectionType === 'Modifications'
-          ? 'lig-0-symop-'
-          : selectionType === 'Domains'
-            ? 'domain-0-symop-'
-            : 'symop-';
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, prefix);
+  private updateSymmetryDropdownOptions() {
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
   }
 
   public async onDropdownSelect(event: string) {
-    const tabName = this.openedAccordionName();
-    if (!tabName) return;
+    // const tabName = this.openedAccordionName();
+    // if (!tabName) return;
     this.dropdown.select(event);
-    this.updateSymmetryDropdownOptions(tabName);
+    this.updateSymmetryDropdownOptions();
     this.zoomed.set(true);
   }
 
