@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, signal, untracked, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, ViewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -11,7 +10,7 @@ import { map } from 'rxjs';
 import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import type { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
-import { makeEntityColors, toBehaviorSubject, whenSignalFirstTrue } from '../../../../helpers/misc';
+import { Dropdown, makeEntityColors, toBehaviorSubject, updateSymmetryDropdownOptions, whenSignalFirstTrue } from '../../../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
 import { MVSHandler } from '../../../../helpers/mvs-handler';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
@@ -39,6 +38,12 @@ type ViewItem =
   | { kind: 'Ligands'; item: ProcessedLigandOrMod | undefined }
   | { kind: 'Domains'; item: ProcessedDomain | undefined }
   | { kind: 'Modifications'; item: ProcessedLigandOrMod | undefined };
+
+type DropdownDetail =
+  | { kind: 'Macromolecules'; item: undefined }
+  | { kind: 'Ligands'; item: undefined }
+  | { kind: 'Domains'; item: undefined }
+  | { kind: 'Modifications'; item: ModifiedResidue };
 
 @Component({
   selector: 'pdbc-summary-3d-section',
@@ -70,8 +75,6 @@ export class Summary3DSectionComponent {
   public hasLoadedLigands = computed(() => this.procLigands() !== undefined);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
-
-  private readonly destroyRef = inject(DestroyRef);
 
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
@@ -120,23 +123,16 @@ export class Summary3DSectionComponent {
 
   private readonly viewItem = signal<ViewItem>({ kind: 'Assembly', item: undefined });
 
-  public dropdownSelectedSignal = signal<string>('');
-  public get dropdownSelected() {
-    return untracked(this.dropdownSelectedSignal);
-  }
-  public dropdownOptions = signal<DownloadOption[]>([]);
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+  public dropdown = new Dropdown<{
+    authAsymId: string;
+    molstarSelection: QueryParamForHelpers[];
+    inPrefAssembly: boolean;
+    symmOperators: string[];
+    detail: DropdownDetail;
+  }>();
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
-  public symmetryDropdownSelectedSignal = signal<string | undefined>(undefined);
-  public get symmetryDropdownSelected() {
-    return untracked(this.symmetryDropdownSelectedSignal);
-  }
-  public symmetryDropdownOptions = signal<DownloadOption[]>([]);
-  private selectedInstanceId = computed(() => {
-    const value = this.symmetryDropdownSelectedSignal();
-    if (value && value !== 'All') return value;
-    else return undefined;
-  });
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
 
   public getCleanMoleculeName = getCleanMoleculeName;
 
@@ -520,9 +516,8 @@ export class Summary3DSectionComponent {
     // on click if already selected -> undefined, otherwise select
     if (listItem === this.lastSelection[selectionType]) {
       this.lastSelection[selectionType] = undefined;
-      this.dropdownOptionsToMolstar = {};
-      this.dropdownOptions.set([]);
-      this.symmetryDropdownOptions.set([]);
+      this.dropdown.updateOptions([]);
+      this.symmetryDropdown.updateOptions([]);
     } else {
       this.lastSelection[selectionType] = listItem;
     }
@@ -535,13 +530,13 @@ export class Summary3DSectionComponent {
 
   public async mouseinListItem(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain, selectionType: string) {
     const selectionToHighlight = await this.getSelectionObjForSelectionType(listItem, selectionType);
-    const instance = this._molstarComponent?.getInstance() ?? null;
+    const instance = this._molstarComponent?.getInstance();
     if (!instance || !selectionToHighlight) return;
     await instance.visual.highlight({ data: selectionToHighlight });
   }
 
   public async mouseoutListItem() {
-    const instance = this._molstarComponent?.getInstance() ?? null;
+    const instance = this._molstarComponent?.getInstance();
     if (!instance) return;
     await instance.visual.clearHighlight();
   }
@@ -553,163 +548,114 @@ export class Summary3DSectionComponent {
 
   private updateView(tabName: string, resetDropdown: boolean) {
     const listViewItem = this.lastSelection[tabName];
-    this.updateDropdownOptions(listViewItem, tabName, resetDropdown);
-    this.updateSymmetryDropdownOptions(listViewItem, tabName);
+    this.updateDropdownOptions(listViewItem, tabName);
+    this.updateSymmetryDropdownOptions(tabName);
     this.viewItem.set({ kind: tabName as any, item: listViewItem });
     this.zoomed.set(true);
   }
 
-  private updateSymmetryDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
-    this.symmetryDropdownOptions.set([]);
-    this.symmetryDropdownSelectedSignal.set(undefined);
-    // update for symmetry operations dropdown
+  private updateDropdownOptions(listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined, selectionType: string) {
+    type DropdownOption = Summary3DSectionComponent['dropdown']['options'][number];
+    this.dropdown.updateOptions([]);
     if (!listItem) return;
+
+    if (selectionType === 'Assembly') {
+      this.dropdown.updateOptions([]);
+    }
+
     if (selectionType === 'Macromolecules') {
       const macromolecule = listItem as ProcessedMacromolecule;
-      const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-      const chainId = macromolecule.additionalData.selections[idxOfSelection][0]['auth_asym_id'];
-      const chainSymmOperators = chainId ? macromolecule.chainSymmOperators[chainId] : undefined;
-      if (chainSymmOperators) {
-        this.symmetryDropdownOptions.set(
-          chainSymmOperators.map((op, idx) => {
-            return {
-              name: op,
-              url: `macro-${chainId}-symop-${idx + 1}`,
-              downloadable: false,
-            };
-          })
-        );
-        this.symmetryDropdownSelectedSignal.set(this.symmetryDropdownOptions()[0]?.name);
-      }
+      const options = getMacromoleculeChainDropdownOptions(macromolecule);
+      this.dropdown.updateOptions(
+        Object.keys(options).map((name, idx): DropdownOption => {
+          const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
+          if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+          return {
+            name: name,
+            url: `macro-${idx + 1}`,
+            downloadable: false,
+            data: {
+              authAsymId,
+              molstarSelection: options[name],
+              inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
+              symmOperators: macromolecule.chainSymmOperators[authAsymId] ?? [],
+              detail: { kind: 'Macromolecules', item: undefined },
+            },
+          };
+        })
+      );
     }
+
     if (selectionType === 'Ligands' || selectionType === 'Modifications') {
       const ligand = listItem as ProcessedLigandOrMod;
-      const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-      const ligandSymmOperators = idxOfSelection > -1 ? ligand.symmOpListForEachLigOrMod[idxOfSelection] : undefined;
-
-      if (ligandSymmOperators) {
-        this.symmetryDropdownOptions.set(
-          ligandSymmOperators.map((op, idx) => {
-            return {
-              name: op,
-              url: `domain-0-symop-${idx + 1}`,
-              downloadable: false,
-            };
-          })
-        );
-        this.symmetryDropdownSelectedSignal.set(this.symmetryDropdownOptions()[0]?.name);
-      }
+      const options = getLigandsDropdownOptions(ligand);
+      this.dropdown.updateOptions(
+        Object.keys(options).map((name, idx): DropdownOption => {
+          const molstarSelection = options[name];
+          const authAsymId = molstarSelection[0].auth_asym_id;
+          if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+          return {
+            name: name,
+            url: `lig-${idx + 1}`,
+            downloadable: false,
+            data: {
+              authAsymId,
+              molstarSelection,
+              inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
+              symmOperators: ligand.symmOpListForEachLigOrMod[idx],
+              detail: ligand.type === 'modification' ? { kind: 'Modifications', item: ligand.additionalData.source[idx] } : { kind: 'Ligands', item: undefined },
+            },
+          };
+        })
+      );
     }
+
     if (selectionType === 'Domains') {
       const domain = listItem as ProcessedDomain;
-      const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-      const segmentSymmOperators = idxOfSelection > -1 ? domain.symmOpListForSegments[idxOfSelection] : undefined;
-      if (segmentSymmOperators) {
-        this.symmetryDropdownOptions.set(
-          segmentSymmOperators.map((op: string, idx: number) => {
-            return {
-              name: op,
-              url: `domain-0-symop-${idx + 1}`,
-              downloadable: false,
-            };
-          })
-        );
-        this.symmetryDropdownSelectedSignal.set(this.symmetryDropdownOptions()[0]?.name);
-      }
+      const options = getDomainChainDropdownOptions(domain);
+      this.dropdown.updateOptions(
+        Object.keys(options).map((name, idx): DropdownOption => {
+          const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
+          if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+          return {
+            name: name,
+            url: `domain-${idx + 1}`,
+            downloadable: false,
+            data: {
+              authAsymId,
+              molstarSelection: options[name],
+              inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
+              symmOperators: domain.symmOpListForSegments[idx],
+              detail: { kind: selectionType, item: undefined },
+            },
+          };
+        })
+      );
     }
   }
 
-  private updateDropdownOptions(
-    listItem: ProcessedMacromolecule | ProcessedLigandOrMod | ProcessedDomain | undefined,
-    selectionType: string,
-    resetDropdown: boolean
-  ) {
-    this.dropdownOptionsToMolstar = {};
-    this.dropdownOptions.set([]);
-    if (!listItem) return;
-    if (selectionType === 'Assembly') {
-      this.dropdownOptionsToMolstar = {};
-      this.dropdownOptions.set([]);
-      this.dropdownSelectedSignal.set('');
-    }
-    if (selectionType === 'Macromolecules') {
-      const macromolecule = listItem as ProcessedMacromolecule;
-      this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
-      this.dropdownOptions.set(
-        Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-          return {
-            name: eachString,
-            url: `macro-${idx + 1}`,
-            downloadable: false,
-          };
-        })
-      );
-      const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
-      if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
-    }
-    if (selectionType === 'Ligands') {
-      this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as ProcessedLigandOrMod);
-      this.dropdownOptions.set(
-        Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-          return {
-            name: eachString,
-            url: `lig-${idx + 1}`,
-            downloadable: false,
-          };
-        })
-      );
-      const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
-      if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
-    }
-    if (selectionType === 'Modifications') {
-      this.dropdownOptionsToMolstar = getLigandsDropdownOptions(listItem as ProcessedLigandOrMod);
-      this.dropdownOptions.set(
-        Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-          return {
-            name: eachString,
-            url: `mod-${idx + 1}`,
-            downloadable: false,
-          };
-        })
-      );
-      const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
-      if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
-    }
-    if (selectionType === 'Domains') {
-      const domain = listItem as ProcessedDomain;
-      this.dropdownOptionsToMolstar = getDomainChainDropdownOptions(domain, true);
-      this.dropdownOptions.set(
-        Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-          return {
-            name: eachString,
-            url: `domain-${idx + 1}`,
-            downloadable: false,
-          };
-        })
-      );
-      const subSelectionIdx = resetDropdown ? 0 : this.lastSubSelection[selectionType];
-      if (resetDropdown) this.lastSubSelection[selectionType] = subSelectionIdx;
-      this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
-    }
+  private updateSymmetryDropdownOptions(selectionType: string) {
+    const prefix =
+      selectionType === 'Macromolecules'
+        ? `macro-${this.dropdown.selectedOption()?.data.authAsymId}-symop-`
+        : selectionType === 'Ligands' || selectionType === 'Modifications'
+          ? 'lig-0-symop-'
+          : selectionType === 'Domains'
+            ? 'domain-0-symop-'
+            : 'symop-';
+    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators, prefix);
   }
 
   public async onDropdownSelect(event: string) {
     const tabName = this.openedAccordionName();
     if (!tabName) return;
-    const listViewItem = this.lastSelection[tabName];
-    const subSelectionIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(event);
-    if (subSelectionIdx === -1) return;
-    this.lastSubSelection[tabName] = subSelectionIdx;
-    this.dropdownSelectedSignal.set(Object.keys(this.dropdownOptionsToMolstar)[subSelectionIdx]);
-    this.updateSymmetryDropdownOptions(listViewItem, tabName);
+    this.dropdown.select(event);
+    this.updateSymmetryDropdownOptions(tabName);
     this.zoomed.set(true);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelectedSignal.set(event);
+    this.symmetryDropdown.select(event);
     this.zoomed.set(true);
   }
 
@@ -747,12 +693,11 @@ export class Summary3DSectionComponent {
     const viewItem = this.viewItem();
     if (!viewItem) return undefined;
 
-    const preferredAssemblyId = this.preferredAssemblyId();
-    const dropdownSelected = this.dropdownSelectedSignal();
-    const molstarSelectionIndex = Object.keys(this.dropdownOptionsToMolstar).indexOf(dropdownSelected);
-    const molstarSelection = this.dropdownOptionsToMolstar[dropdownSelected];
-    const isSelectionInPrefAssembly = viewItem.item ? viewItem.item.additionalData.selectionsInPrefAssembly[molstarSelectionIndex] : true;
-    const assemblyId = isSelectionInPrefAssembly ? preferredAssemblyId : undefined; // undefined = deposited model
+    const dropdownSelected = this.dropdown.selectedOption();
+    const molstarSelection = dropdownSelected?.data.molstarSelection;
+    const inPrefAssembly = dropdownSelected?.data.inPrefAssembly ?? true;
+    const detail = dropdownSelected?.data.detail;
+    const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined; // undefined = deposited model
     const entityColors = this.entityColors();
 
     switch (viewItem.kind) {
@@ -772,6 +717,7 @@ export class Summary3DSectionComponent {
         } else {
           const entityData = viewItem.item.additionalData;
           const entityId = String(entityData.molecule.entity_id);
+          if (!molstarSelection) return undefined;
           const labelAsymId = molstarSelection[0].label_asym_id;
           const authAsymId = molstarSelection[0].auth_asym_id;
           const instanceId = this.selectedInstanceId();
@@ -784,7 +730,7 @@ export class Summary3DSectionComponent {
         }
       case 'Ligands':
         if (!viewItem.item) {
-          const ligandEntityIds = this.processedLigands().map((ligand) => (ligand.additionalData.source as Molecule).entity_id.toString());
+          const ligandEntityIds = this.processedLigands().map((ligand) => String(ligand.additionalData.source.entity_id));
           return {
             name: 'All ligands',
             kind: 'pdbconnect_all_ligands',
@@ -794,6 +740,7 @@ export class Summary3DSectionComponent {
           const ligandData = viewItem.item.additionalData;
           const moleculeData = ligandData.source as Molecule;
           const entityId = String(moleculeData.entity_id);
+          if (!molstarSelection) return undefined;
           const labelAsymId = molstarSelection[0].label_asym_id;
           if (!labelAsymId) throw new Error('label_asym_id for ligand instance not set');
           const instanceId = this.selectedInstanceId();
@@ -854,11 +801,10 @@ export class Summary3DSectionComponent {
           },
         };
         if (viewItem.item) {
-          const modresData = viewItem.item.additionalData;
-          const labelCompId = viewItem.item.id;
-          const modres = (modresData.source as ModifiedResidue[])[molstarSelectionIndex];
+          if (detail?.kind !== 'Modifications') return undefined;
+          const modres = detail.item;
           const instanceId = this.selectedInstanceId();
-          spec.name = `Selected modification ${labelCompId}`;
+          spec.name = `Selected modification ${viewItem.item.id}`;
           spec.params.selected = [
             {
               label_asym_id: modres.struct_asym_id,

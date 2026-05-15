@@ -7,12 +7,12 @@
   <section class="molstar-details-container">
     <!-- molstar control bar: selection dropdown and zoom controls -->
     <div class="molstar-control-bar">
-      @if (dropdownOptions().length > 0 || symmetryDropdownOptions().length > 0) {
+      @if (dropdown.options.length > 0 || symmetryDropdown.options.length > 0) {
       <div>
         <div class="selector">
           <span class="molstar-control-txt">Select:</span>
           <span class="molstar-control-txt-info">
-            @if (dropdownOptions().length > 0) {
+            @if (dropdown.options.length > 0) {
             <pdbc-entry-dropdown
               [searchable]="false"
               [searchTitle]="''"
@@ -20,12 +20,12 @@
               [islink]="false"
               [isdark]="true"
               [issmall]="true"
-              [options]="dropdownOptions()"
-              [title]="dropdownSelected"
+              [options]="dropdown.options"
+              [title]="dropdown.selectedName() ?? ''"
               (optionClickedEvent)="onDropdownSelect($event)"
             >
             </pdbc-entry-dropdown>
-            } @if (symmetryDropdownSelected && symmetryDropdownOptions().length > 0) {
+            } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 0) {
             <pdbc-entry-dropdown
               [searchable]="false"
               [searchTitle]="''"
@@ -33,8 +33,8 @@
               [islink]="false"
               [isdark]="true"
               [issmall]="true"
-              [options]="symmetryDropdownOptions()"
-              [title]="symmetryDropdownSelected"
+              [options]="symmetryDropdown.options"
+              [title]="symmetryDropdown.selectedName() ?? ''"
               (optionClickedEvent)="onSymmetryDropdownSelect($event)"
             ></pdbc-entry-dropdown>
             }
