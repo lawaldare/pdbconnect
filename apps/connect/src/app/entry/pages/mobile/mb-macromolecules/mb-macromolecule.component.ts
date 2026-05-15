@@ -77,7 +77,7 @@ export class MbMacromoleculeComponent implements OnInit {
   });
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
-  private inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No macromolecule selected -> true (no warning to display)
+  private inPrefAssemblyForChain = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No macromolecule selected -> true (no warning to display)
 
   @ViewChild('macroMoleculeTitle') macroMoleculeTitle!: ElementRef;
 
@@ -320,7 +320,7 @@ export class MbMacromoleculeComponent implements OnInit {
     effect(() => this.compCommunication.mvsSnapshotSpec$.next(this.mvsSnapshotSpec()));
 
     // Update global mobileIsPrefAssembly (for warning display)
-    effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForInstance()));
+    effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForChain()));
   }
 
   ngOnInit(): void {
@@ -401,7 +401,7 @@ export class MbMacromoleculeComponent implements OnInit {
             data: {
               molstarSelection: options[name],
               inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-              symmOperators: authAsymId !== undefined ? macromolecule.chainSymmOperators[authAsymId] : [],
+              symmOperators: authAsymId !== undefined ? macromolecule.chainSymmOperators[authAsymId] ?? [] : [],
             },
           };
         })

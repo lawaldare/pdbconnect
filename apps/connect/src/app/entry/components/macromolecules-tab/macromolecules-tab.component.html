@@ -188,19 +188,19 @@
       <div id="interactive-sequence-viewer-tour">
         <div class="chains">
           <div class="dropdown-container">
-            @if(dropdownOptions.length > 1){
+            @if(dropdown.options.length > 1){
             <pdbc-entry-dropdown
               [searchable]="false"
               [searchTitle]="''"
               [downloadable]="false"
               [islink]="false"
-              [options]="dropdownOptions"
-              [title]="dropdownSelected"
+              [options]="dropdown.options"
+              [title]="dropdown.selectedName() ?? ''"
               (optionClickedEvent)="onDropdownSelect($event)"
             ></pdbc-entry-dropdown>
-            } @else if (dropdownOptions.length === 1) {
-            <span>{{ getCleanSelectionName(dropdownOptions) }}</span>
-            } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+            } @else if (dropdown.options.length === 1) {
+            <span>{{ getCleanSelectionName(dropdown.options) }}</span>
+            } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
             <span class="symm-op-txt">
               Symmetry Op.
               <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
@@ -210,23 +210,23 @@
               [searchTitle]="''"
               [downloadable]="false"
               [islink]="false"
-              [options]="symmetryDropdownOptions"
-              [title]="symmetryDropdownSelected"
+              [options]="symmetryDropdown.options"
+              [title]="symmetryDropdown.selectedName() ?? ''"
               (optionClickedEvent)="onSymmetryDropdownSelect($event)"
             ></pdbc-entry-dropdown>
-            } @else if (symmetryDropdownOptions.length === 1) {
+            } @else if (symmetryDropdown.options.length === 1) {
             <span class="symm-op-txt">
               Symmetry Op.
               <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
-              <span> {{ symmetryDropdownOptions[0].name }}</span>
+              <span> {{ symmetryDropdown.options[0].name }}</span>
             </span>
             }
           </div>
-          @if (dropdownSelected && inPrefAssemblyForChain() === false) { @let chainName = dropdownSelected!.split(' <')![0];
+          @if (dropdown.selectedOption() && !inPrefAssemblyForChain()) {
           <section class="info-banner">
             <p>
               <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
-              {{ chainName }} is <b>not</b> included in the
+              Chain {{ dropdown.selectedOption()?.data?.authAsymId }} is <b>not</b> included in the
               <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
                 >preferred assembly/complex</a
               >, which represents the most probable biological form identified by the PDBe team for this entry.<br />

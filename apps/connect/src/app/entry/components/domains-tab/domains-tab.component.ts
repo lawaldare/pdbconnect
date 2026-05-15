@@ -230,7 +230,7 @@ export class DomainsTabComponent {
 
   public inPrefAssembly = computed(() => {
     const domain = this.currentDomainsDatum();
-    if (!domain) return true;
+    if (!domain) return true; // No domain selected -> true (no warning to display)
     return domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly);
   });
 
