@@ -1,8 +1,9 @@
+/* eslint-disable @angular-eslint/prefer-inject */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, Output, EventEmitter, HostListener, inject, computed, effect, signal } from '@angular/core';
+import { Component, Output, EventEmitter, HostListener, inject, computed, effect, signal, PLATFORM_ID, Inject } from '@angular/core';
 import { L, loadMarkerCluster } from './leaflet-markercluster';
 
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { markersColors } from '../corporate-page.constant';
@@ -47,11 +48,13 @@ export class PartnersMapComponent {
   public country_count = 0;
   public country_data = null;
   public marker_group_dict: any[] = [];
+  private isBrowser: boolean;
 
-  constructor() {
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
     effect(() => {
       const partners = this.partnersData();
-      if (!this.mapInitialized() && partners.length) {
+      if (this.isBrowser && !this.mapInitialized() && partners.length) {
         this.mapInitialized.set(true);
         this.createMap();
       }
@@ -116,7 +119,7 @@ export class PartnersMapComponent {
    */
   @HostListener('window:resize')
   mapResize() {
-    if (this.map) {
+    if (this.isBrowser && this.map) {
       if (window.innerWidth < 900) {
         this.map.scrollWheelZoom.disable();
       } else {
@@ -129,6 +132,7 @@ export class PartnersMapComponent {
    * Main function to create map from JSON
    */
   async createMap() {
+    if (!this.isBrowser) return; // 🛑 Stop server here
     await loadMarkerCluster();
     const unique_countries = this.partnersData()
       .map((ec: any) => ec.country)

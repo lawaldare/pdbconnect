@@ -1,0 +1,240 @@
+@if(tabDataLoaded()){ @if(domainTableRows().length){
+<main [class.change-display]="!isSidebarDisplayed()">
+  @if(isSidebarDisplayed()){
+  <pdbc-interactive-tables tabName="Domains" id="domains-list-tour" />
+  } @if (currentDomainsDatum()) {
+  <div class="tab-content">
+    <div id="domains-detail-tour">
+      @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Domains';
+      <button class="vf-button-ghost" (click)="toggleSidebar()">
+        <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+        <span>{{text}}</span>
+      </button>
+
+      @let accessionId = currentDomainsDatum()!.resource === 'SCOP' ? '' : currentDomainsDatum()!.additionalData.accession;
+      <h5 class="domain-title">
+        <strong>{{currentDomainsDatum()!.accessionName}}</strong> (<strong>{{currentDomainsDatum()!.resource}}</strong>
+        <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>)
+      </h5>
+      @if (inPrefAssembly() === false) {
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          One or more of this domain's segments has a chain <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.
+        </p>
+      </section>
+      }
+      <section class="domain-info">
+        <div class="domain-info-grouped">
+          <div class="info-row">
+            <span>
+              Description
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.description" />
+            </span>
+            <article>{{currentDomainsDatum()!.accessionName}}</article>
+          </div>
+          <div class="info-row">
+            <span>
+              Source and domain accession
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.sourceDomainAccession" />
+            </span>
+            <article>
+              {{currentDomainsDatum()!.resource}}
+              <a [href]="resourceUrls[currentDomainsDatum()!.resource] + accessionId" target="_blank">{{ currentDomainsDatum()!.additionalData.accession }}</a>
+            </article>
+          </div>
+          <div class="info-row">
+            <span> Molecule name </span>
+            <article>{{currentDomainsDatum()!.moleculeNames[0]}}</article>
+          </div>
+        </div>
+        <div class="domain-info-grouped">
+          <div class="info-row">
+            <span>
+              Domain name
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.domainName" />
+            </span>
+            <article>{{currentDomainsDatum()!.domain}}</article>
+          </div>
+
+          <div class="info-row">
+            <span>
+              Author segments
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.authorSegments" />
+            </span>
+            <article>
+              Chain @for(chain of currentDomainsDatum()!.segments; track chain; let islast = $last) {
+              <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+            </article>
+          </div>
+          <div class="info-row">
+            <span>
+              Segments
+              <lib-help-icon-with-tooltip [tooltipText]="entryDomainsTooltips.segments" />
+            </span>
+            <article>
+              Chain @for(chain of currentDomainsDatum()!.additionalData.segmentsResidNumbers; track chain; let islast = $last) {
+              <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- chains information display before interactive data vis -->
+    <div id="domains-sequence-viewer-tour">
+      <div class="chains">
+        <!-- if multiple chains for this domain, show dropdown to select -->
+        @if(dropdownOptions.length > 1){
+        <span class="dropdown-container">
+          <pdbc-entry-dropdown
+            [searchable]="false"
+            [searchTitle]="''"
+            [downloadable]="false"
+            [islink]="false"
+            [options]="dropdownOptions"
+            [title]="dropdownSelected"
+            (optionClickedEvent)="onDropdownSelect($event)"
+          >
+          </pdbc-entry-dropdown>
+        </span>
+        }@else if(dropdownOptions.length === 1){
+        <!-- if single chain just show text -->
+        <span>{{getCleanSelectionName(dropdownOptions)}}</span>
+        } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+        </span>
+        <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
+          [downloadable]="false"
+          [islink]="false"
+          [options]="symmetryDropdownOptions"
+          [title]="symmetryDropdownSelected"
+          (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+        ></pdbc-entry-dropdown>
+        } @else if (symmetryDropdownOptions.length === 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+          <span> {{ symmetryDropdownOptions[0].name }}</span>
+        </span>
+        }
+      </div>
+      @if (dropdownSelected && inPrefAssemblyForChain() === false) { @let chainName = dropdownSelected!.split(' <')![0];
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+          {{ chainName }} is <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+          As a result, the 3D viewer below is now displaying the full entry model file.
+        </p>
+      </section>
+      } @if (sequenceDetails().length > 0 && currentSelectionEntityId() && backgroundAnnotation() && nonObserved() !== undefined) {
+      <div class="sequence-container">
+        @for (sequenceDetail of sequenceDetails(); track sequenceDetail; let i = $index;) {
+        <div class="title">
+          <span class="text">{{ sequenceDetail.title }}</span>
+          <button (click)="copySequence(sequenceDetail)">Copy sequence</button>
+        </div>
+        <lib-smart-seq-viewer
+          [containerId]="'smart-seq-viewer-domains'+(i+1)"
+          class="sequence"
+          [sequence]="sequenceDetail.sequenceForViewer"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
+          [backgroundDataInput]="backgroundAnnotation()"
+          [altSequences]="altSequences()"
+          [nonObserved]="nonObserved()!"
+          [indexWithMultipleResidues]="sequenceDetail.indexWithMultipleResidues"
+        ></lib-smart-seq-viewer>
+        }
+      </div>
+      }
+    </div>
+
+    @if (slowNetwork() === undefined) {
+    <div [style.width]="'100%'">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+    </div>
+    } @else if (fastNetworkOrForceLoad()) {
+    <section class="domain-charts" [class.collapsed]="!isSidebarDisplayed()">
+      <section class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
+        @if(entryId() && currentSelectionEntityId() && protvistaDomainSelection()) {
+        <!-- <pdbc-entry-pg-protvista
+          tabName="domains"
+          [entryId]="entryId()!"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
+          [externalInteractivity]="true"
+          [fixedSelectionInput]="protvistaDomainSelection()!"
+        ></pdbc-entry-pg-protvista> -->
+        @if (macromolSequence() && currentSelectionChainId() && currentDomainsFeature() && loadingStatus() === 'any-tracks-loaded') {
+        <lib-pv-angular-wrapper
+          containerId="domains-pv"
+          [sequence]="macromolSequence()!"
+          [data]="protvistaData()!"
+          [entryId]="entryId()!"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="currentSelectionChainId()!"
+          [tooltips]="protvistaTooltips()"
+          [externalEvents]="true"
+          customTrackControls="sticky"
+          (addCustomTrackEvent)="openedAddCustomTrack()"
+        ></lib-pv-angular-wrapper>
+        <!-- customTrackControls="scroll-1" -->
+        } }
+      </section>
+      <section class="molstar-details-container" [class.collapsed]="!isSidebarDisplayed()">
+        @if (!configForMolstar() || checkedWebGl() === undefined) {
+        <div [style.width]="'100%'">
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+        </div>
+        } @else if (configForMolstar() && isWebGlEnabled() ) {
+        <div class="molstar-container">
+          <div #popoutWrapper>
+            <lib-pdbe-molstar #molstarComponent [id]="'domains-molstar'" [molstarConfig]="configForMolstar()" [seqOnExpanded]="true"></lib-pdbe-molstar>
+          </div>
+        </div>
+        } @else if (!isWebGlEnabled()) {
+        <div class="molstar-not-loaded">
+          <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+          <div>
+            <h4 class="heading-4">3D viewer not supported in this browser</h4>
+            <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+            <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+              Learn how to enable WebGL
+              <i class="icon icon-link icon-common"></i>
+            </a>
+          </div>
+        </div>
+        }
+      </section>
+    </section>
+    } @else if (!fastNetworkOrForceLoad()) {
+    <div class="molstar-not-loaded outside">
+      <img alt="Visualisations paused" src="assets/img/paused_3d.webp" />
+      <div>
+        <h4 class="heading-4">All viewers paused due to slow connection</h4>
+        <p>This page includes multiple viewers (annotations, 3D structure).</p>
+        <p>Loading may take longer than usual.</p>
+      </div>
+      <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load viewers anyway</button>
+    </div>
+    }
+    <!-- <button class="vf-button vf-button--secondary-pdbe" (click)="popupMolstar()">Popup the molstar</button> -->
+  </div>
+  }
+</main>
+
+}@else{
+<h5>No Domains data available</h5>
+} }@else{
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

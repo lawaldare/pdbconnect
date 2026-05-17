@@ -1,8 +1,15 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { appRoutes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideBrowserGlobalErrorListeners(), provideHttpClient(), provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(appRoutes)],
+  providers: [
+    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
+    provideBrowserGlobalErrorListeners(),
+    provideHttpClient(),
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideClientHydration(withEventReplay()),
+  ],
 };

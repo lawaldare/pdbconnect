@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @angular-eslint/prefer-inject */
-import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { isPlatformBrowser } from '@angular/common';
 
-declare const Highcharts: any;
+// declare const Highcharts: any;
+
+import * as Highcharts from 'highcharts';
 
 @Component({
   selector: 'pdbc-partners-plots',
@@ -16,6 +19,7 @@ declare const Highcharts: any;
 export class PartnersPlotsComponent implements OnInit {
   private readonly cpApiService = inject(CorporatePagesApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private platformId = inject(PLATFORM_ID);
 
   resource_protein_count: any = null;
   category_protein_count: any = null;
@@ -37,7 +41,9 @@ export class PartnersPlotsComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.getDataAndPlot();
+    if (isPlatformBrowser(this.platformId)) {
+      this.getDataAndPlot();
+    }
   }
 
   private getDataAndPlot() {
@@ -127,6 +133,9 @@ export class PartnersPlotsComponent implements OnInit {
   }
 
   generatePlots() {
+    if (!isPlatformBrowser(this.platformId) || typeof Highcharts === 'undefined') {
+      return;
+    }
     //TODO:
     // add protein and resource type plots
     const today = new Date();
@@ -147,7 +156,7 @@ export class PartnersPlotsComponent implements OnInit {
       return obj;
     }, {});
     all_series_chart_1 = Object.values(all_series_chart_1);
-    Highcharts.chart('chart-1-plot', {
+    (Highcharts as any).chart('chart-1-plot', {
       chart: {
         type: 'column',
       },
@@ -181,7 +190,7 @@ export class PartnersPlotsComponent implements OnInit {
         y: 80,
         floating: true,
         borderWidth: 1,
-        backgroundColor: Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
+        backgroundColor: (Highcharts as any).defaultOptions.legend.backgroundColor || '#FFFFFF',
         shadow: true,
         itemStyle: {
           fontSize: '12px',
@@ -268,7 +277,7 @@ export class PartnersPlotsComponent implements OnInit {
       // ]
     });
     const all_series_chart_2 = Object.values(this.category_protein_count);
-    Highcharts.chart('chart-2-plot', {
+    (Highcharts as any).chart('chart-2-plot', {
       chart: {
         type: 'column',
       },
@@ -309,7 +318,7 @@ export class PartnersPlotsComponent implements OnInit {
         y: 80,
         floating: true,
         borderWidth: 1,
-        backgroundColor: Highcharts.defaultOptions.legend.backgroundColor || '#FFFFFF',
+        backgroundColor: (Highcharts as any).defaultOptions.legend.backgroundColor || '#FFFFFF',
         shadow: true,
       },
       responsive: {
