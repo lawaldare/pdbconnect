@@ -15,10 +15,6 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-// app.get(['/__complexes-health', '/pdbe/pdbe-kb/complexes/__complexes-health'], (_req, res) => {
-//   res.type('text/plain').send('complexes ssr\n');
-// });
-
 /**
  * Serve static files from /browser
  */
