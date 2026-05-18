@@ -18,8 +18,8 @@ import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, fil
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { CitationDetail } from '../../data-models/publication.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
-import { Dropdown, DropdownOptionWithData, groupBy, makeSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
-import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { Dropdown, groupBy, whenSignalFirstTrue } from '../../helpers/misc';
+import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import {
@@ -30,10 +30,12 @@ import {
   removeDuplicatesByKey,
 } from '../../helpers/procesing-for-smart-seq-viewer';
 import {
+  CommonDropdownOptionData,
   getCleanMoleculeName,
   getCleanSelectionName,
-  getMacromoleculeChainDropdownOptions,
   getMacromoleculeSequenceDetails,
+  makeMacromoleculeChainDropdownOptions,
+  makeSymmetryDropdownOptions,
 } from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -47,13 +49,6 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
 import { colDefs, gridOptions } from './ag-grid';
-
-interface DropdownOptionData {
-  authAsymId: string;
-  molstarSelection: QueryParamForHelpers[];
-  inPrefAssembly: boolean;
-  symmOperators: string[];
-}
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -81,16 +76,13 @@ export class LLMTabComponent implements OnInit {
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
 
-  public dropdown = new Dropdown<DropdownOptionData>({
-    autoOptions: () => this.makeDropdownOptions(this.currentMacromoleculeDatum()),
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeMacromoleculeChainDropdownOptions(this.currentMacromoleculeDatum()),
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
     autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
   });
-
-  // public dropdown = new Dropdown<{ authAsymId: string; molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
-  // public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
 
@@ -397,40 +389,10 @@ export class LLMTabComponent implements OnInit {
   public selectionTypeText?: string;
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
-    this.updateDropdownOptions(macromolecule);
-    this.updateSymmetryDropdownOptions();
     this.resetAnnotationListByCurrentChain(true);
 
     await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
-  }
-
-  private updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
-    // this.dropdown.updateOptions(this.makeDropdownOptions(macromolecule));
-  }
-
-  private makeDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
-    if (!macromolecule) return [];
-    const options = getMacromoleculeChainDropdownOptions(macromolecule);
-    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-      const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
-      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-      return {
-        name: name,
-        url: `macro-${idx + 1}`,
-        downloadable: false,
-        data: {
-          authAsymId: authAsymId,
-          molstarSelection: options[name],
-          inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-          symmOperators: macromolecule.chainSymmOperators[authAsymId] ?? [],
-        },
-      };
-    });
-  }
-
-  private updateSymmetryDropdownOptions() {
-    // updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
   }
 
   private async updateBackgroundAnnotation() {
@@ -478,7 +440,6 @@ export class LLMTabComponent implements OnInit {
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-    this.updateSymmetryDropdownOptions();
 
     const chainId = this.dropdown.selectedOption()?.data.authAsymId;
     if (chainId !== undefined) {

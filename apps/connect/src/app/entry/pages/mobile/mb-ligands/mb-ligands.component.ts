@@ -8,10 +8,10 @@ import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
-import { Dropdown, DropdownOptionWithData, makeEntityColors, makeSymmetryDropdownOptions } from '../../../helpers/misc';
+import { Dropdown, makeEntityColors } from '../../../helpers/misc';
 import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
-import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
+import { CommonDropdownOptionData, makeLigandsDropdownOptions, makeSymmetryDropdownOptions } from '../../../helpers/processed-data-to-controls';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { ProcessedLigandOrMod } from '../../../store/data-processing/ligand-processing';
@@ -19,13 +19,6 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntryActions } from '../../../store/entry.actions';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MobileStateService } from '../mobile-state.service';
-
-interface DropdownOptionData {
-  authAsymId: string;
-  molstarSelection: QueryParamForHelpers[];
-  inPrefAssembly: boolean;
-  symmOperators: string[];
-}
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -64,9 +57,8 @@ export class MbLigandsComponent implements OnInit {
     return undefined;
   });
 
-  // TODO: @adam Refactor the dropdowns
-  public dropdown = new Dropdown<DropdownOptionData>({
-    autoOptions: () => this.makeDropdownOptions(this.selectedLigand()),
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeLigandsDropdownOptions(this.selectedLigand()),
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
@@ -149,27 +141,6 @@ export class MbLigandsComponent implements OnInit {
 
   public mapSynonyms(synonyms: any[]): string {
     return synonyms.map((synonym) => synonym.value).join(', ');
-  }
-
-  private makeDropdownOptions(ligand: ProcessedLigandOrMod | undefined) {
-    if (!ligand) return [];
-    const options = getLigandsDropdownOptions(ligand);
-    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-      const molstarSelection = options[name];
-      const authAsymId = molstarSelection[0].auth_asym_id;
-      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-      return {
-        name: name,
-        url: `lig-${idx + 1}`,
-        downloadable: false,
-        data: {
-          authAsymId,
-          molstarSelection,
-          inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
-          symmOperators: ligand.symmOpListForEachLigOrMod[idx],
-        },
-      };
-    });
   }
 
   public toggleBottomsheetHeight() {

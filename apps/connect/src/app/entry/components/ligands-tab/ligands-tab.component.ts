@@ -29,11 +29,11 @@ import { Interaction, InteractionFromAPI } from '../../data-models/interaction.m
 import { Molecule } from '../../data-models/molecule.model';
 import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
 import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
-import { Dropdown, DropdownOptionWithData, makeEntityColors, makeSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
-import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
+import { CommonDropdownOptionData, getCleanSelectionName, makeLigandsDropdownOptions, makeSymmetryDropdownOptions } from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryApiService } from '../../services/entry-api.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -45,13 +45,6 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { colDefs, gridOptions } from './ag-grid';
 import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
-
-interface DropdownOptionData {
-  authAsymId: string;
-  molstarSelection: QueryParamForHelpers[];
-  inPrefAssembly: boolean;
-  symmOperators: string[];
-}
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -81,12 +74,8 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public readonly symmOperatorTooltip = symmOperatorTooltip;
 
-  // TODO: @adam refactor other tabs like this, factor out `makeDropdownOptions`
-
-  // TODO: continue here
-
-  public dropdown = new Dropdown<DropdownOptionData>({
-    autoOptions: () => this.makeDropdownOptions(this.currentLigandDatum()),
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeLigandsDropdownOptions(this.currentLigandDatum()),
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
@@ -285,27 +274,6 @@ export class LigandsTabComponent implements AfterViewInit {
     //   // refresh data to ligand env viewer
     //   await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
     // }
-  }
-
-  makeDropdownOptions(ligand: ProcessedLigandOrMod | undefined) {
-    if (!ligand) return [];
-    const options = getLigandsDropdownOptions(ligand);
-    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-      const molstarSelection = options[name];
-      const authAsymId = molstarSelection[0].auth_asym_id;
-      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-      return {
-        name: name,
-        url: `lig-${idx + 1}`,
-        downloadable: false,
-        data: {
-          authAsymId,
-          molstarSelection,
-          inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
-          symmOperators: ligand.symmOpListForEachLigOrMod[idx],
-        },
-      };
-    });
   }
 
   async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {

@@ -16,12 +16,18 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
-import { Dropdown, DropdownOptionWithData, makeSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
-import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
+import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { createAuthAlternateNumbering, generateSeqViewerDomainAnnotation, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
-import { getCleanSelectionName, getDomainChainDropdownOptions, getDomainSequenceDetail } from '../../helpers/processed-data-to-controls';
+import {
+  CommonDropdownOptionData,
+  getCleanSelectionName,
+  getDomainSequenceDetail,
+  makeDomainChainDropdownOptions,
+  makeSymmetryDropdownOptions,
+} from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { VisualisationInteractivityService } from '../../services/vis-interactivity-service';
@@ -33,13 +39,6 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { PvDataProcessingFacade } from '../shared/entry-pv-nightingale/pv-entry-api.facade';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-
-interface DropdownOptionData {
-  authAsymId: string;
-  molstarSelection: QueryParamForHelpers[];
-  inPrefAssembly: boolean;
-  symmOperators: string[];
-}
 
 @Component({
   selector: 'pdbc-domains-tab',
@@ -230,16 +229,13 @@ export class DomainsTabComponent {
   public readonly tabDataLoaded = computed(() => this.processedDomains() !== undefined);
   public selectedChains?: string;
 
-  public dropdown = new Dropdown<DropdownOptionData>({
-    autoOptions: () => this.makeDropdownOptions(this.currentDomainsDatum()),
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeDomainChainDropdownOptions(this.currentDomainsDatum()),
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
     autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
   });
-
-  // public dropdown = new Dropdown<{ authAsymId: string; molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
-  // public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
 
@@ -417,26 +413,6 @@ export class DomainsTabComponent {
   async triggerDomainUpdateSideEffects(domain: ProcessedDomain) {
     // reset alt sequences
     this.altSequences.set([]);
-  }
-
-  private makeDropdownOptions(domain: ProcessedDomain | undefined) {
-    if (!domain) return [];
-    const options = getDomainChainDropdownOptions(domain);
-    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-      const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
-      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-      return {
-        name: name,
-        url: `domain-${idx + 1}`,
-        downloadable: false,
-        data: {
-          authAsymId,
-          molstarSelection: options[name],
-          inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
-          symmOperators: domain.symmOpListForSegments[idx],
-        },
-      };
-    });
   }
 
   private getAuthorNumberingForChain(chainId: string) {

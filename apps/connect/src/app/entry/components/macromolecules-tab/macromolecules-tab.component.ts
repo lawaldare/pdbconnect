@@ -18,16 +18,18 @@ import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValue
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
-import { Dropdown, DropdownOptionWithData, makeSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import {
+  CommonDropdownOptionData,
   getCleanMoleculeName,
   getCleanSelectionName,
-  getMacromoleculeChainDropdownOptions,
   getMacromoleculeSequenceDetails,
+  makeMacromoleculeChainDropdownOptions,
+  makeSymmetryDropdownOptions,
 } from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -48,13 +50,6 @@ import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
 declare let PdbRnaViewerPlugin: any;
-
-interface DropdownOptionData {
-  authAsymId: string;
-  molstarSelection: QueryParamForHelpers[];
-  inPrefAssembly: boolean;
-  symmOperators: string[];
-}
 
 @Component({
   selector: 'pdbc-macromolecules-tab',
@@ -222,8 +217,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly entryMacromoleculeTooltips = entryMacromoleculeTooltips;
   public readonly symmOperatorTooltip = symmOperatorTooltip;
 
-  public dropdown = new Dropdown<DropdownOptionData>({
-    autoOptions: () => this.makeDropdownOptions(this.currentMacromoleculeDatum()),
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeMacromoleculeChainDropdownOptions(this.currentMacromoleculeDatum()),
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
@@ -641,26 +636,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
     // updates smart sequence viewer annotations
     await this.updateBackgroundAnnotation();
-  }
-
-  private makeDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
-    if (!macromolecule) return [];
-    const options = getMacromoleculeChainDropdownOptions(macromolecule);
-    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-      const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
-      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-      return {
-        name: name,
-        url: `macro-${idx + 1}`,
-        downloadable: false,
-        data: {
-          authAsymId,
-          molstarSelection: options[name],
-          inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-          symmOperators: macromolecule.chainSymmOperators[authAsymId] ?? [],
-        },
-      };
-    });
   }
 
   private async updateSequenceDetailsFromChainId(macromolecule: ProcessedMacromolecule, chainId: string) {

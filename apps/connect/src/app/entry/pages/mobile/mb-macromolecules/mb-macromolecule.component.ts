@@ -8,10 +8,14 @@ import { distinctUntilChanged, filter } from 'rxjs';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
 import { baseUrl } from '../../../entry-constant';
-import { Dropdown, DropdownOptionWithData, makeEntityColors, makeSymmetryDropdownOptions } from '../../../helpers/misc';
-import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
+import { Dropdown, makeEntityColors } from '../../../helpers/misc';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
-import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
+import {
+  CommonDropdownOptionData,
+  getMacromoleculeSequenceDetails,
+  makeMacromoleculeChainDropdownOptions,
+  makeSymmetryDropdownOptions,
+} from '../../../helpers/processed-data-to-controls';
 import { truncateText } from '../../../helpers/truncate-text';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
@@ -27,13 +31,6 @@ interface GoMapped {
   names: string[];
   count: number;
   category: string;
-}
-
-interface DropdownOptionData {
-  authAsymId: string;
-  molstarSelection: QueryParamForHelpers[];
-  inPrefAssembly: boolean;
-  symmOperators: string[];
 }
 
 @Component({
@@ -78,8 +75,8 @@ export class MbMacromoleculeComponent implements OnInit {
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
 
-  public dropdown = new Dropdown<DropdownOptionData>({
-    autoOptions: () => this.makeDropdownOptions(this.selectedMacromolecule()),
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeMacromoleculeChainDropdownOptions(this.selectedMacromolecule()),
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
@@ -394,26 +391,6 @@ export class MbMacromoleculeComponent implements OnInit {
 
   private async setCurrentMacromolecule(macromolecule: ProcessedMacromolecule | undefined): Promise<void> {
     this.selectedMacromolecule.set(macromolecule);
-  }
-
-  private makeDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
-    if (!macromolecule) return [];
-    const options = getMacromoleculeChainDropdownOptions(macromolecule);
-    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-      const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
-      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-      return {
-        name: name,
-        url: `macro-${idx + 1}`,
-        downloadable: false,
-        data: {
-          authAsymId,
-          molstarSelection: options[name],
-          inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-          symmOperators: authAsymId !== undefined ? macromolecule.chainSymmOperators[authAsymId] ?? [] : [],
-        },
-      };
-    });
   }
 
   public toggleBottomsheetHeight() {

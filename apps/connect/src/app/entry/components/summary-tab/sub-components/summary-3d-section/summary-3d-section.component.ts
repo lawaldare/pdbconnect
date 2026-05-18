@@ -7,21 +7,22 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { map } from 'rxjs';
-import { ModifiedResidue } from '../../../../data-models/modified-residues.model';
 import type { Molecule } from '../../../../data-models/molecule.model';
 import { assemblyCompositionTooltip, assemblyNameTooltip, baseUrl, complexIdTooltip, preferredAssemblyTooltip } from '../../../../entry-constant';
-import { Dropdown, DropdownOptionWithData, makeEntityColors, makeSymmetryDropdownOptions, toBehaviorSubject, whenSignalFirstTrue } from '../../../../helpers/misc';
+import { Dropdown, makeEntityColors, toBehaviorSubject, whenSignalFirstTrue } from '../../../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../../../helpers/molstar-helpers';
 import { MVSHandler } from '../../../../helpers/mvs-handler';
 import type { SnapshotSpec } from '../../../../helpers/mvs-views/mvs-snapshot-types';
 import {
+  CommonDropdownOptionData,
   getCleanMoleculeName,
-  getDomainChainDropdownOptions,
-  getLigandsDropdownOptions,
-  getMacromoleculeChainDropdownOptions,
+  makeDomainChainDropdownOptions,
+  makeLigandsDropdownOptions,
+  makeMacromoleculeChainDropdownOptions,
+  makeSymmetryDropdownOptions,
 } from '../../../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../../../services/component-comm.service';
-import { ProcessedLigandOrMod } from '../../../../store/data-processing/ligand-processing';
+import { ProcessedLigand, ProcessedLigandOrMod, ProcessedModification } from '../../../../store/data-processing/ligand-processing';
 import { ProcessedDomain, ProcessedMacromolecule } from '../../../../store/data-processing/models/processed-entities.model';
 import { EntryStoreState } from '../../../../store/entry-store.model';
 import { EntrySelectors } from '../../../../store/entry.selectors';
@@ -35,23 +36,9 @@ type NestedDomainsData = Array<{
 type ViewItem =
   | { kind: 'Assembly'; item: undefined }
   | { kind: 'Macromolecules'; item: ProcessedMacromolecule | undefined }
-  | { kind: 'Ligands'; item: ProcessedLigandOrMod | undefined }
+  | { kind: 'Ligands'; item: ProcessedLigand | undefined }
   | { kind: 'Domains'; item: ProcessedDomain | undefined }
-  | { kind: 'Modifications'; item: ProcessedLigandOrMod | undefined };
-
-type DropdownDetail =
-  | { kind: 'Macromolecules'; item: undefined }
-  | { kind: 'Ligands'; item: undefined }
-  | { kind: 'Domains'; item: undefined }
-  | { kind: 'Modifications'; item: ModifiedResidue };
-
-interface DropdownOptionData {
-  authAsymId: string;
-  molstarSelection: QueryParamForHelpers[];
-  inPrefAssembly: boolean;
-  symmOperators: string[];
-  detail: DropdownDetail;
-}
+  | { kind: 'Modifications'; item: ProcessedModification | undefined };
 
 @Component({
   selector: 'pdbc-summary-3d-section',
@@ -131,8 +118,22 @@ export class Summary3DSectionComponent {
 
   private readonly viewItem = signal<ViewItem>({ kind: 'Assembly', item: undefined });
 
-  public dropdown = new Dropdown<DropdownOptionData>({
-    autoOptions: () => this.makeDropdownOptions(this.viewItem()),
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => {
+      const viewItem = this.viewItem();
+      if (!viewItem.item) return [];
+      switch (viewItem.kind) {
+        case 'Macromolecules':
+          return makeMacromoleculeChainDropdownOptions(viewItem.item);
+        case 'Ligands':
+        case 'Modifications':
+          return makeLigandsDropdownOptions(viewItem.item);
+        case 'Domains':
+          return makeDomainChainDropdownOptions(viewItem.item);
+        default:
+          return [];
+      }
+    },
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
@@ -557,76 +558,6 @@ export class Summary3DSectionComponent {
     this.zoomed.set(true);
   }
 
-  private makeDropdownOptions(viewItem: ViewItem) {
-    if (!viewItem.item) return [];
-
-    if (viewItem.kind === 'Macromolecules') {
-      const macromolecule = viewItem.item;
-      const options = getMacromoleculeChainDropdownOptions(macromolecule);
-      return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-        const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
-        if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-        return {
-          name: name,
-          url: `macro-${idx + 1}`,
-          downloadable: false,
-          data: {
-            authAsymId,
-            molstarSelection: options[name],
-            inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-            symmOperators: macromolecule.chainSymmOperators[authAsymId] ?? [],
-            detail: { kind: 'Macromolecules', item: undefined },
-          },
-        };
-      });
-    }
-
-    if (viewItem.kind === 'Ligands' || viewItem.kind === 'Modifications') {
-      const ligand = viewItem.item;
-      const options = getLigandsDropdownOptions(ligand);
-      return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-        const molstarSelection = options[name];
-        const authAsymId = molstarSelection[0].auth_asym_id;
-        if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-        return {
-          name: name,
-          url: `lig-${idx + 1}`,
-          downloadable: false,
-          data: {
-            authAsymId,
-            molstarSelection,
-            inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
-            symmOperators: ligand.symmOpListForEachLigOrMod[idx],
-            detail: ligand.type === 'modification' ? { kind: 'Modifications', item: ligand.additionalData.source[idx] } : { kind: 'Ligands', item: undefined },
-          },
-        };
-      });
-    }
-
-    if (viewItem.kind === 'Domains') {
-      const domain = viewItem.item;
-      const options = getDomainChainDropdownOptions(domain);
-      return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
-        const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
-        if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-        return {
-          name: name,
-          url: `domain-${idx + 1}`,
-          downloadable: false,
-          data: {
-            authAsymId,
-            molstarSelection: options[name],
-            inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
-            symmOperators: domain.symmOpListForSegments[idx],
-            detail: { kind: 'Domains', item: undefined },
-          },
-        };
-      });
-    }
-
-    return [];
-  }
-
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
     this.zoomed.set(true);
@@ -779,7 +710,7 @@ export class Summary3DSectionComponent {
           },
         };
         if (viewItem.item) {
-          if (detail?.kind !== 'Modifications') return undefined;
+          if (detail?.kind !== 'modification') return undefined;
           const modres = detail.item;
           const instanceId = this.selectedInstanceId();
           spec.name = `Selected modification ${viewItem.item.id}`;

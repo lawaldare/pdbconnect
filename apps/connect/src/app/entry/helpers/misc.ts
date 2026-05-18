@@ -122,15 +122,3 @@ export class Dropdown<TData> {
 
   public selectedName = computed(() => this._selectedOption()?.name);
 }
-
-export function makeSymmetryDropdownOptions(symmOperators: string[] | undefined) {
-  if (!symmOperators) return [];
-  return symmOperators.map(
-    (op): DropdownOptionWithData<{ instanceId: string | undefined }> => ({
-      name: op,
-      url: `symop-${op}`,
-      downloadable: false,
-      data: { instanceId: op !== 'All' ? op : undefined },
-    })
-  );
-}
