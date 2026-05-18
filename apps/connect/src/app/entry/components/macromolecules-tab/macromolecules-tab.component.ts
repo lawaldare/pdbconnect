@@ -18,7 +18,7 @@ import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValue
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
-import { Dropdown, updateSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, DropdownOptionWithData, makeSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
@@ -48,6 +48,14 @@ import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
 declare let PdbRnaViewerPlugin: any;
+
+interface DropdownOptionData {
+  authAsymId: string;
+  molstarSelection: QueryParamForHelpers[];
+  inPrefAssembly: boolean;
+  symmOperators: string[];
+}
+
 @Component({
   selector: 'pdbc-macromolecules-tab',
   standalone: true,
@@ -214,8 +222,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly entryMacromoleculeTooltips = entryMacromoleculeTooltips;
   public readonly symmOperatorTooltip = symmOperatorTooltip;
 
-  public dropdown = new Dropdown<{ authAsymId: string; molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
-  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
+  public dropdown = new Dropdown<DropdownOptionData>({
+    autoOptions: () => this.makeDropdownOptions(this.currentMacromoleculeDatum()),
+  });
+
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+  });
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
 
@@ -611,10 +624,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
-    // refreshes chain dropdown options on new macromolecule
-    await this.updateDropdownOptions(macromolecule);
-    await this.updateSymmetryDropdownOptions();
-
     // updates shown sequence on new macromolecule
     const chainId = this.currentSelectionChainId();
     if (chainId === undefined) return;
@@ -634,30 +643,24 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     await this.updateBackgroundAnnotation();
   }
 
-  async updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
+  private makeDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
+    if (!macromolecule) return [];
     const options = getMacromoleculeChainDropdownOptions(macromolecule);
-    type DropdownOption = MacromoleculesTabComponent['dropdown']['options'][number];
-    this.dropdown.updateOptions(
-      Object.keys(options).map((eachString, idx): DropdownOption => {
-        const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
-        if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-        return {
-          name: eachString,
-          url: `macro-${idx + 1}`,
-          downloadable: false,
-          data: {
-            authAsymId,
-            molstarSelection: options[eachString],
-            inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-            symmOperators: macromolecule.chainSymmOperators[authAsymId] ?? [],
-          },
-        };
-      })
-    );
-  }
-
-  async updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
+    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
+      const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
+      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+      return {
+        name: name,
+        url: `macro-${idx + 1}`,
+        downloadable: false,
+        data: {
+          authAsymId,
+          molstarSelection: options[name],
+          inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
+          symmOperators: macromolecule.chainSymmOperators[authAsymId] ?? [],
+        },
+      };
+    });
   }
 
   private async updateSequenceDetailsFromChainId(macromolecule: ProcessedMacromolecule, chainId: string) {
@@ -738,7 +741,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-    await this.updateSymmetryDropdownOptions();
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();

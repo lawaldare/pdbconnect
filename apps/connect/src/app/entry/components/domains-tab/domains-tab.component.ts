@@ -16,7 +16,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
-import { Dropdown, updateSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, DropdownOptionWithData, makeSymmetryDropdownOptions, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
@@ -33,6 +33,13 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { PvDataProcessingFacade } from '../shared/entry-pv-nightingale/pv-entry-api.facade';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+
+interface DropdownOptionData {
+  authAsymId: string;
+  molstarSelection: QueryParamForHelpers[];
+  inPrefAssembly: boolean;
+  symmOperators: string[];
+}
 
 @Component({
   selector: 'pdbc-domains-tab',
@@ -223,8 +230,16 @@ export class DomainsTabComponent {
   public readonly tabDataLoaded = computed(() => this.processedDomains() !== undefined);
   public selectedChains?: string;
 
-  public dropdown = new Dropdown<{ authAsymId: string; molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
-  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
+  public dropdown = new Dropdown<DropdownOptionData>({
+    autoOptions: () => this.makeDropdownOptions(this.currentDomainsDatum()),
+  });
+
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+  });
+
+  // public dropdown = new Dropdown<{ authAsymId: string; molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
+  // public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
 
@@ -402,36 +417,26 @@ export class DomainsTabComponent {
   async triggerDomainUpdateSideEffects(domain: ProcessedDomain) {
     // reset alt sequences
     this.altSequences.set([]);
-
-    // refreshes dropdown options on new macromolecule
-    this.updateDropdownOptions(domain);
-    this.updateSymmetryDropdownOptions();
   }
 
-  private updateDropdownOptions(domain: ProcessedDomain) {
+  private makeDropdownOptions(domain: ProcessedDomain | undefined) {
+    if (!domain) return [];
     const options = getDomainChainDropdownOptions(domain);
-    type DropdownOption = DomainsTabComponent['dropdown']['options'][number];
-    this.dropdown.updateOptions(
-      Object.keys(options).map((name, idx): DropdownOption => {
-        const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
-        if (authAsymId === undefined) throw new Error('authAsymId is undefined');
-        return {
-          name: name,
-          url: `domain-${idx + 1}`,
-          downloadable: false,
-          data: {
-            authAsymId,
-            molstarSelection: options[name],
-            inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
-            symmOperators: domain.symmOpListForSegments[idx],
-          },
-        };
-      })
-    );
-  }
-
-  private updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
+    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
+      const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
+      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+      return {
+        name: name,
+        url: `domain-${idx + 1}`,
+        downloadable: false,
+        data: {
+          authAsymId,
+          molstarSelection: options[name],
+          inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
+          symmOperators: domain.symmOpListForSegments[idx],
+        },
+      };
+    });
   }
 
   private getAuthorNumberingForChain(chainId: string) {
@@ -440,7 +445,6 @@ export class DomainsTabComponent {
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-    this.updateSymmetryDropdownOptions();
 
     // reset alt sequences
     this.altSequences.set([]);

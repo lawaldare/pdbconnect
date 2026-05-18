@@ -1,6 +1,6 @@
-import { computed, effect, signal, Signal } from '@angular/core';
+import { assertInInjectionContext, computed, effect, signal, Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { DownloadOptionWithData } from '@pdbe-lib/dropdown-menu';
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { BehaviorSubject, filter, Observable, take } from 'rxjs';
 import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
@@ -62,54 +62,75 @@ export function sortBy<T, K>(items: T[], key: (item: T) => K): T[] {
   });
 }
 
+export interface DropdownOptionWithData<TCustomData> extends DownloadOption {
+  data: TCustomData;
+}
+
 export class Dropdown<TData> {
-  private _options: DownloadOptionWithData<TData>[] = [];
-  private _optionMap: { [name: string]: DownloadOptionWithData<TData> } = {};
-  private _selected = signal<string | undefined>(undefined);
+  private _options: DropdownOptionWithData<TData>[] = [];
+  private _optionMap: { [name: string]: DropdownOptionWithData<TData> } = {};
+  private _selectedOption = signal<DropdownOptionWithData<TData> | undefined>(undefined);
 
   constructor(
     private readonly settings?: {
+      /** Function which returns set of available options. If this function reads Angular signal, options will automatically update when signal value change. `autoOptions` can only be used within injection context. */
+      autoOptions?: () => DropdownOptionWithData<TData>[];
       /** Function which returns default option given a set of available options (if not provided, default option is the first one) */
-      defaultOption?: (options: DownloadOptionWithData<TData>[]) => DownloadOptionWithData<TData> | undefined;
+      defaultOption?: (options: DropdownOptionWithData<TData>[]) => DropdownOptionWithData<TData> | undefined;
     }
-  ) {}
+  ) {
+    if (settings?.autoOptions) {
+      try {
+        assertInInjectionContext(this.constructor);
+      } catch (e) {
+        throw new Error(`new Dropdown with autoOptions can only be used within an injection context (${e})`);
+      }
+      effect(() => {
+        const newOptions = settings.autoOptions!();
+        this._updateOptions(newOptions);
+      });
+    }
+  }
 
   public get options() {
     return this._options;
   }
+
   /** Update options and reset `selected` to the first listed option (or to `undefined` if there are no options) */
-  public updateOptions(options: DownloadOptionWithData<TData>[]) {
+  public updateOptions(options: DropdownOptionWithData<TData>[]) {
+    if (this.settings?.autoOptions) throw new Error('Calling `updateOptions` is invalid if `autoOptions` is set');
+    this._updateOptions(options);
+  }
+  private _updateOptions(options: DropdownOptionWithData<TData>[]) {
     this._options = options;
     this._optionMap = Object.fromEntries(options.map((opt) => [opt.name, opt]));
     const defaultOption = this.settings?.defaultOption ? this.settings.defaultOption(options) : options[0];
-    this._selected.set(defaultOption?.name);
+    this.select(defaultOption?.name);
   }
 
   /** Set current selected value */
   public select(optionName: string | undefined) {
     if (optionName !== undefined && !(optionName in this._optionMap))
       throw new Error(`Trying to select invalid option "${optionName}" (available options: ${this.options})`);
-    this._selected.set(optionName);
+    const option = optionName !== undefined ? this._optionMap[optionName] : undefined;
+    this._selectedOption.set(option);
   }
 
-  public selectedOption = computed<DownloadOptionWithData<TData> | undefined>(() => {
-    const selected = this._selected();
-    if (selected === undefined) return undefined;
-    return this._optionMap[selected];
+  public selectedOption = computed<DropdownOptionWithData<TData> | undefined>(() => {
+    return this._selectedOption();
   });
 
-  public selectedName = computed(() => this._selected());
+  public selectedName = computed(() => this._selectedOption()?.name);
 }
 
-export function updateSymmetryDropdownOptions(symmetryDropdown: Dropdown<{ instanceId: string | undefined }>, symmOperators: string[] | undefined) {
-  type SymmetryDropdownOption = (typeof symmetryDropdown)['options'][number];
-  const options = (symmOperators ?? []).map(
-    (op): SymmetryDropdownOption => ({
+export function makeSymmetryDropdownOptions(symmOperators: string[] | undefined) {
+  if (!symmOperators) return [];
+  return symmOperators.map(
+    (op): DropdownOptionWithData<{ instanceId: string | undefined }> => ({
       name: op,
-      url: `symop-${op}`, // not sure if this is really necessary
+      url: `symop-${op}`,
       downloadable: false,
       data: { instanceId: op !== 'All' ? op : undefined },
     })
   );
-  symmetryDropdown.updateOptions(options);
 }

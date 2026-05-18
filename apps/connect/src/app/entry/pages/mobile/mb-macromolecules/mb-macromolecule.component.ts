@@ -8,7 +8,7 @@ import { distinctUntilChanged, filter } from 'rxjs';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
 import { baseUrl } from '../../../entry-constant';
-import { Dropdown, makeEntityColors, updateSymmetryDropdownOptions } from '../../../helpers/misc';
+import { Dropdown, DropdownOptionWithData, makeEntityColors, makeSymmetryDropdownOptions } from '../../../helpers/misc';
 import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { getMacromoleculeChainDropdownOptions, getMacromoleculeSequenceDetails } from '../../../helpers/processed-data-to-controls';
@@ -27,6 +27,13 @@ interface GoMapped {
   names: string[];
   count: number;
   category: string;
+}
+
+interface DropdownOptionData {
+  authAsymId: string;
+  molstarSelection: QueryParamForHelpers[];
+  inPrefAssembly: boolean;
+  symmOperators: string[];
 }
 
 @Component({
@@ -71,8 +78,12 @@ export class MbMacromoleculeComponent implements OnInit {
   public expanded = signal<boolean>(false);
   public readonly util = inject(UtilService);
 
-  public dropdown = new Dropdown<{ molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
+  public dropdown = new Dropdown<DropdownOptionData>({
+    autoOptions: () => this.makeDropdownOptions(this.selectedMacromolecule()),
+  });
+
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
     defaultOption: (options) => options.find((opt) => opt.data.instanceId !== undefined) ?? options[0],
   });
 
@@ -383,36 +394,26 @@ export class MbMacromoleculeComponent implements OnInit {
 
   private async setCurrentMacromolecule(macromolecule: ProcessedMacromolecule | undefined): Promise<void> {
     this.selectedMacromolecule.set(macromolecule);
-    this.updateDropdownOptions(macromolecule);
-    this.updateSymmetryDropdownOptions();
   }
 
-  private updateDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
-    if (macromolecule) {
-      const options = getMacromoleculeChainDropdownOptions(macromolecule);
-      type DropdownOption = MbMacromoleculeComponent['dropdown']['options'][number];
-      this.dropdown.updateOptions(
-        Object.keys(options).map((name, idx): DropdownOption => {
-          const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
-          return {
-            name: name,
-            url: `macro-${idx + 1}`,
-            downloadable: false,
-            data: {
-              molstarSelection: options[name],
-              inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
-              symmOperators: authAsymId !== undefined ? macromolecule.chainSymmOperators[authAsymId] ?? [] : [],
-            },
-          };
-        })
-      );
-    } else {
-      this.dropdown.updateOptions([]);
-    }
-  }
-
-  private updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
+  private makeDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
+    if (!macromolecule) return [];
+    const options = getMacromoleculeChainDropdownOptions(macromolecule);
+    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
+      const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
+      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+      return {
+        name: name,
+        url: `macro-${idx + 1}`,
+        downloadable: false,
+        data: {
+          authAsymId,
+          molstarSelection: options[name],
+          inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
+          symmOperators: authAsymId !== undefined ? macromolecule.chainSymmOperators[authAsymId] ?? [] : [],
+        },
+      };
+    });
   }
 
   public toggleBottomsheetHeight() {
@@ -456,7 +457,6 @@ export class MbMacromoleculeComponent implements OnInit {
 
   public onDropdownSelect(event: string) {
     this.dropdown.select(event);
-    this.updateSymmetryDropdownOptions();
   }
 
   public async onSymmetryDropdownSelect(event: string) {

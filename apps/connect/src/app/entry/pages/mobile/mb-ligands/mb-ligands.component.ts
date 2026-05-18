@@ -8,7 +8,7 @@ import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
-import { Dropdown, makeEntityColors, updateSymmetryDropdownOptions } from '../../../helpers/misc';
+import { Dropdown, DropdownOptionWithData, makeEntityColors, makeSymmetryDropdownOptions } from '../../../helpers/misc';
 import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
@@ -19,6 +19,13 @@ import { EntryStoreState } from '../../../store/entry-store.model';
 import { EntryActions } from '../../../store/entry.actions';
 import { EntrySelectors } from '../../../store/entry.selectors';
 import { MobileStateService } from '../mobile-state.service';
+
+interface DropdownOptionData {
+  authAsymId: string;
+  molstarSelection: QueryParamForHelpers[];
+  inPrefAssembly: boolean;
+  symmOperators: string[];
+}
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -58,8 +65,13 @@ export class MbLigandsComponent implements OnInit {
   });
 
   // TODO: @adam Refactor the dropdowns
-  public dropdown = new Dropdown<{ molstarSelection: QueryParamForHelpers[]; inPrefAssembly: boolean; symmOperators: string[] }>();
-  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>();
+  public dropdown = new Dropdown<DropdownOptionData>({
+    autoOptions: () => this.makeDropdownOptions(this.selectedLigand()),
+  });
+
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+  });
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
   public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
@@ -133,39 +145,31 @@ export class MbLigandsComponent implements OnInit {
 
   private async setCurrentLigand(ligand: ProcessedLigandOrMod | undefined) {
     this.selectedLigand.set(ligand);
-    this.updateDropdownOptions(ligand);
-    this.updateSymmetryDropdownOptions();
   }
 
   public mapSynonyms(synonyms: any[]): string {
     return synonyms.map((synonym) => synonym.value).join(', ');
   }
 
-  private updateDropdownOptions(ligand: ProcessedLigandOrMod | undefined) {
-    if (ligand) {
-      const options = getLigandsDropdownOptions(ligand);
-      type DropdownOption = MbLigandsComponent['dropdown']['options'][number];
-      this.dropdown.updateOptions(
-        Object.keys(options).map(
-          (name, idx): DropdownOption => ({
-            name: name,
-            url: `lig-${idx + 1}`,
-            downloadable: false,
-            data: {
-              molstarSelection: options[name],
-              inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
-              symmOperators: ligand.symmOpListForEachLigOrMod[idx],
-            },
-          })
-        )
-      );
-    } else {
-      this.dropdown.updateOptions([]);
-    }
-  }
-
-  private updateSymmetryDropdownOptions() {
-    updateSymmetryDropdownOptions(this.symmetryDropdown, this.dropdown.selectedOption()?.data.symmOperators);
+  private makeDropdownOptions(ligand: ProcessedLigandOrMod | undefined) {
+    if (!ligand) return [];
+    const options = getLigandsDropdownOptions(ligand);
+    return Object.keys(options).map((name, idx): DropdownOptionWithData<DropdownOptionData> => {
+      const molstarSelection = options[name];
+      const authAsymId = molstarSelection[0].auth_asym_id;
+      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+      return {
+        name: name,
+        url: `lig-${idx + 1}`,
+        downloadable: false,
+        data: {
+          authAsymId,
+          molstarSelection,
+          inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
+          symmOperators: ligand.symmOpListForEachLigOrMod[idx],
+        },
+      };
+    });
   }
 
   public toggleBottomsheetHeight() {
@@ -205,7 +209,6 @@ export class MbLigandsComponent implements OnInit {
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-    this.updateSymmetryDropdownOptions();
   }
 
   public async onSymmetryDropdownSelect(event: string) {
