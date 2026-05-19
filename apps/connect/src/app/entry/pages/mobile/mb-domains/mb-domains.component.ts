@@ -42,10 +42,9 @@ export class MbDomainsComponent implements OnInit {
 
   public readonly resourceUrls = resourceUrls;
 
-  public currentViewState = signal<'list' | 'detail'>('list');
   public selectedDomain = signal<ProcessedDomain | undefined>(undefined);
+  public currentViewState = computed<'list' | 'detail'>(() => (this.selectedDomain() ? 'detail' : 'list'));
   public expanded = signal<boolean>(false);
-  public title = this.state.domainTitle;
 
   public dropdown = new Dropdown<CommonDropdownOptionData>({
     autoOptions: () => makeDomainChainDropdownOptions(this.selectedDomain(), true), // TODO: is allChain param needed?
@@ -102,16 +101,12 @@ export class MbDomainsComponent implements OnInit {
   }
 
   public navigateToDetail(data: ProcessedDomain) {
-    this.currentViewState.set('detail');
     this.selectedDomain.set(data);
-    this.state.updateSelectedDomainTitle(data.accessionName);
     this.scrollTabToTop();
   }
 
   public async goBackToList() {
-    this.currentViewState.set('list'); // TODO: to computed
     this.selectedDomain.set(undefined);
-    this.state.updateSelectedDomainTitle('Domains'); // TODO: to computed
     this.scrollTabToTop();
   }
 

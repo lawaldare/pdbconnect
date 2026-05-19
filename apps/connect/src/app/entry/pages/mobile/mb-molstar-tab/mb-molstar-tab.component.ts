@@ -188,7 +188,7 @@ export class MbMolstarTabComponent implements AfterViewInit, OnInit {
     // this.mbFacade.onTabClick(chip, this.chipElements);
 
     if (chip.id === this.selectedTabName()) {
-      this.state.updateSelectedTabName('');
+      // do nothing
     } else {
       this.state.updateSelectedTabName(chip.id);
       // scrolls into view horizontally on mobile without anti pattern

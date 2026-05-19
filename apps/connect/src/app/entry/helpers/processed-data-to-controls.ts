@@ -32,7 +32,7 @@ export function getCleanSelectionName(options: DownloadOption[]) {
   return options[0].name.split('<img')[0];
 }
 
-export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?: boolean) {
+function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?: boolean) {
   const dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
   const selections = datum.additionalData.selections;
   const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
@@ -62,6 +62,7 @@ export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?
 export function makeDomainChainDropdownOptions(domain: ProcessedDomain | undefined, allChains?: boolean) {
   if (!domain) return [];
   const options = getDomainChainDropdownOptions(domain, allChains);
+  console.log('makeDomainChainDropdownOptions:', allChains, Object.keys(options).length, options);
   return Object.keys(options).map((name, idx): DropdownOptionWithData<CommonDropdownOptionData> => {
     const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
     if (authAsymId === undefined) throw new Error('authAsymId is undefined');

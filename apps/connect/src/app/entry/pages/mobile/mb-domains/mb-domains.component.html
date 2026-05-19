@@ -8,11 +8,7 @@
     </nav>
     }
     <section class="header">
-      <h2>
-        {{title()}} @if(currentViewState() === 'list'){
-        <span>({{domainTableRows().length}})</span>
-        }
-      </h2>
+      <h2>{{currentViewState()==='list' ? `Domains (${domainTableRows().length})`: selectedDomain()?.accessionName ?? ''}}</h2>
       <div class="controls">
         <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
         <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />

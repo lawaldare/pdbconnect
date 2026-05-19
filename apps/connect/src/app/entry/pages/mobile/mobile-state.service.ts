@@ -11,9 +11,6 @@ export class MobileStateService {
   private _selectedComponent = signal<Type<any> | null>(null);
   public selectedComponent = this._selectedComponent.asReadonly();
 
-  private _domainTitle = signal<string>('Domains');
-  public domainTitle = this._domainTitle.asReadonly();
-
   updateActivePage(page: string) {
     this._activePage.set(page);
   }
@@ -24,9 +21,5 @@ export class MobileStateService {
 
   updateSelectedComponent(component: Type<any> | null) {
     this._selectedComponent.set(component);
-  }
-
-  public updateSelectedDomainTitle(title: string) {
-    this._domainTitle.set(title);
   }
 }
