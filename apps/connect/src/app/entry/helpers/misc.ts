@@ -14,7 +14,7 @@ export function makeEntityColors(macromolecules: ProcessedMacromolecule[] | unde
   }
   for (const ligand of ligands ?? []) {
     if (ligand.type === 'ligand') {
-      colors[(ligand.additionalData.source as Molecule).entity_id] = ligand.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
+      colors[ligand.additionalData.source.entity_id] = ligand.molstarColorHex ?? DEFAULT_ENTITY_COLOR;
     }
   }
   return colors;

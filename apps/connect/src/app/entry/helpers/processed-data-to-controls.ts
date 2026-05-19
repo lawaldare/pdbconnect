@@ -59,9 +59,9 @@ export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?
   }
   return dropdownOptionsToMolstar;
 }
-export function makeDomainChainDropdownOptions(domain: ProcessedDomain | undefined) {
+export function makeDomainChainDropdownOptions(domain: ProcessedDomain | undefined, allChains?: boolean) {
   if (!domain) return [];
-  const options = getDomainChainDropdownOptions(domain);
+  const options = getDomainChainDropdownOptions(domain, allChains);
   return Object.keys(options).map((name, idx): DropdownOptionWithData<CommonDropdownOptionData> => {
     const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
     if (authAsymId === undefined) throw new Error('authAsymId is undefined');

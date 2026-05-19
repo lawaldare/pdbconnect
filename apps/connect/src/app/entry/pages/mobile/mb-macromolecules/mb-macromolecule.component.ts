@@ -89,11 +89,7 @@ export class MbMacromoleculeComponent implements OnInit {
 
   @ViewChild('macroMoleculeTitle') macroMoleculeTitle!: ElementRef;
 
-  public readonly macromoleculeTableRows = computed(() => {
-    const rows = this.processedMacromolecules();
-    if (rows === undefined) return [];
-    return rows;
-  });
+  public readonly macromoleculeTableRows = computed(() => this.processedMacromolecules() ?? []);
 
   public uniprotMappedData = computed(() => {
     const currentMacromoleculeDatum = this.selectedMacromolecule();
@@ -329,6 +325,7 @@ export class MbMacromoleculeComponent implements OnInit {
 
     // Update global mobileIsPrefAssembly (for warning display)
     effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForChain()));
+    effect(() => console.log('this.compCommunication.mobileIsPrefAssembly:', this.compCommunication.mobileIsPrefAssembly()));
   }
 
   ngOnInit(): void {
