@@ -21,6 +21,8 @@ publish:${serviceName}:
     needs:
       - pipeline: $PARENT_PIPELINE_ID
         job: build
+    variables:
+      DOCKER_CONFIG: '/tmp/docker-config-$CI_JOB_ID'
     script:
       - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
       - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=\$${serviceName
