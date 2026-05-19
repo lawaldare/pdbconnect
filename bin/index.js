@@ -25,9 +25,7 @@ publish:${serviceName}:
       DOCKER_CONFIG: '/tmp/docker-config-$CI_JOB_ID'
     script:
       - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-      - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=\$${serviceName
-        .replaceAll('-', '_')
-        .toUpperCase()}_BASE_HREF --tag $CI_REGISTRY_IMAGE/connect-${serviceName}:$CI_COMMIT_SHORT_SHA --file apps/${serviceName}/Dockerfile .
+      - docker build --pull --cache-from $CI_REGISTRY_IMAGE --tag $CI_REGISTRY_IMAGE/connect-${serviceName}:$CI_COMMIT_SHORT_SHA --file apps/${serviceName}/Dockerfile .
       - docker push $CI_REGISTRY_IMAGE/connect-${serviceName}:$CI_COMMIT_SHORT_SHA
     rules:
       - if: $PARENT_PIPELINE_ID

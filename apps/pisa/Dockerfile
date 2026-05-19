@@ -9,8 +9,7 @@ WORKDIR /app
 COPY dist/apps/pisa /usr/share/nginx/html
 COPY apps/pisa/nginx-custom.conf /etc/nginx/conf.d/default.conf
 
-ARG APP_BASE_HREF
-ENV APP_BASE_HREF=$APP_BASE_HREF
+ENV APP_BASE_HREF="/pdbe/pisa/"
 
 RUN echo "ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
           echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
