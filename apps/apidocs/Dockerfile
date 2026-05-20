@@ -9,8 +9,7 @@ WORKDIR /app
 COPY dist/apps/apidocs /usr/share/nginx/html
 COPY apps/apidocs/nginx-custom.conf /etc/nginx/conf.d/default.conf
 
-ARG APP_BASE_HREF
-ENV APP_BASE_HREF=$APP_BASE_HREF
+ENV APP_BASE_HREF="/pdbe/api/v2/doc/"
 
 # Replace $APP_BASE_HREF placeholder in index.html at container startup.
 # This allows dynamic base href per environment (e.g. /pdbe/api/v2/doc/)

@@ -9,8 +9,7 @@ WORKDIR /app
 COPY dist/apps/kb-corporate-page/browser /usr/share/nginx/html
 COPY apps/kb-corporate-page/nginx-custom.conf /etc/nginx/conf.d/default.conf
 
-ARG APP_BASE_HREF
-ENV APP_BASE_HREF=$APP_BASE_HREF
+ENV APP_BASE_HREF="/pdbe/pdbe-kb/"
 
 RUN echo "ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
           echo \"ASSETS_PATH=\$ASSETS_PATH\" && \
