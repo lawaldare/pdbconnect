@@ -71,8 +71,6 @@ export class MbAssembliesComponent implements OnInit {
       EntryActions.getPreferredAssembly,
       EntryActions.getProcessedAssemblies,
     ]);
-
-    this.compCommunication.mobileMolstarDisplay = 'assemblies'; // TODO: @adam Remove this.compCommunication.mobileMolstarDisplay
   }
 
   toggleBottomsheetHeight() {

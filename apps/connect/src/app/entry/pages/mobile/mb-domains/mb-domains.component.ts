@@ -27,7 +27,6 @@ export class MbDomainsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public configForMobileMolstar$ = toObservable(this.compCommunication.configForMobileMolstar);
 
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
@@ -47,12 +46,13 @@ export class MbDomainsComponent implements OnInit {
   public expanded = signal<boolean>(false);
 
   public dropdown = new Dropdown<CommonDropdownOptionData>({
-    autoOptions: () => makeDomainChainDropdownOptions(this.selectedDomain(), true), // TODO: is allChain param needed?
+    autoOptions: () => makeDomainChainDropdownOptions(this.selectedDomain(), true),
   });
 
   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
     autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
-  }); // TODO: check where we have/don't have 'All'
+    defaultOption: (options) => options.find((opt) => opt.data.instanceId !== undefined) ?? options[0],
+  });
 
   public readonly currentSelectionChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
   private readonly selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);

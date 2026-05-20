@@ -8,18 +8,22 @@ import { ProcessedDomain, ProcessedMacromolecule } from '../store/data-processin
 import { DropdownOptionWithData } from './misc';
 import { QueryParamForHelpers } from './molstar-helpers';
 
-type DropdownDetail =
-  | { kind: 'macromolecule'; item: undefined }
-  | { kind: 'ligand'; item: undefined }
-  | { kind: 'domain'; item: undefined }
-  | { kind: 'modification'; item: ModifiedResidue };
-
+/** Option data for the primary dropdown on most Entry Page tabs ("Chain X", "HEM 500 in chain X"...) */
 export interface CommonDropdownOptionData {
   authAsymId: string;
   molstarSelection: QueryParamForHelpers[];
   inPrefAssembly: boolean;
   symmOperators: string[];
-  detail: DropdownDetail;
+  detail:
+    | { kind: 'macromolecule'; item: undefined }
+    | { kind: 'ligand'; item: undefined }
+    | { kind: 'domain'; item: undefined }
+    | { kind: 'modification'; item: ModifiedResidue };
+}
+
+/** Option data for the secondary (symmetry) dropdown on most Entry Page tabs ("All", "ASM-1"...) */
+export interface SymmetryDropdownOptionData {
+  instanceId: string | undefined;
 }
 
 export function getCleanMoleculeName(molecule: Molecule) {
@@ -59,10 +63,10 @@ function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?: boole
   }
   return dropdownOptionsToMolstar;
 }
+
 export function makeDomainChainDropdownOptions(domain: ProcessedDomain | undefined, allChains?: boolean) {
   if (!domain) return [];
   const options = getDomainChainDropdownOptions(domain, allChains);
-  console.log('makeDomainChainDropdownOptions:', allChains, Object.keys(options).length, options);
   return Object.keys(options).map((name, idx): DropdownOptionWithData<CommonDropdownOptionData> => {
     const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
     if (authAsymId === undefined) throw new Error('authAsymId is undefined');
@@ -74,7 +78,7 @@ export function makeDomainChainDropdownOptions(domain: ProcessedDomain | undefin
         authAsymId,
         molstarSelection: options[name],
         inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
-        symmOperators: domain.symmOpListForSegments[idx],
+        symmOperators: domain.symmOpListForSegments[idx] ?? [],
         detail: { kind: 'domain', item: undefined },
       },
     };
@@ -212,7 +216,7 @@ export function makeLigandsDropdownOptions(ligand: ProcessedLigandOrMod | undefi
         authAsymId,
         molstarSelection,
         inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
-        symmOperators: ligand.symmOpListForEachLigOrMod[idx],
+        symmOperators: ligand.symmOpListForEachLigOrMod[idx] ?? [],
         detail: ligand.type === 'modification' ? { kind: 'modification', item: ligand.additionalData.source[idx] } : { kind: 'ligand', item: undefined },
       },
     };
@@ -240,7 +244,7 @@ export function getMacromoleculeOfDomain(datum: ProcessedDomain, macromolecules:
 export function makeSymmetryDropdownOptions(symmOperators: string[] | undefined) {
   if (!symmOperators) return [];
   return symmOperators.map(
-    (op): DropdownOptionWithData<{ instanceId: string | undefined }> => ({
+    (op): DropdownOptionWithData<SymmetryDropdownOptionData> => ({
       name: op,
       url: `symop-${op}`,
       downloadable: false,

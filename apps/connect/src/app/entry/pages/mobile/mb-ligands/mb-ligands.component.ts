@@ -31,7 +31,6 @@ export class MbLigandsComponent implements OnInit {
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public configForMobileMolstar$ = toObservable(this.compCommunication.configForMobileMolstar);
 
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 

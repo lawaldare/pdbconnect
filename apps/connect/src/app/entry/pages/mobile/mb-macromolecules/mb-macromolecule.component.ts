@@ -325,7 +325,6 @@ export class MbMacromoleculeComponent implements OnInit {
 
     // Update global mobileIsPrefAssembly (for warning display)
     effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForChain()));
-    effect(() => console.log('this.compCommunication.mobileIsPrefAssembly:', this.compCommunication.mobileIsPrefAssembly()));
   }
 
   ngOnInit(): void {

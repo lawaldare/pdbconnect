@@ -74,7 +74,6 @@ export class MbMolstarTabComponent implements AfterViewInit, OnInit {
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
     if (ref) {
       this._molstarComponent = ref;
-      this.compCommunication.mobileMolstar = ref;
       this.molstarReady.set(true);
     }
   }
@@ -103,49 +102,11 @@ export class MbMolstarTabComponent implements AfterViewInit, OnInit {
   public inPrefAssembly = this.compCommunication.mobileIsPrefAssembly;
   public hasClosedMessage = this.compCommunication.mobileHasClosedMessage;
 
-  private preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
-
   // TODO: @adam Also migrate Structure Overview (consider using low-quality coords there)
-  public readonly configForMolstar = computed(() => {
-    return EntryPageTabsCommonMolstarParams;
-    // const summary = this.summary();
-    // const entryId = this.entryId();
-    // const inPrefAssembly = this.inPrefAssembly();
-
-    // if (!summary || !entryId) return undefined;
-    // const preferredAssemblyId = this.preferredAssemblyId();
-    // const assemblyId = inPrefAssembly ? preferredAssemblyId : undefined;
-
-    // const configForMolstar = {
-    //   ...Molstar370DefaultParams,
-    //   moleculeId: this.entryId(),
-    //   assemblyId,
-    //   landscape: false,
-    //   subscribeEvents: true,
-    //   granularity: 'residue',
-    //   hideControls: false,
-    //   visualStyle: {
-    //     polymer: {
-    //       type: 'cartoon',
-    //       color: 'entity-id',
-    //       // color: 'uniform',
-    //       // colorParams: { value: Color(0xd4d5d4) },
-    //     },
-    //   },
-    //   bgColor: 'white',
-    //   hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
-    //   loadMaps: true,
-    //   mapSettings: { defaultView: 'selection-box' },
-    //   sequencePanel: true,
-    // };
-    // return configForMolstar;
-  });
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   constructor() {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(async () => {
-      // run after molstar rendered
-      this.compCommunication.mobileMolstarLoaded$.next(true);
-
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.compCommunication.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
 
@@ -168,9 +129,6 @@ export class MbMolstarTabComponent implements AfterViewInit, OnInit {
       EntryActions.getProcessedLigands,
     ]);
   }
-  // private readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
-  // private readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
-  // private readonly entityColors = computed(() => makeEntityColors(this.processedMacromolecules(), this.processedLigands()));
 
   ngAfterViewInit(): void {
     // Angular materials body style patch
