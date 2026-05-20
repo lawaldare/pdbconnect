@@ -2,7 +2,6 @@ import { assertInInjectionContext, computed, effect, signal, Signal } from '@ang
 import { toObservable } from '@angular/core/rxjs-interop';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { BehaviorSubject, filter, Observable, take } from 'rxjs';
-import { Molecule } from '../data-models/molecule.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
 

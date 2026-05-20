@@ -1,24 +1,25 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService } from '@pdbc/core';
-import { EntryStoreState } from '../../../store/entry-store.model';
-import { EntrySelectors } from '../../../store/entry.selectors';
+import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { combineLatest, filter, map } from 'rxjs';
-import { MolstarGalleryComponent } from '@pdbe-lib/molstar-for-apps';
-import { MobileFacade } from '../mobile.facade';
-import { MbStructureOverviewComponent } from './sub-components/mb-structure-overview/mb-structure-overview.component';
-import { MbPrimaryPublicationComponent } from './sub-components/mb-primary-publication/mb-primary-publication.component';
-import { MbModelQualitySummaryOverviewComponent } from './sub-components/mb-pdb-model-quality-summary/mb-pdb-model-quality-summary.component';
-import { MbOverviewAssemblyComponent } from './sub-components/mb-overview-assembly/mb-overview-assembly.component';
-import { MbOverviewMacromoleculesComponent } from './sub-components/mb-overview-macromolecules/mb-overview-macromolecules.component';
-import { MbOverviewLigandsAndModsComponent } from './sub-components/mb-overview-ligands-and-mods/mb-overview-ligands-and-mods.component';
+import { environment } from '../../../../../environments/environment';
 import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { MbSlowNetworkImageGalleryComponent } from './sub-components/mb-slow-network-img-gallery/mb-slow-network-img-gallery.component';
-import { MbOtherResourcesPreviewComponent } from './sub-components/mb-other-resources-preview/mb-other-resources-preview.component';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntrySelectors } from '../../../store/entry.selectors';
 import { MbTableOfContentsComponent, NavigationLink } from '../mb-table-of-contents/mb-table-of-contents.component';
+import { MobileFacade } from '../mobile.facade';
+import { MbOtherResourcesPreviewComponent } from './sub-components/mb-other-resources-preview/mb-other-resources-preview.component';
+import { MbOverviewAssemblyComponent } from './sub-components/mb-overview-assembly/mb-overview-assembly.component';
+import { MbOverviewLigandsAndModsComponent } from './sub-components/mb-overview-ligands-and-mods/mb-overview-ligands-and-mods.component';
+import { MbOverviewMacromoleculesComponent } from './sub-components/mb-overview-macromolecules/mb-overview-macromolecules.component';
+import { MbModelQualitySummaryOverviewComponent } from './sub-components/mb-pdb-model-quality-summary/mb-pdb-model-quality-summary.component';
+import { MbPrimaryPublicationComponent } from './sub-components/mb-primary-publication/mb-primary-publication.component';
+import { MbSlowNetworkImageGalleryComponent } from './sub-components/mb-slow-network-img-gallery/mb-slow-network-img-gallery.component';
+import { MbStructureOverviewComponent } from './sub-components/mb-structure-overview/mb-structure-overview.component';
 
 @Component({
   selector: 'pdbc-mb-overview-tab',
@@ -49,6 +50,7 @@ export class MbOverviewTabComponent implements OnInit {
   // summary dispatch called in main.component.ts and used for related
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly entryStoreId = toSignal(this.globalStore.select(EntrySelectors.entryId));
+  public readonly pdbeUrl = environment.baseUrl.replace(/\/$/, '') + '/pdbe';
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
