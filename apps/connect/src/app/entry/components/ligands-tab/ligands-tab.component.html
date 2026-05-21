@@ -152,17 +152,17 @@
       </section>
       }
       <section class="ligand-charts">
-        @if (interactionsRowData()) {
+        @if (filteredInteractionsRows()) {
         <div class="table">
-          <p class="table-title">Ligand interactions - {{interactionsRowData()?.length}} total</p>
+          <p class="table-title">Ligand interactions - {{filteredInteractionsRows()?.length}} total</p>
           <div class="table-toolbar">
             <button class="vf-button vf-button--link" (click)="downloadCSV()">
               Download table (csv)
               <i class="icon icon-common icon-download"></i>
             </button>
             <div class="search-box">
-              <input type="search" [formControl]="searchTerm" placeholder="Search the table" />
-              @if(!searchTerm.value){
+              <input type="search" [formControl]="searchTermForm" placeholder="Search the table" />
+              @if(!searchTermForm.value){
               <i class="icon icon-common icon-search"></i>
               }
             </div>
@@ -171,7 +171,7 @@
             <ag-grid-angular
               class="ag-theme-quartz"
               style="width: 100%; height: 100%"
-              [rowData]="interactionsRowData()"
+              [rowData]="filteredInteractionsRows()"
               [columnDefs]="colDefs"
               [gridOptions]="gridOptions"
               (selectionChanged)="onSelectionChanged($event)"
@@ -240,17 +240,17 @@
           </section>
           <div class="legends">
             <div class="legends-data">
-              @for(color of legendsColor.slice(0, initialColorCount()); track color.label ){
+              @for(item of legendItems.slice(0, legendExpanded() ? undefined : LegendMaxItems); track item.key ){
               <div class="legend-wrapper">
-                <span class="legend-color" [style.background-color]="color.color"></span>
-                <span class="legend-label">{{ color.label }}</span>
+                <span class="legend-color" [style.background-color]="item.color"></span>
+                <span class="legend-label">{{ item.label }}</span>
               </div>
               }
             </div>
             <div class="control">
-              @if(legendsColor.length > 4){
-              <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{initialColorCount() > 4 ? 'Hide' : 'Show'}} full legend</span>
-              <i class="icon icon-common" [ngClass]="initialColorCount() > 4 ? 'icon-angle-up' : 'icon-angle-down'"></i>
+              @if(legendItems.length > LegendMaxItems){
+              <span role="button" class="related-entry-toggle" (click)="toggleColorList()">{{legendExpanded() ? 'Hide' : 'Show'}} full legend</span>
+              <i class="icon icon-common" [ngClass]="legendExpanded() ? 'icon-angle-up' : 'icon-angle-down'"></i>
               }
             </div>
           </div>

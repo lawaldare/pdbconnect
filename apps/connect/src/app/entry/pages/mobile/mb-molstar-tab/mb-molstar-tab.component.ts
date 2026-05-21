@@ -102,7 +102,6 @@ export class MbMolstarTabComponent implements AfterViewInit, OnInit {
   public inPrefAssembly = this.compCommunication.mobileIsPrefAssembly;
   public hasClosedMessage = this.compCommunication.mobileHasClosedMessage;
 
-  // TODO: @adam Also migrate Structure Overview (consider using low-quality coords there)
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   constructor() {

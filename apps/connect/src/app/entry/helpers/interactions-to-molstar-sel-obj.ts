@@ -1,6 +1,6 @@
 import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import type { QueryParam } from 'pdbe-molstar/lib/helpers';
-import { INTX_NAME_STANDARDIZER } from '../components/ligands-tab/interaction-type.component';
+import { standardizeInteractionType } from '../components/ligands-tab/interaction-type.component';
 import { Interaction } from '../data-models/interaction.model';
 import { INTX_NAME_COLORS } from '../entry-constant';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
@@ -32,8 +32,8 @@ export function interactionsToMolstar(
     const details = int.interaction_details;
     const tooltipHeader =
       details.length === 1
-        ? `<strong>${formatInteractionType(details[0])} interaction (${dist} Å)</strong>`
-        : `<strong>Mixed interaction (${dist} Å)</strong><br>${details.map(formatInteractionType).join(', ')}`;
+        ? `<strong>${standardizeInteractionType(details[0])} interaction (${dist} Å)</strong>`
+        : `<strong>Mixed interaction (${dist} Å)</strong><br>${details.map(standardizeInteractionType).join(', ')}`;
     const tooltipPartner1 = `<strong>${ligand.id} ${residueId}${resIns?.trim() ?? ''}</strong> | ${int.ligand_atoms.join(', ')}`;
     const tooltipPartner2 = `<strong>${int.end.chem_comp_id} ${int.end.author_residue_number}${
       int.end.author_insertion_code?.trim() ?? ''
@@ -86,10 +86,6 @@ export function interactionsToMolstar(
     interactionsMolstarSelections,
     residToInstanceId,
   };
-}
-
-function formatInteractionType(interactionType: string) {
-  return INTX_NAME_STANDARDIZER[interactionType as keyof typeof INTX_NAME_STANDARDIZER] ?? interactionType;
 }
 
 export function normalizeInsertionCode(insCode: string | undefined) {

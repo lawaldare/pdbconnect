@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -44,7 +44,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { colDefs, gridOptions } from './ag-grid';
-import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
+import { INTX_NAME_STANDARDIZER, standardizeInteractionType } from './interaction-type.component';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -118,21 +118,19 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public readonly util = inject(UtilService);
 
-  public readonly legendsColor = this.getInteractionLabelColorArray(INTX_NAME_COLORS, INTX_NAME_STANDARDIZER);
+  public readonly legendItems = getInteractionLegendItems(INTX_NAME_COLORS, INTX_NAME_STANDARDIZER);
 
   public getCleanSelectionName = getCleanSelectionName;
 
-  public initialColorCount = signal<number>(4);
+  public readonly legendExpanded = signal<boolean>(false);
+  /** Maximum number of legend items to display, unless the legend is fully expanded. */
+  public readonly LegendMaxItems = 4;
 
   public get isMobile(): boolean {
     return window.innerWidth <= 768; // typical mobile breakpoint
   }
 
-  public readonly ligandTableRows = computed(() => {
-    const rows = this.processedLigands();
-    if (rows === undefined) return [];
-    return rows;
-  });
+  public readonly ligandTableRows = computed(() => this.processedLigands() ?? []);
 
   public currentLigandDatum = signal<ProcessedLigandOrMod | undefined>(undefined);
 
@@ -189,28 +187,49 @@ export class LigandsTabComponent implements AfterViewInit {
     granularity: 'element',
   }));
 
-  private currentChainId = signal<string | undefined>(undefined);
-  private currentResidueId = signal<string | undefined>(undefined);
-
-  public readonly isInitialInteractionsMoreThanOne = computed(() => {
-    const chainId = this.currentChainId();
-    const residueId = this.currentResidueId();
-    if (!chainId || !residueId) return false;
-    const interactionsFromApi = this.interactions();
-    if (!interactionsFromApi) return false;
-    const interaction = interactionsFromApi[chainId][residueId].interactions;
-    return interaction && interaction.length > 1;
+  private currentChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.molstarSelection[0].auth_asym_id);
+  private currentResidueId = computed<string | undefined>(() => {
+    const auth_seq_id = this.dropdown.selectedOption()?.data.molstarSelection[0].auth_seq_id;
+    if (auth_seq_id === undefined) return undefined;
+    return String(auth_seq_id);
   });
 
-  public searchTerm = new FormControl('');
-  private noTermFiltering = signal<boolean>(false);
+  public searchTermForm = new FormControl('');
+  private searchTerm = toSignal(this.searchTermForm.valueChanges);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
 
-  public interactionsRawData = signal<InteractionFromAPI | undefined>(undefined);
-  public interactionsRowData = computed<Interaction[] | undefined>(() => this.interactionsRawData()?.interactions);
+  /** All interactions for current ligand/chainId/residueId/instanceId, without applying filter. */
+  private interactionsForCurrentInstance = computed<InteractionFromAPI | undefined>(() => {
+    const chainId = this.currentChainId();
+    const residueId = this.currentResidueId();
+    if (!chainId || !residueId) return undefined;
+
+    const instanceId = this.selectedInstanceId();
+    const chainForInteractions = chainNameForInteractionsApi(chainId, instanceId);
+
+    const allInteractions = this.interactions();
+    return allInteractions?.[chainForInteractions]?.[residueId];
+  });
+
+  /** Filtered interactions for current ligand/chainId/residueId/instanceId. */
+  public filteredInteractionsData = computed<InteractionFromAPI | undefined>(() => {
+    const interactionsForCurrentInstance = this.interactionsForCurrentInstance();
+    if (!interactionsForCurrentInstance) return undefined;
+
+    const searchQuery = this.searchTerm();
+    const filteredInteractions = this.filterItemsBySearchQuery(searchQuery, interactionsForCurrentInstance.interactions);
+    return {
+      ...interactionsForCurrentInstance,
+      interactions: filteredInteractions,
+    };
+    // TODO: replace calls to triggerLigandInteractionsSideEffects by effect
+  });
+
+  /** Filtered interactions for current ligand/chainId/residueId/instanceId. */
+  public filteredInteractionsRows = computed<Interaction[] | undefined>(() => this.filteredInteractionsData()?.interactions);
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
@@ -251,13 +270,6 @@ export class LigandsTabComponent implements AfterViewInit {
     }
   }
 
-  private getInteractionLabelColorArray(colors: Record<string, string>, labels: Record<string, string>): { label: string; color: string }[] {
-    return Object.entries(labels).map(([key, label]) => ({
-      label,
-      color: colors[key] || '#000000', // default color if not found
-    }));
-  }
-
   async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
     // used in template for dashboard stats
     this.selectionIdentifier = ligand.id;
@@ -267,13 +279,7 @@ export class LigandsTabComponent implements AfterViewInit {
 
     // update visualisations with data
     // get interactions data, create ligand selection, zoom in ligand
-    this.renderInMolstar(ligand);
-
-    // if (this.ligandEv === undefined && this.hasLigandEnv) {
-    //   const interactionRawData = this.interactionsRawData();
-    //   // refresh data to ligand env viewer
-    //   await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
-    // }
+    this.searchTermForm.setValue('');
   }
 
   async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {
@@ -302,7 +308,7 @@ export class LigandsTabComponent implements AfterViewInit {
     const instanceId = this.selectedInstanceId();
 
     const ligand = this.currentLigandDatum();
-    const interactions = this.interactionsRowData();
+    const interactions = this.filteredInteractionsRows();
     const mvsAtomInteractions =
       ligand && interactions ? interactionsToMolstar(ligand, molstarSelection, interactions, instanceId).interactionsMolstarSelections : undefined;
 
@@ -342,7 +348,6 @@ export class LigandsTabComponent implements AfterViewInit {
 
     // TODO: Refactor use of residToInstanceId
     // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
-    // TODO: Fix weird table behavior when the user changes to a ligand with no interaction data
   }
 
   private readonly ligandEnvMutex = Mutex('ligandEnvMutex');
@@ -359,6 +364,22 @@ export class LigandsTabComponent implements AfterViewInit {
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
+
+    // Fetch interaction data when ligand/chainId/residueId/instanceId changes
+    effect(() => {
+      const chainId = this.currentChainId();
+      const residueId = this.currentResidueId();
+      const instanceId = this.selectedInstanceId();
+      const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
+      if (inPrefAssemblyForInstance && chainId !== undefined && residueId !== undefined) {
+        this.fetchInteractionData(chainId, residueId, instanceId);
+      }
+    });
+  }
+
+  private fetchInteractionData(authAsymId: string, residueId: string, instanceId: string | undefined) {
+    const chainForInteractions = chainNameForInteractionsApi(authAsymId, instanceId);
+    this.globalStore.dispatch(EntryActions.getInteractions({ chainId: chainForInteractions, residueId: residueId }));
   }
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
@@ -394,13 +415,13 @@ export class LigandsTabComponent implements AfterViewInit {
       const chainForInteractions = chainNameForInteractionsApi(chainId, this.selectedInstanceId());
       const interactionsFromApi = allInteractions[chainForInteractions][residueId];
       // only update if no search term
-      if (!this.searchTerm.value) {
+      if (!this.searchTermForm.value) {
         this.triggerLigandInteractionsSideEffects(interactionsFromApi);
       }
-      this.interactionsRawData.set(interactionsFromApi);
+      // this.interactionsRawData.set(interactionsFromApi);
     });
 
-    this.searchTerm.valueChanges
+    this.searchTermForm.valueChanges
       .pipe(
         map((searchQuery: string | null) => {
           const chainId = this.currentChainId();
@@ -411,9 +432,7 @@ export class LigandsTabComponent implements AfterViewInit {
           if (Object.keys(allInteractions).indexOf(chainId) === -1) return undefined;
           if (Object.keys(allInteractions[chainId]).indexOf(residueId) === -1) return undefined;
           const interactionsFromApiToFilter = allInteractions[chainId][residueId] ?? [];
-          const filteredInteractions = searchQuery
-            ? this.filterItemsBySearchQuery(searchQuery, interactionsFromApiToFilter.interactions)
-            : interactionsFromApiToFilter.interactions;
+          const filteredInteractions = this.filterItemsBySearchQuery(searchQuery, interactionsFromApiToFilter.interactions);
 
           const interactionsFromApiFiltered: InteractionFromAPI = {
             ...interactionsFromApiToFilter,
@@ -426,47 +445,12 @@ export class LigandsTabComponent implements AfterViewInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((interactionsFromApiFiltered) => {
-        if (this.noTermFiltering() === false) {
-          this.interactionsRawData.set(interactionsFromApiFiltered);
-          this.triggerLigandInteractionsSideEffects(interactionsFromApiFiltered);
-        }
-        this.noTermFiltering.set(false);
+        this.triggerLigandInteractionsSideEffects(interactionsFromApiFiltered);
       });
   }
 
   public toggleColorList(): void {
-    const colorList = this.legendsColor ?? [];
-    this.initialColorCount.update((prev) => (prev === 4 ? colorList.length : 4));
-  }
-
-  private async renderInMolstar(ligand: ProcessedLigandOrMod) {
-    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
-    if (!molstarSelection) return;
-
-    const chainId = molstarSelection[0].auth_asym_id;
-    const residueId = molstarSelection[0].auth_seq_id;
-
-    this.currentChainId.set(chainId);
-    this.currentResidueId.set(`${residueId}`);
-
-    this.noTermFiltering.set(true);
-    this.searchTerm.setValue('');
-    this.interactionsRawData.set(undefined);
-
-    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
-    const chainForInteractions = chainNameForInteractionsApi(chainId ?? '', this.selectedInstanceId());
-
-    if (inPrefAssemblyForInstance) {
-      this.globalStore.dispatch(
-        EntryActions.getInteractions({
-          chainId: chainForInteractions ?? '',
-          residueId: `${residueId}`,
-        })
-      );
-    }
-    if (ligand.type === 'modification') {
-      this.interactionsRawData.set(undefined);
-    }
+    this.legendExpanded.update((prev) => !prev);
   }
 
   public async onDropdownSelect(event: string) {
@@ -477,8 +461,8 @@ export class LigandsTabComponent implements AfterViewInit {
     if (!ligand) return;
 
     // get interactions data, create ligand selection, zoom in ligand
-    this.renderInMolstar(ligand);
-    const interactionRawData = this.interactionsRawData();
+    this.searchTermForm.setValue('');
+    const interactionRawData = this.filteredInteractionsData();
 
     // refresh data to ligand env viewer
     await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
@@ -489,14 +473,14 @@ export class LigandsTabComponent implements AfterViewInit {
 
     const ligand = this.currentLigandDatum();
     if (!ligand) return;
-    await this.renderInMolstar(ligand);
-    const interactionRawData = this.interactionsRawData();
+    this.searchTermForm.setValue('');
+    const interactionRawData = this.filteredInteractionsData();
 
     // refresh data to ligand env viewer
-    await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
+    await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData); // TODO: do this via effect
   }
 
-  private async initOrRefreshLigandEnvViewer(ligand: ProcessedLigandOrMod, interactionsRawData?: InteractionFromAPI) {
+  private async initOrRefreshLigandEnvViewer(ligand: ProcessedLigandOrMod, interactionsRawData: InteractionFromAPI | undefined) {
     const ligandId = ligand.id;
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
     const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
@@ -594,16 +578,18 @@ export class LigandsTabComponent implements AfterViewInit {
     });
   }
 
-  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+  /** Return list of interactions which match `searchQuery`. Return all interactions if `searchQuery` is empty/undefined/null. */
+  private filterItemsBySearchQuery(searchQuery: string | null | undefined, items: Interaction[]): Interaction[] {
+    if (!searchQuery) return items;
     return items.filter((item) => {
       const searchQueryLower = searchQuery.toLocaleLowerCase();
       const residueName = item.end.chem_comp_id.toString() + '_' + item.end.author_residue_number.toString();
       const atomName = item.end.atom_names.join(',');
-      const interactionType = item.interaction_details.map((type: keyof typeof INTX_NAME_STANDARDIZER) => INTX_NAME_STANDARDIZER[type]).join(',');
+      const interactionType = item.interaction_details.map(standardizeInteractionType).join(',');
       const distance = item.distance;
       const ligandAtom = item.ligand_atoms.join(',');
       const rowString = residueName + atomName + interactionType + distance + ligandAtom;
-      return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
+      return rowString.toLocaleLowerCase().includes(searchQueryLower);
     });
   }
 
@@ -673,13 +659,13 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   public downloadCSV(): void {
-    const mappedData = this.interactionsRowData()?.map((row) => {
+    const mappedData = this.filteredInteractionsRows()?.map((row) => {
       return {
         'Ligand Atoms': row.ligand_atoms.join(', '),
         'Interacting Molecule': this.getMoleculeName(row.end.chain_id),
         Residue: row.end.chem_comp_id + '_' + row.end.author_residue_number,
         Atoms: row.end.atom_names.join(','),
-        'Interaction Type': row.interaction_details.map((type) => INTX_NAME_STANDARDIZER[type as keyof typeof INTX_NAME_STANDARDIZER]).join(', '),
+        'Interaction Type': row.interaction_details.map(standardizeInteractionType).join(', '),
         'Distance (Å)': row.distance,
       };
     });
@@ -713,4 +699,14 @@ export class LigandsTabComponent implements AfterViewInit {
 function chainNameForInteractionsApi(authAsymId: string, instanceId: string | undefined) {
   const symOpForInteractions = instanceId && instanceId !== 'ASM-1' ? '_' + instanceId.split('-')[1] : '';
   return `${authAsymId}${symOpForInteractions}`;
+}
+
+function getInteractionLegendItems(colors: Record<string, string>, labels: Record<string, string>) {
+  return Object.entries(labels).map(([key, label]) => ({
+    /** Unique key */
+    key,
+    /** Interaction type name to display */
+    label,
+    color: colors[key] || '#000000', // default color if not found
+  }));
 }
