@@ -113,7 +113,6 @@
     "@angular/cli": "~17.3.0",
     "@angular/compiler-cli": "20.2.4",
     "@angular/language-service": "20.2.4",
-    "@angular/ssr": "^20.2.2",
     "@ngrx/schematics": "20.0.1",
     "@ngrx/store-devtools": "20.0.1",
     "@nrwl/storybook": "19.6.2",
