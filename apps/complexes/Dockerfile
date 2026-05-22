@@ -5,7 +5,6 @@ WORKDIR /app
 ARG APP_BASE_HREF=/
 ENV APP_BASE_HREF=$APP_BASE_HREF
 ENV NODE_ENV=production
-# ⚠️ CRITICAL: Cluster expects port 80, so we tell Node/Express to bind there
 ENV PORT=80
 
 COPY package*.json ./
