@@ -85,11 +85,11 @@
       </div>
     </div>
     <div class="stats-link-bar" id="ligand-deeper-analysis-tour">
-      @if(dashboardStatLinks['Ligands'].length > 0 && selectionIdentifier !== 'None') {
+      @if(dashboardStatLinks['Ligands'].length > 0 && currentLigandDatum()) {
       <span><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" /> View more about this ligand:</span>
       @for (displayLink of dashboardStatLinks['Ligands']; track displayLink; let islast = $last) {
       <a
-        [href]="displayLink.link + selectionIdentifier + displayLink.linkSuffix"
+        [href]="displayLink.link + currentLigandDatum()!.id + displayLink.linkSuffix"
         target="_blank"
         (click)="gAS.logPageEvents('ep_go_to_kb', {
         kb_website: 'ligands',
