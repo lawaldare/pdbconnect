@@ -31,7 +31,7 @@ app.use(
  */
 app.get('/**', (req, res, next) => {
   angularApp
-    .handle(req)
+    .handle(req) // 👈 Pass the untouched original req object cleanly
     .then((response) => {
       if (response) {
         writeResponseToNodeResponse(response, res);
