@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, untracked, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -15,6 +15,7 @@ import {
   Mutex,
   PopupWindowService,
   ScriptLoaderService,
+  SingleAsyncQueue,
   TruncateTextDirective,
   UtilService,
 } from '@pdbc/core';
@@ -139,7 +140,6 @@ export class LigandsTabComponent implements AfterViewInit {
 
   @ViewChild('ligandEnvContainer') ligandEnvContainer!: ElementRef;
   private ligandEv: any;
-  public hasLigandEnv = false;
 
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
@@ -272,27 +272,13 @@ export class LigandsTabComponent implements AfterViewInit {
 
   async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
     // used in template for dashboard stats
-    this.selectionIdentifier = ligand.id;
-
-    // update whether we show the env viewer or not
-    await this.updateVisualsDisplayed(ligand);
+    this.selectionIdentifier = ligand.id; // TODO: to computed
 
     // update visualisations with data
     // get interactions data, create ligand selection, zoom in ligand
     this.searchTermForm.setValue('');
   }
 
-  async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {
-    // modification is a special case for Ligands table in which lig env viewer is not displayed
-    if (ligand.type.includes('modification') === false) {
-      this.hasLigandEnv = true;
-    } else {
-      // if it is a ligand
-      // we await destruction of current ligand env viewer (if there is one) and resetting of loading status vars
-      this.hasLigandEnv = false;
-      await this.destroyLigandEnv();
-    }
-  }
   private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
@@ -339,8 +325,6 @@ export class LigandsTabComponent implements AfterViewInit {
     const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
     if (!molstarSelection) return;
 
-    if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
-
     const instanceId = this.selectedInstanceId();
     const mvsInteractions = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId);
 
@@ -350,11 +334,11 @@ export class LigandsTabComponent implements AfterViewInit {
     // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
   }
 
-  private readonly ligandEnvMutex = Mutex('ligandEnvMutex');
+  private readonly ligandEnvQueue = new SingleAsyncQueue();
   private readonly tableHoverMutex = Mutex('tableHoverMutex');
 
   constructor() {
-    this.ligandEnvMutex.run(async () => {
+    this.ligandEnvQueue.enqueue(async () => {
       // await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js', true);
       await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
     });
@@ -373,6 +357,22 @@ export class LigandsTabComponent implements AfterViewInit {
       const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
       if (inPrefAssemblyForInstance && chainId !== undefined && residueId !== undefined) {
         this.fetchInteractionData(chainId, residueId, instanceId);
+      }
+    });
+
+    // Refresh data to ligand env viewer when ligand/chainId/residueId/instanceId changes
+    effect(async () => {
+      const viewReady = this.viewReady();
+      if (!viewReady) return;
+
+      const ligand = this.currentLigandDatum();
+      if (ligand?.type === 'ligand') {
+        // Regular ligand -> show Ligand Env viewer
+        const interactionRawData = this.filteredInteractionsData();
+        await untracked(() => this.initOrRefreshLigandEnvViewer(ligand, interactionRawData));
+      } else {
+        // Modification or no ligand -> hide Ligand Env viewer
+        await this.destroyLigandEnv();
       }
     });
   }
@@ -418,7 +418,6 @@ export class LigandsTabComponent implements AfterViewInit {
       if (!this.searchTermForm.value) {
         this.triggerLigandInteractionsSideEffects(interactionsFromApi);
       }
-      // this.interactionsRawData.set(interactionsFromApi);
     });
 
     this.searchTermForm.valueChanges
@@ -455,29 +454,12 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-
-    // all possible rendering functions are called for a dashboard
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-
-    // get interactions data, create ligand selection, zoom in ligand
     this.searchTermForm.setValue('');
-    const interactionRawData = this.filteredInteractionsData();
-
-    // refresh data to ligand env viewer
-    await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdown.select(event);
-
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
     this.searchTermForm.setValue('');
-    const interactionRawData = this.filteredInteractionsData();
-
-    // refresh data to ligand env viewer
-    await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData); // TODO: do this via effect
   }
 
   private async initOrRefreshLigandEnvViewer(ligand: ProcessedLigandOrMod, interactionsRawData: InteractionFromAPI | undefined) {
@@ -488,18 +470,13 @@ export class LigandsTabComponent implements AfterViewInit {
     const resId = molstarSelection[0].auth_seq_id;
     const chainId = molstarSelection[0].auth_asym_id!;
 
-    // this.resetLigEnvRenderer();
-    if (!this.viewReady()) {
-      await firstValueFrom(
-        toObservable(this.viewReady).pipe(
-          filter((ready) => ready),
-          take(1)
-        )
-      );
-    }
-    const imageContainer = this.ligandEnvContainer.nativeElement;
+    console.log('RUN initOrRefreshLigandEnvViewer', ligand.id, chainId, resId, ':', interactionsRawData?.interactions.length);
 
-    this.ligandEnvMutex.run(async () => {
+    const imageContainer = this.ligandEnvContainer?.nativeElement;
+
+    const QUEUE_THROTTLE_MS = 1000; // Throttling here avoids repeated rendering when user quickly types something in the filter form
+
+    this.ligandEnvQueue.enqueueWithThrottle(QUEUE_THROTTLE_MS, async () => {
       const depiction = await firstValueFrom(this.entryApiService.fetchDepiction(ligandId).pipe(takeUntilDestroyed(this.destroyRef)));
 
       if (this.ligandEv) {
@@ -512,11 +489,7 @@ export class LigandsTabComponent implements AfterViewInit {
       ligandComp.menuOn = true;
       ligandComp.zoomControlsOn = true;
 
-      // this.renderer.setAttribute(ligandComp, 'pdb-id', this.entryId() ?? ''.toLowerCase());
       this.renderer.appendChild(imageContainer, ligandComp);
-      // ligandComp.display.initLigandInteraction = () => {
-      //   ligandComp.chainId = chainId;
-      // };
       this.renderer.setProperty(ligandComp, 'depiction', depiction);
       this.ligandEv = ligandComp;
       this.ligandEv.pdbId = `${this.entryId()}`;
@@ -525,9 +498,9 @@ export class LigandsTabComponent implements AfterViewInit {
       this.ligandEv.display.pdbId = `${this.entryId()}`;
       this.ligandEv.display.chainId = chainId;
       this.ligandEv.display.resId = resId;
-    });
-    if (interactionsRawData) {
-      this.ligandEnvMutex.run(async () => {
+
+      if (interactionsRawData && interactionsRawData.interactions.length > 0) {
+        // Calling `addLigandInteractions` with [] would freeze ligand env viewer!
         const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
         const copiedInteractions = JSON.parse(JSON.stringify(interactionsRawData));
         dataToLigEnv[`${this.entryId()}`] = [copiedInteractions];
@@ -535,24 +508,11 @@ export class LigandsTabComponent implements AfterViewInit {
           await this.ligandEv.display.addLigandInteractions(dataToLigEnv, false);
         } catch (err) {
           console.error('Failed to add ligand interactions:', err);
-          return;
         }
-
-        this.ligandEv.display.centerScene();
-
-        // const links = this.ligandEv.display.links;
-        // links.selectAll('line').on('mouseenter', null).on('mouseleave', null); // clear previous listeners
-        // ... if there is ever a way to use Molstar to select the interactions
-        // .on('mouseenter', (ev: any, datum: any) => {
-        //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
-        //   this.ligandEv.display.linkMouseOverEventHandler(datum, datum.index, g);
-        // })
-        // .on('mouseleave', (ev: any, datum: any) => {
-        //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
-        //   this.ligandEv.display.linkMouseOutEventHandler(datum, datum.index, g);
-        // })
-      });
-    }
+      }
+      this.ligandEv.display.centerScene();
+      console.log('FINISHED initOrRefreshLigandEnvViewer', ligand.id, chainId, resId, ':', interactionsRawData?.interactions.length);
+    });
   }
 
   public toggleSidebar() {
@@ -560,19 +520,16 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async destroyLigandEnv() {
-    this.ligandEnvMutex.run(async () => {
+    console.log('destroyLigandEnv');
+    this.ligandEnvQueue.enqueue(async () => {
       // to destroy ligand env we use removeChild and reset all variables related to it's loading status
       if (this.ligandEnvContainer && this.ligandEnvContainer.nativeElement) {
         const imageContainer = this.ligandEnvContainer.nativeElement;
         this.renderer.removeChild(imageContainer, this.ligandEv);
       }
 
-      if (this.ligandEv) {
-        // this.ligandEnvContainer.nativeElement.innerHTML = '';
-        this.ligandEv = undefined;
-      }
+      this.ligandEv = undefined;
 
-      this.hasLigandEnv = false;
       // unfortunately needed so destruction happens syncronously
       await firstValueFrom(timer(100));
     });
