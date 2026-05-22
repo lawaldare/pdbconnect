@@ -25,7 +25,7 @@ import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { AgGridAngular } from 'ag-grid-angular';
 import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { debounceTime, distinctUntilChanged, filter, firstValueFrom, map, take, timer } from 'rxjs';
+import { debounceTime, distinctUntilChanged, firstValueFrom, timer } from 'rxjs';
 import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
@@ -112,8 +112,6 @@ export class LigandsTabComponent implements AfterViewInit {
   private readonly preferredAssemblyId = computed(() => this.summaryData()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
   /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
   private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined));
-
-  public residToInstanceId: { [key: string]: string | undefined } = {};
 
   public readonly tabDataLoaded = computed(() => this.processedLigands() !== undefined);
 
@@ -225,7 +223,6 @@ export class LigandsTabComponent implements AfterViewInit {
       ...interactionsForCurrentInstance,
       interactions: filteredInteractions,
     };
-    // TODO: replace calls to triggerLigandInteractionsSideEffects by effect
   });
 
   /** Filtered interactions for current ligand/chainId/residueId/instanceId. */
@@ -274,8 +271,6 @@ export class LigandsTabComponent implements AfterViewInit {
     // used in template for dashboard stats
     this.selectionIdentifier = ligand.id; // TODO: to computed
 
-    // update visualisations with data
-    // get interactions data, create ligand selection, zoom in ligand
     this.searchTermForm.setValue('');
   }
 
@@ -316,23 +311,6 @@ export class LigandsTabComponent implements AfterViewInit {
     };
   });
   private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
-
-  async triggerLigandInteractionsSideEffects(rawInteractions: InteractionFromAPI | undefined) {
-    const interactions = rawInteractions?.interactions;
-    if (!interactions) return;
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
-    if (!molstarSelection) return;
-
-    const instanceId = this.selectedInstanceId();
-    const mvsInteractions = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId);
-
-    this.residToInstanceId = mvsInteractions.residToInstanceId;
-
-    // TODO: Refactor use of residToInstanceId
-    // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
-  }
 
   private readonly ligandEnvQueue = new SingleAsyncQueue();
   private readonly tableHoverMutex = Mutex('tableHoverMutex');
@@ -404,48 +382,8 @@ export class LigandsTabComponent implements AfterViewInit {
       const datum = this.ligandTableRows()[idx];
       if (datum) {
         this.currentLigandDatum.set(datum);
-        await this.triggerLigandUpdateSideEffects(datum);
       }
     });
-
-    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
-      const chainId = this.currentChainId();
-      const residueId = this.currentResidueId();
-      if (!chainId || !residueId) return;
-      const chainForInteractions = chainNameForInteractionsApi(chainId, this.selectedInstanceId());
-      const interactionsFromApi = allInteractions[chainForInteractions][residueId];
-      // only update if no search term
-      if (!this.searchTermForm.value) {
-        this.triggerLigandInteractionsSideEffects(interactionsFromApi);
-      }
-    });
-
-    this.searchTermForm.valueChanges
-      .pipe(
-        map((searchQuery: string | null) => {
-          const chainId = this.currentChainId();
-          const residueId = this.currentResidueId();
-          if (!chainId || !residueId) return undefined;
-          const allInteractions = this.interactions();
-          if (!allInteractions || Object.keys(allInteractions).length === 0) return undefined;
-          if (Object.keys(allInteractions).indexOf(chainId) === -1) return undefined;
-          if (Object.keys(allInteractions[chainId]).indexOf(residueId) === -1) return undefined;
-          const interactionsFromApiToFilter = allInteractions[chainId][residueId] ?? [];
-          const filteredInteractions = this.filterItemsBySearchQuery(searchQuery, interactionsFromApiToFilter.interactions);
-
-          const interactionsFromApiFiltered: InteractionFromAPI = {
-            ...interactionsFromApiToFilter,
-            interactions: filteredInteractions,
-          };
-          // interactionsFromApi.interactions = filteredInteractions;
-          // return searchQuery ? this.filterItemsBySearchQuery(searchQuery, interactionsFromApi.interactions) : interactionsFromApi.interactions;
-          return interactionsFromApiFiltered;
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((interactionsFromApiFiltered) => {
-        this.triggerLigandInteractionsSideEffects(interactionsFromApiFiltered);
-      });
   }
 
   public toggleColorList(): void {
@@ -472,7 +410,7 @@ export class LigandsTabComponent implements AfterViewInit {
 
     console.log('RUN initOrRefreshLigandEnvViewer', ligand.id, chainId, resId, ':', interactionsRawData?.interactions.length);
 
-    const imageContainer = this.ligandEnvContainer?.nativeElement;
+    const imageContainer = this.ligandEnvContainer.nativeElement;
 
     const QUEUE_THROTTLE_MS = 1000; // Throttling here avoids repeated rendering when user quickly types something in the filter form
 
@@ -570,25 +508,19 @@ export class LigandsTabComponent implements AfterViewInit {
     if (!instance) return;
     const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
     if (!molstarSelection) return;
-    const entityId = molstarSelection[0].label_entity_id;
     const chainId = molstarSelection[0].auth_asym_id;
     const residueId = molstarSelection[0].auth_seq_id;
     const resIns = molstarSelection[0].pdbx_PDB_ins_code;
 
-    const chainToEntityId = this.chainToEntityId();
-    if (!chainToEntityId) return;
-    const residEntityId = chainToEntityId[int.end.chain_id];
-
     const instance_id = this.selectedInstanceId();
 
-    const residueChain = int.end.chain_id.split('_')[0];
+    const defaultInstance = this.displayedAssemblyId() === undefined ? undefined : 'ASM-1';
+    const [residueChain, residueInstance] = chainIdAndInstanceIdFromRenamedChain(int.end.chain_id, defaultInstance);
     const residueNum = int.end.author_residue_number;
     const residueIns = normalizeInsertionCode(int.end.author_insertion_code);
-    const resIdentifier = `${residueChain}|${residueNum}|${residueIns}`;
 
     const atomSelections: QueryParamForHelpers[] = [
       {
-        label_entity_id: `${entityId}`,
         auth_asym_id: chainId,
         auth_seq_id: residueId,
         pdbx_PDB_ins_code: normalizeInsertionCode(resIns),
@@ -596,23 +528,20 @@ export class LigandsTabComponent implements AfterViewInit {
         instance_id,
       },
       {
-        label_entity_id: `${residEntityId}`,
         auth_asym_id: residueChain,
         auth_seq_id: residueNum,
         pdbx_PDB_ins_code: residueIns,
         atoms: int.end.atom_names,
-        instance_id: this.residToInstanceId[resIdentifier],
+        instance_id: residueInstance,
       },
     ];
     await instance.visual.highlight({ data: atomSelections });
-    // await instance.visual.focus(atomSelections);
   }
 
   private async _handleCellMouseOut() {
     const instance = this._molstarComponent?.getInstance();
     if (!instance) return;
     await instance.visual.clearHighlight();
-    // if (this.ligandSelection) await instance.visual.focus(this.ligandSelection);
   }
 
   public downloadCSV(): void {
@@ -652,10 +581,14 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 }
 
-// TODO: Fix mapping of instance_id vs API chain numbering
+// TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
 function chainNameForInteractionsApi(authAsymId: string, instanceId: string | undefined) {
   const symOpForInteractions = instanceId && instanceId !== 'ASM-1' ? '_' + instanceId.split('-')[1] : '';
   return `${authAsymId}${symOpForInteractions}`;
+}
+function chainIdAndInstanceIdFromRenamedChain(renamedChain: string, fallbackInstanceId: string | undefined): [chainId: string, instanceId: string | undefined] {
+  const [chainId, instanceNum] = renamedChain.split('_');
+  return [chainId, instanceNum !== undefined ? `ASM-${instanceNum}` : fallbackInstanceId];
 }
 
 function getInteractionLegendItems(colors: Record<string, string>, labels: Record<string, string>) {
