@@ -244,7 +244,14 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public dashboardStatLinks = dashboardStatLinks;
 
-  public macromoleculeSequence = computed(() => this.sequenceDetails()?.fullSequence);
+  public macromoleculeSequence = computed(() => {
+    return this.sequenceDetails()?.sequenceForViewer;
+  });
+
+  public indexWithMultipleResidues = computed(() => {
+    return this.sequenceDetails()?.indexWithMultipleResidues;
+  });
+
   public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
 
   public getCleanSelectionName = getCleanSelectionName;
@@ -416,7 +423,21 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   @ViewChild('rnaViewerContainer', { static: false }) rnaViewerContainer!: ElementRef;
   private rnaViewerInstance: any;
 
-  public sequenceDetails = signal<{ title: string; fullSequence: string } | undefined>(undefined);
+  public sequenceDetails = signal<
+    | {
+        title: string;
+        fullSequence: string;
+        sequenceForViewer: string;
+        indexWithMultipleResidues: {
+          [key: string]: {
+            three_letter_code: string;
+            one_letter_code: string;
+            parent_chem_comp_ids: string[];
+          };
+        };
+      }
+    | undefined
+  >(undefined);
 
   public readonly selectionUniprotId = computed(() => {
     const allowed = this.uniprotsAllowed();
@@ -641,6 +662,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   private async updateSequenceDetailsFromChainId(macromolecule: ProcessedMacromolecule, chainId: string) {
     this.sequenceDetails.set(undefined);
     const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
+    console.log('sequenceDetails');
+    console.log(sequenceDetails);
     this.sequenceDetails.set(sequenceDetails);
     await this.updateBackgroundAnnotation();
   }

@@ -67,7 +67,7 @@ export class ComplexUtilService {
     const trimmedValue = ligandId.trim();
     const origin = window.location.origin;
     const pathname = '/chemicalCompound/show/';
-    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe/connect';
+    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe-srv/pdbechem';
     const href = origin + baseHref + pathname + trimmedValue;
     window.open(href, '_blank');
   }

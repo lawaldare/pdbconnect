@@ -89,22 +89,6 @@ build:
   tags:
     - pdbe-docker
 
-storybook_build:
-  stage: build
-  image: node:$NODE_VERSION
-  extends: .distributed
-  script:
-    - npx nx build-storybook lib-docs
-  artifacts:
-    paths:
-      - dist/
-    expire_in: 1 week
-  tags:
-    - pdbe-docker
-  except:
-    refs:
-      - playground
-
 performance_check:
   stage: metrics
   image: cypress/browsers:node-20.11.0-chrome-121.0.6167.85-1-ff-120.0-edge-121.0.2277.83-1
@@ -144,37 +128,6 @@ performance_check:
   allow_failure: true
   tags:
     - pdbe-docker
-
-storybook_publish:
-  stage: publish
-  needs:
-    - storybook_build
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build --pull --cache-from $CI_REGISTRY_IMAGE --build-arg APP_BASE_HREF=$STORYBOOK_BASE_HREF --tag $CI_REGISTRY_IMAGE/connect-storybook:$CI_COMMIT_SHORT_SHA --file libs/lib-docs/Dockerfile .
-    - docker push $CI_REGISTRY_IMAGE/connect-storybook:$CI_COMMIT_SHORT_SHA
-  tags:
-    - pdbe-shell
-  except:
-    refs:
-      - playground
-
-storybook_publish_deploy:
-  stage: deploy
-  variables:
-    UPSTREAM_REF: main
-    IMAGE_PATHS: $CI_REGISTRY_IMAGE/connect-storybook:$CI_COMMIT_SHORT_SHA
-    IMAGE_NAMES: connect-storybook
-    APP_NAME: connect-storybook
-  trigger:
-    project: pdbe/backend/k8s-deploy-configs
-    branch: main
-    strategy: depend
-  needs:
-    - storybook_publish
-  except:
-    refs:
-      - playground
 
 triggers:
   stage: trigger

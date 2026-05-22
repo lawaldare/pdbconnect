@@ -9,8 +9,7 @@ WORKDIR /app
 COPY dist/apps/ligands/browser /usr/share/nginx/html
 COPY apps/ligands/nginx-custom.conf /etc/nginx/conf.d/default.conf
 
-ARG APP_BASE_HREF
-ENV APP_BASE_HREF=$APP_BASE_HREF
+ENV APP_BASE_HREF="/pdbe-srv/pdbechem/chemicalCompound/"
 
 RUN echo "ASSETS_PATH=$(echo $APP_BASE_HREF | awk '{print substr($0, 2, length($0)-2)}') && \
           echo \"ASSETS_PATH=\$ASSETS_PATH\" && \

@@ -1,5 +1,5 @@
 export type SmartSequenceAnnotationScales = 'ordinal' | 'quantile';
-export type SmartSequenceAnnotationRenderingTypes = 'Background' | 'Underline' | 'CircleAbove' | 'TextColour';
+export type SmartSequenceAnnotationRenderingTypes = 'Background' | 'Underline' | 'CircleAbove' | 'TextColour' | 'DistStarAbove' | 'HexagonAbove';
 
 export interface AlternativeNumbering {
   numberingType: 'Auth' | 'UniProt'; // e.g Auth, UniProt

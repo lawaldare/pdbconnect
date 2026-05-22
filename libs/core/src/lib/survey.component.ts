@@ -24,9 +24,10 @@ const TEXT_MAX_LENGTH = 400;
             <div class="survey-question-area">
               @if (currentQuestion()) {
                 <p class="survey-progress">{{ questionProgress }}</p>
-                <p class="survey-question-title">
-                  {{ currentQuestion()?.title }}
-                </p>
+                <p class="survey-question-title" [innerHTML]="currentQuestion()?.title"></p>
+                @if (currentQuestion()?.subtitle) {
+                  <p class="survey-question-subtitle" [innerHTML]="currentQuestion()?.subtitle"></p>
+                }
 
                 <!-- STAR RATING -->
                 @if (currentQuestion()?.type === 'rating') {
@@ -48,6 +49,24 @@ const TEXT_MAX_LENGTH = 400;
                           [value]="choice"
                           [checked]="answers()[currentId] === choice"
                           (change)="saveAnswer(currentId!, choice)"
+                        />
+                        {{ choice }}
+                      </label>
+                    }
+                  </div>
+                }
+
+                <!-- MULTIPLE CHOICE (CHECK BOXES) -->
+                @if (currentQuestion()?.type === 'multiple-check') {
+                  <div class="multiple-row">
+                    @for (choice of currentQuestion()?.choices ?? []; track choice) {
+                      <label class="choice-row">
+                        <input
+                          type="checkbox"
+                          [name]="currentId"
+                          [value]="choice"
+                          [checked]="answers()[currentId]?.includes(choice)"
+                          (change)="onCheckboxChange(currentId!, choice, $event)"
                         />
                         {{ choice }}
                       </label>
@@ -103,7 +122,7 @@ const TEXT_MAX_LENGTH = 400;
         position: fixed;
         bottom: 15px;
         right: 15px;
-        width: 340px;
+        max-width: 340px;
         background: white;
         color: #222;
         padding: 1rem;
@@ -141,7 +160,7 @@ const TEXT_MAX_LENGTH = 400;
 
       .survey-question-area {
         min-height: 60px;
-        max-height: 160px;
+        max-height: 45vh;
         overflow-y: scroll;
         padding: 5px 0 10px;
         display: flex;
@@ -150,6 +169,9 @@ const TEXT_MAX_LENGTH = 400;
 
         .multiple-row {
           width: 85%;
+          label {
+            white-space: nowrap;
+          }
         }
       }
 
@@ -163,7 +185,17 @@ const TEXT_MAX_LENGTH = 400;
       .survey-question-title {
         font-size: 16px;
         font-weight: 600;
-        margin-bottom: 6px;
+        margin-bottom: 6px !important;
+      }
+
+      .survey-question-subtitle {
+        font-size: 14px;
+        font-weight: 400;
+        margin-bottom: 6px !important;
+        a {
+          font-size: 14px;
+          line-height: normal;
+        }
       }
 
       /* STAR RATING */
@@ -276,7 +308,9 @@ export class SurveyPopupComponent {
 
   get questionProgress(): string {
     const total = this.questions.length;
-    return `Question ${this.currentIndex + 1} of ${total}`;
+    const questionHasChoices = this.currentQuestion()?.choices?.length;
+    const questionOpts = questionHasChoices ? `(${questionHasChoices} options)` : '';
+    return `Question ${this.currentIndex + 1} of ${total} ${questionOpts}`;
   }
 
   get isLastQuestion(): boolean {
@@ -330,6 +364,22 @@ export class SurveyPopupComponent {
     this.survey.saveAnswer(questionId, value);
   }
 
+  onCheckboxChange(questionId: string, choice: string, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+
+    const current: string[] = this.answers()[questionId] ?? [];
+
+    let updated: string[];
+
+    if (checked) {
+      updated = [...current, choice];
+    } else {
+      updated = current.filter((c) => c !== choice);
+    }
+
+    this.saveAnswer(questionId, updated);
+  }
+
   /** Hard-coded limit + HTML sanitisation */
   onTextInput(questionId: string, raw: string) {
     const cleaned = this.sanitize(raw).slice(0, this.textMax);
@@ -345,7 +395,17 @@ export class SurveyPopupComponent {
 
   submit() {
     this.submitted = true;
-    this.survey.submit();
+
+    const formattedAnswers = Object.fromEntries(
+      Object.entries(this.answers()).map(([key, value]) => {
+        if (Array.isArray(value)) {
+          return [key, value.join('\r\n')]; // newline-separated for checkbox
+        }
+        return [key, value];
+      })
+    );
+
+    this.survey.submit(formattedAnswers);
 
     setTimeout(() => {
       this.survey.showSurvey.set(false);

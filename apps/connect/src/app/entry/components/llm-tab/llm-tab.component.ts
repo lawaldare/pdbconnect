@@ -222,7 +222,14 @@ export class LLMTabComponent implements OnInit {
     return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
   });
 
-  public macromoleculeSequence = computed(() => this.sequenceDetails()?.fullSequence);
+  public macromoleculeSequence = computed(() => {
+    return this.sequenceDetails()?.sequenceForViewer;
+  });
+
+  public indexWithMultipleResidues = computed(() => {
+    return this.sequenceDetails()?.indexWithMultipleResidues;
+  });
+
   public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
   public llmAnnotationForSeq = signal<SmartSequenceAnnotation | undefined>(undefined);
   public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
@@ -376,8 +383,7 @@ export class LLMTabComponent implements OnInit {
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
 
-  // public sequenceDetails = signal<{ title: string; fullSequence: string } | undefined>(undefined);
-  public sequenceDetails = computed<{ title: string; fullSequence: string } | undefined>(() => {
+  public sequenceDetails = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return undefined;
     const chainId = this.dropdown.selectedOption()?.data.authAsymId;
