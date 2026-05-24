@@ -9,7 +9,6 @@ const serverConfig: ApplicationConfig = {
     provideServerRendering(withRoutes(serverRoutes)),
     {
       provide: APP_BASE_HREF,
-      // Read the environment variable directly at runtime. Fallback to local root if not set.
       useValue: process.env['APP_BASE_HREF'] || '/',
     },
   ],
