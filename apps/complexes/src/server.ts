@@ -51,13 +51,23 @@ app.get('/**', (req, res, next) => {
       if (response) {
         writeResponseToNodeResponse(response, res);
       } else {
-        next();
+        console.warn(`No SSR response generated for path: ${req.path}`);
+        res.status(404).send('Page not found'); // ✅ Proper response
       }
     })
     .catch((err) => {
       console.error('SSR error:', err);
       res.status(500).send('Internal server error');
     });
+});
+
+app.use((_req, _res, err: any) => {
+  console.error('Unhandled error:', err);
+  _res.status(500).send('Internal server error');
+});
+
+app.use((_req, res) => {
+  res.status(404).send('Page not found');
 });
 
 /**
