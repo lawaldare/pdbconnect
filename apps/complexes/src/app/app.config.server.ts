@@ -9,7 +9,7 @@ const serverConfig: ApplicationConfig = {
     provideServerRendering(withRoutes(serverRoutes)),
     {
       provide: APP_BASE_HREF,
-      useValue: process.env['APP_BASE_HREF'] || '/',
+      useValue: process.env['APP_BASE_HREF'] || '/pdbe/pdbe-kb/complexes/',
     },
   ],
 };
