@@ -23,19 +23,19 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 // // 1. Force an instant 200 OK for the raw root path (in case the probe hits here)
-// app.get('/', (_req, res) => {
-//   res.status(200).send('OK');
-// });
+app.get('/', (_req, res) => {
+  res.status(200).send('OK');
+});
 
-// // 2. Force an instant 200 OK for a generic health path
-// app.get('/health', (_req, res) => {
-//   res.status(200).send('OK');
-// });
+// 2. Force an instant 200 OK for a generic health path
+app.get('/health', (_req, res) => {
+  res.status(200).send('OK');
+});
 
-// // 3. Keep your existing complexes health check intact right here too
-// app.get(['/__complexes-health', '/pdbe/pdbe-kb/complexes/__complexes-health'], (_req, res) => {
-//   res.type('text/plain').send('complexes ssr\n');
-// });
+// 3. Keep your existing complexes health check intact right here too
+app.get(['/__complexes-health', '/pdbe/pdbe-kb/complexes/__complexes-health'], (_req, res) => {
+  res.type('text/plain').send('complexes ssr\n');
+});
 
 /**
  * Serve static files from /browser
