@@ -22,7 +22,7 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-// // 1. Force an instant 200 OK for the raw root path (in case the probe hits here)
+// 1. Force an instant 200 OK for the raw root path (in case the probe hits here)
 app.get('/', (_req, res) => {
   res.status(200).send('OK');
 });
