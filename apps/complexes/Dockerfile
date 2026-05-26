@@ -7,7 +7,7 @@ ENV NODE_ENV=production
 ENV PORT=80
 
 COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --legacy-peer-deps --ignore-scripts
 
 # Copy your built Angular artifacts
 COPY dist/apps/complexes/server /app/server
