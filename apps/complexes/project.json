@@ -60,7 +60,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "/pdbe/pdbe-kb/complexes/"
+          "baseHref": "/pdbe/pdbe-kb/complexes/",
+          "deployUrl": "/pdbe/pdbe-kb/complexes/"
         },
         "development": {
           "aot": true,
@@ -69,7 +70,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "deployUrl": "/pdbe/pdbe-kb/complexes/"
+          "deployUrl": "/pdbe/pdbe-kb/complexes/",
+          "baseHref": "/pdbe/pdbe-kb/complexes/"
         },
         "local": {
           "optimization": false,

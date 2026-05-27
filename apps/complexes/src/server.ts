@@ -40,6 +40,7 @@ const angularApp = new AngularNodeAppEngine({
  * Serve static files from /browser
  */
 app.use(
+  '/pdbe/pdbe-kb/complexes',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
@@ -51,12 +52,30 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.get('/**', (req, res, next) => {
+  // 🪵 DEBUG LOG: See exactly what headers are hitting the Node server
+  console.log(`[SSR Request] Path: ${req.path} | Host Header: "${req.headers['host']}" | X-Forwarded-Host: "${req.headers['x-forwarded-host']}"`);
+
+  // Verify if the host is whitelisted
+  const incomingHost = req.headers['host'];
+  const incomingForwardedHost = req.headers['x-forwarded-host'] as string;
+
+  if (incomingHost && !allowedHosts.includes(incomingHost)) {
+    console.error(`🚨 [CRITICAL CONFIG ALERT] Angular SSR is about to reject this request! Host "${incomingHost}" is not in the allowedHosts whitelist.`);
+  }
+  if (incomingForwardedHost && !allowedHosts.includes(incomingForwardedHost)) {
+    console.error(
+      `🚨 [CRITICAL CONFIG ALERT] Angular SSR is about to reject this request! X-Forwarded-Host "${incomingForwardedHost}" is not in the allowedHosts whitelist.`
+    );
+  }
+
   angularApp
     .handle(req)
     .then((response) => {
       if (response) {
+        console.log(`[SSR Success] Generated HTML for ${req.path} - Status: ${response.status}`);
         writeResponseToNodeResponse(response, res);
       } else {
+        console.warn(`[SSR Warning] No response object returned for ${req.path}, falling back to next()`);
         next();
       }
     })
