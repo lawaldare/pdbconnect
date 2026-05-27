@@ -31,32 +31,19 @@ const angularApp = new AngularNodeAppEngine({
 /**
  * Serve static files from /browser
  */
-// app.use(
-//   '/pdbe/pdbe-kb/complexes',
-//   express.static(browserDistFolder, {
-//     maxAge: '1y',
-//     index: false,
-//     redirect: false,
-//   })
-// );
-
 app.use(
+  '/pdbe/pdbe-kb/complexes',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
     redirect: false,
-    setHeaders(res, path) {
-      if (path.endsWith('.js')) {
-        res.setHeader('Content-Type', 'application/javascript');
-      }
-    },
   })
 );
 
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.get('*', (req, res, next) => {
+app.get('/**', (req, res, next) => {
   angularApp
     .handle(req)
     .then((response) => {
