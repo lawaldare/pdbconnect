@@ -8,7 +8,9 @@ import { fileURLToPath } from 'node:url';
 import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
 
 if (angularAppEngineManifest) {
-  angularAppEngineManifest.allowedHosts = [];
+  if (!angularAppEngineManifest.allowedHosts) {
+    angularAppEngineManifest.allowedHosts = [];
+  }
 }
 
 ɵsetAngularAppEngineManifest(angularAppEngineManifest);
@@ -18,6 +20,7 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine({
+  allowedHosts: ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost'],
   trustProxyHeaders: true,
 });
 
@@ -36,6 +39,11 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.get('/**', (req, res, next) => {
+  delete req.headers['x-forwarded-host'];
+  delete req.headers['x-forwarded-scheme'];
+  delete req.headers['x-forwarded-port'];
+  req.headers['host'] = 'localhost';
+
   angularApp
     .handle(req)
     .then((response) => {
