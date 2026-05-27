@@ -19,7 +19,7 @@ export class BaseHrefService {
     if (hostname === 'localhost') {
       baseHref = '/';
     } else if (pathname.includes('complexes')) {
-      baseHref = '/pdbe/pdbe-kb/complexes/';
+      baseHref = '/pdbe/pdbe-kb/';
     } else if (pathname.includes('entry')) {
       baseHref = '/pdbe/entry/';
     } else if (pathname.includes('search/index')) {

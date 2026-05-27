@@ -10,20 +10,9 @@ ENV PORT=80
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps --ignore-scripts
 
-# 1. Copy the server artifacts normally
+# Copy your built Angular artifacts
 COPY dist/apps/complexes/server /app/server
-
-# 2. Copy the WHOLE browser artifact folder into a temporary staging area
-COPY dist/apps/complexes/browser /app/browser-staging
-
-# 3. Use an automatic shell command to find wherever the files landed and flatten them into /app/browser!
-RUN mkdir -p /app/browser && \
-    if [ -d "/app/browser-staging/pdbe/pdbe-kb/complexes" ]; then \
-        cp -r /app/browser-staging/pdbe/pdbe-kb/complexes/* /app/browser/; \
-    else \
-        cp -r /app/browser-staging/* /app/browser/; \
-    fi && \
-    rm -rf /app/browser-staging
+COPY dist/apps/complexes/browser /app/browser/
 
 EXPOSE 80
 
