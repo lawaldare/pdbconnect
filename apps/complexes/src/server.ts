@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { AngularAppEngine, ɵsetAngularAppEngineManifest } from '@angular/ssr';
+import { ɵsetAngularAppEngineManifest } from '@angular/ssr';
 import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
@@ -13,16 +13,11 @@ if (angularAppEngineManifest) {
 
 ɵsetAngularAppEngineManifest(angularAppEngineManifest);
 
-AngularAppEngine.ɵallowStaticRouteRender = true;
-AngularAppEngine.ɵdisableAllowedHostsCheck = true;
-
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine({
-  trustProxyHeaders: true,
-});
+const angularApp = new AngularNodeAppEngine();
 
 /**
  * Serve static files from /browser

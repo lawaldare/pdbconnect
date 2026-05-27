@@ -3,6 +3,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV APP_BASE_HREF=/pdbe/pdbe-kb/complexes/
+ENV ALLOW_ALL_HOSTS=true
 ENV NODE_ENV=production
 ENV PORT=80
 
@@ -14,6 +15,7 @@ COPY dist/apps/complexes/server /app/server
 COPY dist/apps/complexes/browser /app/browser
 
 EXPOSE 80
+
 
 # Run the Express SSR server directly
 CMD ["node", "--use-env-proxy", "/app/server/server.mjs"]
