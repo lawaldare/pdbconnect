@@ -2,8 +2,8 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
+ENV NG_TRUST_PROXY_HEADERS=true
 ENV APP_BASE_HREF=/pdbe/pdbe-kb/complexes/
-ENV ALLOW_ALL_HOSTS=true
 ENV NODE_ENV=production
 ENV PORT=80
 
