@@ -9,9 +9,8 @@ import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
 
 // 🛑 ADD THIS EXACT OBJECT REPAIR BLOCK RIGHT HERE:
 if (angularAppEngineManifest) {
-  if (!angularAppEngineManifest.allowedHosts) {
-    angularAppEngineManifest.allowedHosts = [];
-  }
+  angularAppEngineManifest.trustProxyHeaders = true;
+  angularAppEngineManifest.allowedHosts = ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost'];
 }
 
 ɵsetAngularAppEngineManifest(angularAppEngineManifest);
@@ -53,14 +52,12 @@ app.use(
  */
 app.get('/**', (req, res, next) => {
   angularApp
-    .handle(req) // 👈 Pass the untouched original req object cleanly
+    .handle(req)
     .then((response) => {
       if (response) {
         writeResponseToNodeResponse(response, res);
       } else {
-        next(); // Pass control to the next middleware (which will handle 404)
-        // console.warn(`No SSR response generated for path: ${req.path}`);
-        // res.status(404).send('Page not found'); // ✅ Proper response
+        next();
       }
     })
     .catch((err) => {
@@ -69,19 +66,6 @@ app.get('/**', (req, res, next) => {
     });
 });
 
-// app.use((_req, _res, err: any) => {
-//   console.error('Unhandled error:', err);
-//   _res.status(500).send('Internal server error');
-// });
-
-// app.use((_req, res) => {
-//   res.status(404).send('Page not found');
-// });
-
-/**
- * Start the server if this module is the main entry point.
- * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
- */
 if (isMainModule(import.meta.url)) {
   const port = Number(process.env['PORT']) || 4000;
   app.listen(port, '0.0.0.0', () => {
