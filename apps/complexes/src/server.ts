@@ -7,20 +7,32 @@ import { fileURLToPath } from 'node:url';
 // @ts-ignore Angular generates this manifest next to the built server bundle.
 import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
 
+const allowedHosts = ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost', '127.0.0.1'];
+
+// if (angularAppEngineManifest) {
+//   // if (!angularAppEngineManifest.allowedHosts) {
+//   angularAppEngineManifest.allowedHosts = allowedHosts;
+//   // }
+// }
+
 if (angularAppEngineManifest) {
-  if (!angularAppEngineManifest.allowedHosts) {
-    angularAppEngineManifest.allowedHosts = [];
-  }
+  const updatedManifest = {
+    ...angularAppEngineManifest,
+    allowedHosts: allowedHosts,
+  };
+  ɵsetAngularAppEngineManifest(updatedManifest);
+} else {
+  ɵsetAngularAppEngineManifest(angularAppEngineManifest);
 }
 
-ɵsetAngularAppEngineManifest(angularAppEngineManifest);
+// ɵsetAngularAppEngineManifest(angularAppEngineManifest);
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine({
-  allowedHosts: ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost'],
+  allowedHosts: allowedHosts,
   trustProxyHeaders: true,
 });
 
@@ -39,11 +51,6 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.get('/**', (req, res, next) => {
-  delete req.headers['x-forwarded-host'];
-  delete req.headers['x-forwarded-scheme'];
-  delete req.headers['x-forwarded-port'];
-  req.headers['host'] = 'localhost';
-
   angularApp
     .handle(req)
     .then((response) => {
