@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ɵsetAngularAppEngineManifest } from '@angular/ssr';
+import { AngularAppEngine, ɵsetAngularAppEngineManifest } from '@angular/ssr';
 import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
@@ -7,12 +7,14 @@ import { fileURLToPath } from 'node:url';
 // @ts-ignore Angular generates this manifest next to the built server bundle.
 import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
 
-// 🛑 ADD THIS EXACT OBJECT REPAIR BLOCK RIGHT HERE:
 if (angularAppEngineManifest) {
-  angularAppEngineManifest.allowedHosts = ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost'];
+  angularAppEngineManifest.allowedHosts = [];
 }
 
 ɵsetAngularAppEngineManifest(angularAppEngineManifest);
+
+AngularAppEngine.ɵallowStaticRouteRender = true;
+AngularAppEngine.ɵdisableAllowedHostsCheck = true;
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -21,21 +23,6 @@ const app = express();
 const angularApp = new AngularNodeAppEngine({
   trustProxyHeaders: true,
 });
-
-// // 1. Force an instant 200 OK for the raw root path (in case the probe hits here)
-// app.get('/', (_req, res) => {
-//   res.status(200).send('OK');
-// });
-
-// // 2. Force an instant 200 OK for a generic health path
-// app.get('/health', (_req, res) => {
-//   res.status(200).send('OK');
-// });
-
-// // 3. Keep your existing complexes health check intact right here too
-// app.get(['/__complexes-health', '/pdbe/pdbe-kb/complexes/__complexes-health'], (_req, res) => {
-//   res.type('text/plain').send('complexes ssr\n');
-// });
 
 /**
  * Serve static files from /browser
