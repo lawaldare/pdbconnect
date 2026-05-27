@@ -9,7 +9,6 @@ import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
 
 // 🛑 ADD THIS EXACT OBJECT REPAIR BLOCK RIGHT HERE:
 if (angularAppEngineManifest) {
-  angularAppEngineManifest.trustProxyHeaders = true;
   angularAppEngineManifest.allowedHosts = ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost'];
 }
 
@@ -19,22 +18,24 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
-
-// 1. Force an instant 200 OK for the raw root path (in case the probe hits here)
-app.get('/', (_req, res) => {
-  res.status(200).send('OK');
+const angularApp = new AngularNodeAppEngine({
+  trustProxyHeaders: true,
 });
 
-// 2. Force an instant 200 OK for a generic health path
-app.get('/health', (_req, res) => {
-  res.status(200).send('OK');
-});
+// // 1. Force an instant 200 OK for the raw root path (in case the probe hits here)
+// app.get('/', (_req, res) => {
+//   res.status(200).send('OK');
+// });
 
-// 3. Keep your existing complexes health check intact right here too
-app.get(['/__complexes-health', '/pdbe/pdbe-kb/complexes/__complexes-health'], (_req, res) => {
-  res.type('text/plain').send('complexes ssr\n');
-});
+// // 2. Force an instant 200 OK for a generic health path
+// app.get('/health', (_req, res) => {
+//   res.status(200).send('OK');
+// });
+
+// // 3. Keep your existing complexes health check intact right here too
+// app.get(['/__complexes-health', '/pdbe/pdbe-kb/complexes/__complexes-health'], (_req, res) => {
+//   res.type('text/plain').send('complexes ssr\n');
+// });
 
 /**
  * Serve static files from /browser
