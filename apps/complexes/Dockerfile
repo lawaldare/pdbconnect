@@ -12,7 +12,7 @@ RUN npm ci --legacy-peer-deps --ignore-scripts
 
 # Copy your built Angular artifacts
 COPY dist/apps/complexes/server /app/server
-COPY dist/apps/complexes/browser /app/browser/
+COPY dist/apps/complexes/browser /app/browser
 
 EXPOSE 80
 
