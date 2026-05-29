@@ -1,10 +1,8 @@
 import type { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import type { QueryParam } from 'pdbe-molstar/lib/helpers';
 import { standardizeInteractionType } from '../components/ligands-tab/interaction-type.component';
-import { Interaction } from '../data-models/interaction.model';
+import { InteractionFromAPI } from '../data-models/interaction.model';
 import { INTX_NAME_COLORS } from '../entry-constant';
-import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
-import { unique } from './mvs-views/helpers';
+import { SymmetryOperatorMapping } from './misc';
 
 export interface MVSAtomInteraction {
   start: ComponentExpressionT[];
@@ -13,79 +11,61 @@ export interface MVSAtomInteraction {
   tooltip?: string;
 }
 
-export function interactionsToMolstar(
-  ligand: ProcessedLigandOrMod,
-  ligandMolstarSelection: QueryParam[],
-  interactions: Interaction[],
-  instance_id: string | undefined
-) {
-  const chainId = ligandMolstarSelection[0].auth_asym_id;
-  const residueId = ligandMolstarSelection[0].auth_seq_id;
-  const resIns = ligandMolstarSelection[0].pdbx_PDB_ins_code;
+/** Create list of MVSAtomInteractions which can be passed to MolViewSpec provider.
+ * Use `symmetryOperatorMapping` to map renamed chains from API response (e.g. A_2) to original chain ID and symmetry instance ID.
+ * (If `symmetryOperatorMapping` is undefined, always use symmetry instance ID = undefined.) */
+export function interactionsToMolstar(interactions: InteractionFromAPI, symmetryOperatorMapping: SymmetryOperatorMapping | undefined): MVSAtomInteraction[] {
+  const [ligandAuthAsymId, ligandInstanceId] = SymmetryOperatorMapping.getChainIdAndInstanceIdFromRenamedChain(interactions.ligand.chain_id, symmetryOperatorMapping);
+  const ligandCompId = interactions.ligand.chem_comp_id;
+  const ligandAuthSeqId = interactions.ligand.author_residue_number;
+  const ligandInsCode = normalizeInsertionCode(interactions.ligand.author_insertion_code);
 
-  const residuesMolstarSelections: ComponentExpressionT[] = [];
-  const interactionsMolstarSelections: MVSAtomInteraction[] = [];
-  const residToInstanceId: { [key: string]: string | undefined } = {};
+  const mvsAtomInteractions: MVSAtomInteraction[] = [];
 
-  for (const int of interactions) {
+  for (const int of interactions.interactions) {
     const dist = int.distance.toFixed(2);
     const details = int.interaction_details;
+
+    const [residueAuthAsymId, residueInstanceId] = SymmetryOperatorMapping.getChainIdAndInstanceIdFromRenamedChain(int.end.chain_id, symmetryOperatorMapping);
+    const residueCompId = int.end.chem_comp_id;
+    const residueAuthSeqId = int.end.author_residue_number;
+    const residuesInsCode = normalizeInsertionCode(int.end.author_insertion_code);
+
     const tooltipHeader =
       details.length === 1
         ? `<strong>${standardizeInteractionType(details[0])} interaction (${dist} Å)</strong>`
         : `<strong>Mixed interaction (${dist} Å)</strong><br>${details.map(standardizeInteractionType).join(', ')}`;
-    const tooltipPartner1 = `<strong>${ligand.id} ${residueId}${resIns?.trim() ?? ''}</strong> | ${int.ligand_atoms.join(', ')}`;
-    const tooltipPartner2 = `<strong>${int.end.chem_comp_id} ${int.end.author_residue_number}${
-      int.end.author_insertion_code?.trim() ?? ''
-    }</strong> | ${int.end.atom_names.join(', ')}`;
+    const tooltipPartner1 = `<strong>${ligandCompId} ${ligandAuthSeqId}${ligandInsCode ?? ''}</strong> | ${int.ligand_atoms.join(', ')}`;
+    const tooltipPartner2 = `<strong>${residueCompId} ${residueAuthSeqId}${residuesInsCode ?? ''}</strong> | ${int.end.atom_names.join(', ')}`;
     const tooltip = `${tooltipHeader}<br>${tooltipPartner1} - ${tooltipPartner2}`;
     const color = details.length === 1 ? INTX_NAME_COLORS[details[0]] ?? INTX_NAME_COLORS['default'] : INTX_NAME_COLORS['mixed'];
 
-    const atomAsymId = instance_id ? instance_id : undefined;
-    const residueChain = int.end.chain_id.split('_')[0];
-    let residueSymOp = int.end.chain_id.includes('_') ? 'ASM-' + int.end.chain_id.split('_')[1] : undefined;
-    if (instance_id && residueSymOp === undefined) residueSymOp = 'ASM-1';
-
-    const residueNum = int.end.author_residue_number;
-    const residueIns = normalizeInsertionCode(int.end.author_insertion_code);
-
-    interactionsMolstarSelections.push({
+    mvsAtomInteractions.push({
       start: int.ligand_atoms.map(
         (atom) =>
           ({
-            auth_asym_id: chainId,
-            auth_seq_id: residueId,
-            pdbx_PDB_ins_code: normalizeInsertionCode(resIns),
+            auth_asym_id: ligandAuthAsymId,
+            auth_seq_id: ligandAuthSeqId,
+            pdbx_PDB_ins_code: ligandInsCode,
             auth_atom_id: atom,
-            instance_id: atomAsymId,
+            instance_id: ligandInstanceId,
           }) satisfies ComponentExpressionT
       ),
       end: int.end.atom_names.map(
         (atom) =>
           ({
-            auth_asym_id: residueChain,
-            auth_seq_id: residueNum,
-            pdbx_PDB_ins_code: residueIns,
+            auth_asym_id: residueAuthAsymId,
+            auth_seq_id: residueAuthSeqId,
+            pdbx_PDB_ins_code: residuesInsCode,
             auth_atom_id: atom,
-            instance_id: residueSymOp,
+            instance_id: residueInstanceId,
           }) satisfies ComponentExpressionT
       ),
       color,
       tooltip,
     });
-    residuesMolstarSelections.push({
-      auth_asym_id: residueChain,
-      auth_seq_id: residueNum,
-      pdbx_PDB_ins_code: residueIns,
-      instance_id: residueSymOp,
-    });
-    residToInstanceId[`${residueChain}|${residueNum}|${residueIns}`] = residueSymOp;
   }
-  return {
-    residuesMolstarSelections: unique(residuesMolstarSelections, JSON.stringify),
-    interactionsMolstarSelections,
-    residToInstanceId,
-  };
+  return mvsAtomInteractions;
 }
 
 export function normalizeInsertionCode(insCode: string | undefined) {

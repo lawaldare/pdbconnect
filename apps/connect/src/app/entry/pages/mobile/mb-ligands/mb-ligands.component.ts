@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, Optional, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
 import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { InteractionFromAPI } from '../../../data-models/interaction.model';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
-import { Dropdown, makeEntityColors } from '../../../helpers/misc';
+import { Dropdown, makeEntityColors, SymmetryOperatorMapping } from '../../../helpers/misc';
 import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
 import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { CommonDropdownOptionData, makeLigandsDropdownOptions, makeSymmetryDropdownOptions } from '../../../helpers/processed-data-to-controls';
@@ -37,6 +38,19 @@ export class MbLigandsComponent implements OnInit {
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
   private readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
+
+  /** All interactions for current ligand/chainId/residueId/instanceId, without applying filter. */
+  private interactionsForCurrentInstance = computed<InteractionFromAPI | undefined>(() => {
+    const chainId = this.currentChainId();
+    const residueId = this.currentResidueId();
+    if (!chainId || !residueId) return undefined;
+
+    const instanceId = this.selectedInstanceId();
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(chainId, instanceId, this.symmetryOperatorMapping());
+
+    const allInteractions = this.interactions();
+    return allInteractions?.[chainForInteractions]?.[residueId];
+  });
 
   public readonly annotationsTooltips: any = annotationsTooltips;
 
@@ -67,12 +81,30 @@ export class MbLigandsComponent implements OnInit {
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
   public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
 
+  /** Mapping for symmetry operator (if displayed structure is an assembly), or undefined (if displayed structure is deposited model) */
+  private symmetryOperatorMapping = computed(() => {
+    if (this.displayedAssemblyId() !== undefined) {
+      return SymmetryOperatorMapping.getSymmetryOperatorMapping(this.dropdown.selectedOption()?.data.symmOperators ?? []);
+    } else {
+      return undefined;
+    }
+  });
+
+  private currentChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.molstarSelection[0].auth_asym_id);
+  private currentResidueId = computed<string | undefined>(() => {
+    const auth_seq_id = this.dropdown.selectedOption()?.data.molstarSelection[0].auth_seq_id;
+    if (auth_seq_id === undefined) return undefined;
+    return String(auth_seq_id);
+  });
+
   public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
   public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
   private readonly entityColors = computed(() => makeEntityColors(this.processedMacromolecules(), this.processedLigands()));
 
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   private readonly preferredAssemblyId = computed(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined));
 
   public readonly ligandTableRows = computed(() => this.processedLigands() ?? []);
 
@@ -104,21 +136,27 @@ export class MbLigandsComponent implements OnInit {
     // Update MVS snapshot when needed
     effect(() => this.compCommunication.mvsSnapshotSpec$.next(this.mvsSnapshotSpec()));
 
-    // Fetch interaction data when needed
+    // Fetch interaction data when ligand/chainId/residueId/instanceId changes
     effect(() => {
-      if (!this.inPrefAssemblyForInstance()) return;
-      const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
-      if (!molstarSelection) return;
-      const { auth_asym_id, auth_seq_id } = molstarSelection[0];
-      if (auth_asym_id === undefined) throw new Error('auth_asym_id is undefined');
-      if (auth_seq_id === undefined) throw new Error('auth_seq_id is undefined');
+      const ligand = this.selectedLigand();
+      if (!ligand || ligand.type === 'modification') return; // Interaction data are not available for modifications
+
+      const chainId = this.currentChainId();
+      const residueId = this.currentResidueId();
       const instanceId = this.selectedInstanceId();
-      const chainForInteractions = chainNameForInteractionsApi(auth_asym_id, instanceId);
-      this.globalStore.dispatch(EntryActions.getInteractions({ chainId: chainForInteractions, residueId: String(auth_seq_id) }));
+      const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance(); // Interaction data are only available for preferred assembly
+      if (inPrefAssemblyForInstance && chainId !== undefined && residueId !== undefined) {
+        this.fetchInteractionData(chainId, residueId, instanceId);
+      }
     });
 
     // Update global mobileIsPrefAssembly (for warning display)
     effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForInstance()));
+  }
+
+  private fetchInteractionData(authAsymId: string, residueId: string, instanceId: string | undefined) {
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(authAsymId, instanceId, this.symmetryOperatorMapping());
+    this.globalStore.dispatch(EntryActions.getInteractions({ chainId: chainForInteractions, residueId: residueId }));
   }
 
   ngOnInit(): void {
@@ -211,10 +249,8 @@ export class MbLigandsComponent implements OnInit {
         },
       } satisfies SnapshotSpec;
     } else {
-      const dropdownSelected = this.dropdown.selectedOption();
-      if (!dropdownSelected) return undefined;
-      const { molstarSelection, inPrefAssembly } = dropdownSelected.data;
-      const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined; // undefined = deposited model
+      const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
+      if (!molstarSelection) return undefined;
 
       const authAsymId = molstarSelection[0].auth_asym_id;
       const authSeqId = molstarSelection[0].auth_seq_id;
@@ -223,33 +259,24 @@ export class MbLigandsComponent implements OnInit {
       if (authSeqId === undefined) throw new Error('authSeqId is undefined');
       const instanceId = this.selectedInstanceId();
 
-      const chainForInteractions = chainNameForInteractionsApi(authAsymId, instanceId);
-      const interactions = this.interactions()?.[chainForInteractions]?.[authSeqId]?.interactions;
-      const mvsInteractions = interactions
-        ? interactionsToMolstar(selectedLigand, molstarSelection, interactions, instanceId).interactionsMolstarSelections
-        : undefined;
+      const interactionsData = this.interactionsForCurrentInstance();
+      const mvsAtomInteractions = interactionsData ? interactionsToMolstar(interactionsData, this.symmetryOperatorMapping()) : undefined;
 
       return {
         name: 'Ligand environment',
         kind: 'pdbconnect_environment',
         params: {
           entry: entryId,
-          assemblyId,
+          assemblyId: this.displayedAssemblyId(),
           authAsymId,
           authSeqId,
           authInsCode,
           instanceId,
-          atomInteractions: mvsInteractions ?? 'builtin',
+          atomInteractions: mvsAtomInteractions ?? 'builtin',
           volumeStreaming: true,
           entityColors: this.entityColors(),
         },
       } satisfies SnapshotSpec;
     }
   });
-}
-
-// TODO: Fix mapping of instance_id vs API chain numbering (same as in desktop version)
-function chainNameForInteractionsApi(authAsymId: string, instanceId: string | undefined) {
-  const symOpForInteractions = instanceId && instanceId !== 'ASM-1' ? '_' + instanceId.split('-')[1] : '';
-  return `${authAsymId}${symOpForInteractions}`;
 }

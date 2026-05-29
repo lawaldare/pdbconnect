@@ -5,7 +5,7 @@ import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR } from '../entry-constant';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { SequenceDetail } from '../store/data-processing/models/other-models';
 import { ProcessedDomain, ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
-import { DropdownOptionWithData } from './misc';
+import { DropdownOptionWithData, sortSymmetryInstanceIds } from './misc';
 import { QueryParamForHelpers } from './molstar-helpers';
 
 /** Option data for the primary dropdown on most Entry Page tabs ("Chain X", "HEM 500 in chain X"...) */
@@ -23,6 +23,7 @@ export interface CommonDropdownOptionData {
 
 /** Option data for the secondary (symmetry) dropdown on most Entry Page tabs ("All", "ASM-1"...) */
 export interface SymmetryDropdownOptionData {
+  /** Symmetry instance ID, e.g. ASM-1, ASM-3, ASM-2-62 (or `undefined` for the special 'All' option) */
   instanceId: string | undefined;
 }
 
@@ -273,14 +274,22 @@ export function getMacromoleculeOfDomain(datum: ProcessedDomain, macromolecules:
   return macromolecule;
 }
 
-export function makeSymmetryDropdownOptions(symmOperators: string[] | undefined) {
-  if (!symmOperators) return [];
-  return symmOperators.map(
+export function makeSymmetryDropdownOptions(symOperators: string[] | undefined) {
+  if (!symOperators) return [];
+  const ALL_VALUE = 'All';
+  const sortedSymOperators = sortSymmetryInstanceIds(symOperators.filter((op) => op !== ALL_VALUE));
+  if (symOperators.includes(ALL_VALUE)) {
+    sortedSymOperators.unshift(ALL_VALUE);
+  }
+
+  return sortedSymOperators.map(
     (op): DropdownOptionWithData<SymmetryDropdownOptionData> => ({
       name: op,
       url: `symop-${op}`,
       downloadable: false,
-      data: { instanceId: op !== 'All' ? op : undefined },
+      data: {
+        instanceId: op === ALL_VALUE ? undefined : op,
+      },
     })
   );
 }

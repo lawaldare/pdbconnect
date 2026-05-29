@@ -933,4 +933,5 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 }
 
+// TODO: @adam Fix initial view not loading Protvista
 // TODO: Fix wrong inPrefAssembly for macromolecule 2 in 7p19 (same on other tabs)

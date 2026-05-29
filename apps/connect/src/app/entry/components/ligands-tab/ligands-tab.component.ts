@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, untracked, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -30,11 +30,17 @@ import { Interaction, InteractionFromAPI } from '../../data-models/interaction.m
 import { Molecule } from '../../data-models/molecule.model';
 import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
 import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
-import { Dropdown, makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, makeEntityColors, SymmetryOperatorMapping, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
-import { CommonDropdownOptionData, getCleanSelectionName, makeLigandsDropdownOptions, makeSymmetryDropdownOptions } from '../../helpers/processed-data-to-controls';
+import {
+  CommonDropdownOptionData,
+  getCleanSelectionName,
+  makeLigandsDropdownOptions,
+  makeSymmetryDropdownOptions,
+  SymmetryDropdownOptionData,
+} from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryApiService } from '../../services/entry-api.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -79,12 +85,21 @@ export class LigandsTabComponent implements AfterViewInit {
     autoOptions: () => makeLigandsDropdownOptions(this.currentLigandDatum()),
   });
 
-  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+  public symmetryDropdown = new Dropdown<SymmetryDropdownOptionData>({
     autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
   });
 
   private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
   public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
+
+  /** Mapping for symmetry operator (if displayed structure is an assembly), or undefined (if displayed structure is deposited model) */
+  private symmetryOperatorMapping = computed(() => {
+    if (this.displayedAssemblyId() !== undefined) {
+      return SymmetryOperatorMapping.getSymmetryOperatorMapping(this.dropdown.selectedOption()?.data.symmOperators ?? []);
+    } else {
+      return undefined;
+    }
+  });
 
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
@@ -206,7 +221,7 @@ export class LigandsTabComponent implements AfterViewInit {
     if (!chainId || !residueId) return undefined;
 
     const instanceId = this.selectedInstanceId();
-    const chainForInteractions = chainNameForInteractionsApi(chainId, instanceId);
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(chainId, instanceId, this.symmetryOperatorMapping());
 
     const allInteractions = this.interactions();
     return allInteractions?.[chainForInteractions]?.[residueId];
@@ -281,10 +296,8 @@ export class LigandsTabComponent implements AfterViewInit {
     if (authSeqId === undefined) throw new Error('authSeqId is undefined');
     const instanceId = this.selectedInstanceId();
 
-    const ligand = this.currentLigandDatum();
-    const interactions = this.filteredInteractionsRows();
-    const mvsAtomInteractions =
-      ligand && interactions ? interactionsToMolstar(ligand, molstarSelection, interactions, instanceId).interactionsMolstarSelections : undefined;
+    const interactionsData = this.filteredInteractionsData();
+    const mvsAtomInteractions = interactionsData ? interactionsToMolstar(interactionsData, this.symmetryOperatorMapping()) : undefined;
 
     return {
       name: 'Ligand environment',
@@ -356,7 +369,7 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private fetchInteractionData(authAsymId: string, residueId: string, instanceId: string | undefined) {
-    const chainForInteractions = chainNameForInteractionsApi(authAsymId, instanceId);
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(authAsymId, instanceId, this.symmetryOperatorMapping());
     this.globalStore.dispatch(EntryActions.getInteractions({ chainId: chainForInteractions, residueId: residueId }));
   }
 
@@ -497,31 +510,30 @@ export class LigandsTabComponent implements AfterViewInit {
     if (!instance) return;
     const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
     if (!molstarSelection) return;
-    const chainId = molstarSelection[0].auth_asym_id;
-    const residueId = molstarSelection[0].auth_seq_id;
-    const resIns = molstarSelection[0].pdbx_PDB_ins_code;
+    const ligandChainId = molstarSelection[0].auth_asym_id;
+    const ligandSeqId = molstarSelection[0].auth_seq_id;
+    const ligandInsCode = normalizeInsertionCode(molstarSelection[0].pdbx_PDB_ins_code);
 
-    const instance_id = this.selectedInstanceId();
+    const ligandInstanceId = this.selectedInstanceId();
 
-    const defaultInstance = this.displayedAssemblyId() === undefined ? undefined : 'ASM-1';
-    const [residueChain, residueInstance] = chainIdAndInstanceIdFromRenamedChain(int.end.chain_id, defaultInstance);
-    const residueNum = int.end.author_residue_number;
-    const residueIns = normalizeInsertionCode(int.end.author_insertion_code);
+    const [residueChainId, residueInstanceId] = SymmetryOperatorMapping.getChainIdAndInstanceIdFromRenamedChain(int.end.chain_id, this.symmetryOperatorMapping());
+    const residueSeqId = int.end.author_residue_number;
+    const residueInsCode = normalizeInsertionCode(int.end.author_insertion_code);
 
     const atomSelections: QueryParamForHelpers[] = [
       {
-        auth_asym_id: chainId,
-        auth_seq_id: residueId,
-        pdbx_PDB_ins_code: normalizeInsertionCode(resIns),
+        auth_asym_id: ligandChainId,
+        auth_seq_id: ligandSeqId,
+        pdbx_PDB_ins_code: ligandInsCode,
         atoms: int.ligand_atoms,
-        instance_id,
+        instance_id: ligandInstanceId,
       },
       {
-        auth_asym_id: residueChain,
-        auth_seq_id: residueNum,
-        pdbx_PDB_ins_code: residueIns,
+        auth_asym_id: residueChainId,
+        auth_seq_id: residueSeqId,
+        pdbx_PDB_ins_code: residueInsCode,
         atoms: int.end.atom_names,
-        instance_id: residueInstance,
+        instance_id: residueInstanceId,
       },
     ];
     await instance.visual.highlight({ data: atomSelections });
@@ -570,16 +582,6 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 }
 
-// TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
-function chainNameForInteractionsApi(authAsymId: string, instanceId: string | undefined) {
-  const symOpForInteractions = instanceId && instanceId !== 'ASM-1' ? '_' + instanceId.split('-')[1] : '';
-  return `${authAsymId}${symOpForInteractions}`;
-}
-function chainIdAndInstanceIdFromRenamedChain(renamedChain: string, fallbackInstanceId: string | undefined): [chainId: string, instanceId: string | undefined] {
-  const [chainId, instanceNum] = renamedChain.split('_');
-  return [chainId, instanceNum !== undefined ? `ASM-${instanceNum}` : fallbackInstanceId];
-}
-
 function getInteractionLegendItems(colors: Record<string, string>, labels: Record<string, string>) {
   return Object.entries(labels).map(([key, label]) => ({
     /** Unique key */
@@ -589,3 +591,5 @@ function getInteractionLegendItems(colors: Record<string, string>, labels: Recor
     color: colors[key] || '#000000', // default color if not found
   }));
 }
+
+// TODO: @adam Fix macromolecule (and maybe ligand) ASMs for 1m4x
