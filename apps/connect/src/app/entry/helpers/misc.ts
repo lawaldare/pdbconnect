@@ -124,59 +124,6 @@ export class Dropdown<TData> {
   public selectedName = computed(() => this._selectedOption()?.name);
 }
 
-function reconstructInstances(ass: AssemblyData) {
-  const allChains = ass.entities.flatMap((ent) => ent.in_chains);
-  const uniqueSuffixes = unique(allChains.map((chain) => chain.match(/-(.*)$/)?.[1])); // Cannot use .split() because there can be multiple separators (e.g. A-1-62)
-  const allAsmOperatorCombos = uniqueSuffixes.map((suffix) => (suffix !== undefined ? suffix.split('-') : [])); // TODO: fix these not being really unique
-
-  // console.log(`allAsmOperatorCombos ${allAsmOperatorCombos.length}:`, ...allAsmOperatorCombos.map(ops => ['ASM', ...ops].join('-')))
-  const order = max(allAsmOperatorCombos.map((ops) => ops.length));
-
-  const DEFAULT_OPERATOR = '1'; // This is far from ideal, but it's not possible to guess the default operator, as the operator expression can be wild (1smv assembly 5: 'P', 1m4x assembly 2: '(61-88)', 1e94 assembly 2: '1,7,8,9,10,11')
-
-  if (order === 0) {
-    // single instance; assume its operator is '1'; no chain renaming (real order is 1)
-    return [[DEFAULT_OPERATOR]];
-  }
-
-  if (order === 1) {
-    // instance ~ operator; assume first instance's operator is '1'
-    const operators = allAsmOperatorCombos.map((ops) => ops[0] ?? DEFAULT_OPERATOR);
-    return sortNumeric(operators).map((op) => [op]);
-  }
-
-  // instance ~ operator combination; get first instance's name by which is missing
-  const operatorsOnPositions: string[][] = [];
-  for (let i = 0; i < order; i++) {
-    const operatorsI = sortNumeric(unique(allAsmOperatorCombos.map((ops) => ops[i]).filter((op) => op !== undefined)));
-    operatorsOnPositions.push(operatorsI);
-    // console.log(`Position ${i} operators (${operatorsI.length}):`, ...operatorsI)
-  }
-  // TODO: solve case '(X0)(1-20)'
-  return cartesianProduct(operatorsOnPositions);
-  // if (reconstructedInstances.length !== allAsmOperatorCombos.length) throw new Error('Failed to reconstruct instance_id correspondence');
-}
-
-/**
- * Return cartesian product of given sets. E.g.:
- * ```
- * cartesianProduct([[1, 2], ['a', 'b']]);
- * // => [[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']]
- * ```
- * */
-function cartesianProduct<T>(sets: T[][]): T[][] {
-  if (sets.length === 0) return [[]];
-  const heads = sets[sets.length - 1]; // head is the last element of list
-  const tails = cartesianProduct(sets.slice(0, sets.length - 1)); // tail is all elements but the last
-  const out: T[][] = [];
-  for (const tail of tails) {
-    for (const head of heads) {
-      out.push([...tail, head]);
-    }
-  }
-  return out;
-}
-
 const INTEGER_REGEX = /^[+-]?\d+$/;
 
 /** Compare strings numerically, if they represent integers. (Any non-integer string is > any integer string. Order of non-interger strings is the default string sort order.) */
@@ -215,23 +162,13 @@ function compareLists<T>(a: T[], b: T[], compareElements: (ai: T, bi: T) => numb
   }
 }
 
-/** Compare two lists using lexical ordering with numeric ordering of elements. */
-function compareListsNumeric(a: string[], b: string[]): number {
-  return compareLists(a, b, compareNumeric);
-}
-
-/** Sort strings numerically, if they represent integers. Put non-integer string at the end, in the default string sort order. */
-function sortNumeric(items: string[]): string[] {
-  return items.sort(compareNumeric);
-}
-
 /** Sort symmetry instance IDs in the same order as when assembly CIFs are created, so that sequential suffixes ('', '_2', '_3') will match.
  * This is guesswork, it is not possible to determine this order just from operator names. But should work for nice cases.
  */
 export function sortSymmetryInstanceIds(instanceIds: string[]): string[] {
   return instanceIds
     .map((id) => id.split('-'))
-    .sort(compareListsNumeric)
+    .sort((a, b) => compareLists(a, b, compareNumeric))
     .map((parts) => parts.join('-'));
 }
 
