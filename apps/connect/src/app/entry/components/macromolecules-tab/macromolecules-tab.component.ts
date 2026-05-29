@@ -14,12 +14,13 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
 import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
@@ -252,7 +253,19 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return this.sequenceDetails()?.indexWithMultipleResidues;
   });
 
-  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public backgroundAnnotation = computed<SmartSequenceAnnotation | undefined>(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    const sequence = macromolecule.additionalData.molecule.sequence;
+    if (!sequence) return undefined;
+
+    const outliers = this.residueWiseOutliers();
+    const entityId = macromolecule.additionalData.molecule.entity_id;
+    const chainId = this.currentSelectionChainId();
+    if (chainId === undefined) return undefined;
+    const modelId = this.currentModelId() ?? '1';
+    return convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
+  });
 
   public getCleanSelectionName = getCleanSelectionName;
 
@@ -423,21 +436,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   @ViewChild('rnaViewerContainer', { static: false }) rnaViewerContainer!: ElementRef;
   private rnaViewerInstance: any;
 
-  public sequenceDetails = signal<
-    | {
-        title: string;
-        fullSequence: string;
-        sequenceForViewer: string;
-        indexWithMultipleResidues: {
-          [key: string]: {
-            three_letter_code: string;
-            one_letter_code: string;
-            parent_chem_comp_ids: string[];
-          };
-        };
-      }
-    | undefined
-  >(undefined);
+  public sequenceDetails = computed(() => {
+    const entryId = this.entryId();
+    const macromolecule = this.currentMacromoleculeDatum();
+    const chainId = this.currentSelectionChainId();
+    if (!entryId || !macromolecule || !chainId) return undefined;
+    return getMacromoleculeSequenceDetails(entryId, macromolecule, chainId);
+  });
 
   public readonly selectionUniprotId = computed(() => {
     const allowed = this.uniprotsAllowed();
@@ -531,7 +536,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return hasSequence && hasAltSequences && hasNonObserved && hasBgAnnotations && hasCurrentSelectionEntityId && hasCurrentSelectionChainId;
   });
 
-  public currentModelId$ = new BehaviorSubject<string>('1');
+  private currentModelId$ = new BehaviorSubject<string>('1');
+  private currentModelId = toSignal(this.currentModelId$);
 
   private topolViewerMutex = Mutex('topolViewerMutex');
   private rnaViewerMutex = Mutex('rnaViewerMutex');
@@ -549,6 +555,9 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+
+      // Once molstar has rendered, initializes mutation observer for NMR model Id
+      initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
     });
 
     // Update Protvista data when entity changes
@@ -578,7 +587,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       if (idx === undefined || idx === null) return;
       const datum = this.macromoleculeTableRows()[idx];
       if (datum) {
-        this.sequenceDetails.set(undefined);
         this.currentMacromoleculeDatum.set(datum);
       }
     });
@@ -595,11 +603,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
     this.rnaViewerMutex.run(async () => {
       await this.scriptLoader.loadScript('./assets/pdb-rna-viewer-plugin-0.3.1.js');
-    });
-
-    // every time NMR model Id updates, data for smart seq viewer is refreshed
-    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      await this.updateBackgroundAnnotation();
     });
 
     // when uniprot listing has arrived and been processed
@@ -650,7 +653,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     // updates shown sequence on new macromolecule
     const chainId = this.currentSelectionChainId();
     if (chainId === undefined) return;
-    await this.updateSequenceDetailsFromChainId(macromolecule, chainId);
 
     this.altSequences.set(undefined);
     this.nonObserved.set(undefined);
@@ -661,47 +663,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
     // renders necessary visualisations according to display options and data
     this.renderVisualisations(macromolecule);
-
-    // updates smart sequence viewer annotations
-    await this.updateBackgroundAnnotation();
-  }
-
-  private async updateSequenceDetailsFromChainId(macromolecule: ProcessedMacromolecule, chainId: string) {
-    this.sequenceDetails.set(undefined);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
-    console.log('sequenceDetails');
-    console.log(sequenceDetails);
-    this.sequenceDetails.set(sequenceDetails);
-    await this.updateBackgroundAnnotation();
-  }
-
-  private async updateBackgroundAnnotation() {
-    this.backgroundAnnotation.set(undefined);
-
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return;
-    const sequence = macromolecule.additionalData.molecule.sequence;
-    if (!sequence) return;
-
-    // wait max 10s for residueWiseOutliers to populate
-    let outliers = this.residueWiseOutliers();
-    if (outliers === undefined) {
-      outliers = await firstValueFrom(
-        interval(200).pipe(
-          map(() => this.residueWiseOutliers()),
-          filter((o) => o !== undefined), // stop when defined
-          take(1), // only take the first defined
-          timeout({ first: 10000, with: () => of([]) }) // fallback if still undefined
-        )
-      );
-    }
-
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.currentSelectionChainId();
-    if (chainId === undefined) return;
-    const modelId = this.currentModelId$.value || '1';
-    const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
-    this.backgroundAnnotation.set(annotation);
   }
 
   updateVisualsDisplayed(macromolecule: ProcessedMacromolecule) {
@@ -750,13 +711,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
-
-    const chainId = this.currentSelectionChainId();
-    if (chainId === undefined) return;
-    await this.updateSequenceDetailsFromChainId(macromolecule, chainId);
-
     await this.renderVisualisations(macromolecule);
-    await this.updateBackgroundAnnotation();
   }
 
   public async onSymmetryDropdownSelect(event: string) {
