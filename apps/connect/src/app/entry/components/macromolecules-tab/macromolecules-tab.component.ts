@@ -560,6 +560,14 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       }
     });
 
+    // Update visualizations (Protvista, Topology) when entity changes
+    effect(() => {
+      const macromolecule = this.currentMacromoleculeDatum();
+      if (!macromolecule) return;
+      macromolecule.additionalData.molecule.entity_id;
+      return this.triggerMacromoleculeUpdateSideEffects(macromolecule);
+    });
+
     effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
     effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
     effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
@@ -572,7 +580,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       if (datum) {
         this.sequenceDetails.set(undefined);
         this.currentMacromoleculeDatum.set(datum);
-        await this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
   }
@@ -933,5 +940,4 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 }
 
-// TODO: @adam Fix initial view not loading Protvista
 // TODO: Fix wrong inPrefAssembly for macromolecule 2 in 7p19 (same on other tabs)
