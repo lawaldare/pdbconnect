@@ -361,26 +361,27 @@ export function filterMacromoleculesByPreferredAssembly(macromolecules: Molecule
   );
 }
 
-export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
+function getChainIdToStuctAsymMap(coverage: PolymerCoverageMolecule[]) {
+  const map: { [chainId: string]: string } = {};
+  for (const entity of coverage) {
+    for (const chain of entity.chains) {
+      map[chain.chain_id] = chain.struct_asym_id;
+    }
+  }
+  return map;
+}
+
+export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[], preferredAssembly: AssemblyData, coverage: PolymerCoverageMolecule[]): Molecule[] {
+  const chainIdToStructAsymMap = getChainIdToStuctAsymMap(coverage);
   const preferredAssemblyEntitiesMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
-  return macromolecules.map((molecule) => {
+  return macromolecules.map<Molecule>((molecule) => {
     // Get list of struct_asyms of preferred assembly
-    const allowedAsyms = preferredAssemblyEntitiesMap.get(molecule.entity_id);
+    const allowedStructAsyms = new Set(preferredAssemblyEntitiesMap.get(molecule.entity_id));
 
-    // Filter the in_struct_asyms and in_chains to only
-    // include those present in the preferred assembly entity
-    const in_struct_asyms_in_pref_assembly: boolean[] = [];
-    const in_chains_in_pref_assembly: boolean[] = [];
-
-    molecule.in_struct_asyms.forEach((asymId, idx) => {
-      if (allowedAsyms && allowedAsyms.includes(asymId)) {
-        in_struct_asyms_in_pref_assembly.push(true);
-        in_chains_in_pref_assembly.push(true); // Keep corresponding chain
-      } else {
-        in_struct_asyms_in_pref_assembly.push(false);
-        in_chains_in_pref_assembly.push(false); // Keep corresponding chain
-      }
-    });
+    // Filter the in_struct_asyms and in_chains to only include those present in the preferred assembly entity
+    const in_struct_asyms_in_pref_assembly: boolean[] = molecule.in_struct_asyms.map((labelAsymId) => allowedStructAsyms.has(labelAsymId));
+    const in_chains_in_pref_assembly: boolean[] = molecule.in_chains.map((authAsymId) => allowedStructAsyms.has(chainIdToStructAsymMap[authAsymId]));
+    // These two might have different order!
 
     return {
       ...molecule,
@@ -398,8 +399,8 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
     const chainId = macromolecule.in_chains[chain_idx];
 
     // add flag for not in preferred assembly
-    if (macromolecule.in_chains_in_pref_assembly?.[chain_idx] === false) selectionsInPrefAssembly.push(false);
-    else selectionsInPrefAssembly.push(true);
+    const isInPrefAssembly = macromolecule.in_chains_in_pref_assembly?.[chain_idx] ?? false;
+    selectionsInPrefAssembly.push(isInPrefAssembly);
 
     const molstarSelection: QueryParamForHelpers[] = [];
     if (macromolecule.molecule_type.includes('carbohydrate') === false) {
@@ -600,6 +601,10 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], pref
       },
       'selectionsInPrefAssembly'
     );
+
+    console.log('generateProcessedMacromolecules', molecule);
+    console.log('generateProcessedMacromolecules', selectionData.selections, selectionData.selectionNames, selectionData.selectionsInPrefAssembly);
+    console.log('generateProcessedMacromolecules SORTED:', selections, selectionNames, selectionsInPrefAssembly);
 
     processedMacromolecules.push({
       name: {

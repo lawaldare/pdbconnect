@@ -16,7 +16,7 @@ export function filterMacromoleculesForLLM(
   const llmUniProtIds = new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession));
   const chainIds = new Set(primaryCitationYes?.map((a: any) => a.pdbChain));
 
-  const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+  const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
   const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
 
   const filteredMacromolecules = macromoleculesWithPrefAssembly.filter((macromolecule) => {

@@ -927,15 +927,17 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.macroMolecules),
+          this.store.select(EntrySelectors.polymerCoverage),
         ]).pipe(
           filter(([summaryData, assemblies]) => summaryData !== undefined && assemblies !== undefined)
           // take(1)
         )
       ),
-      map(([summaryData, assemblies, macromolecules]) => {
-        if (assemblies === undefined || summaryData === undefined || macromolecules === undefined) throw 'missing data to process macromolecules';
+      map(([summaryData, assemblies, macromolecules, polymerCoverage]) => {
+        if (assemblies === undefined || summaryData === undefined || macromolecules === undefined || polymerCoverage === undefined)
+          throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const procMacromoleculesFilters = generateMacromoleculesTableFilters(macromoleculesWithPrefAssembly);
         return EntryActions.getProcMacromoleculesFiltersSuccess({ procMacromoleculesFilters });
       }),
@@ -952,19 +954,17 @@ export class EntryEffects {
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.macroMolecules),
           this.store.select(EntrySelectors.carbohydrates),
+          this.store.select(EntrySelectors.polymerCoverage),
         ]).pipe(
-          filter(
-            ([summaryData, assemblies, macromolecules, carbohydrates]) =>
-              summaryData !== undefined && assemblies !== undefined && macromolecules !== undefined && carbohydrates !== undefined
-          )
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
-      map(([summaryData, assemblies, macromolecules, carbohydrates]) => {
-        if (summaryData === undefined || assemblies === undefined || macromolecules === undefined || carbohydrates === undefined)
+      map(([summaryData, assemblies, macromolecules, carbohydrates, polymerCoverage]) => {
+        if (summaryData === undefined || assemblies === undefined || macromolecules === undefined || carbohydrates === undefined || polymerCoverage === undefined)
           throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const procMacromoleculesCards = generateMacromoleculesCards(macromoleculesWithPrefAssembly, carbohydrates);
         return EntryActions.getProcMacromoleculesCardsSuccess({ procMacromoleculesCards });
       }),
@@ -982,19 +982,17 @@ export class EntryEffects {
             this.store.select(EntrySelectors.assemblies),
             this.store.select(EntrySelectors.macroMolecules),
             this.store.select(EntrySelectors.carbohydrates),
+            this.store.select(EntrySelectors.polymerCoverage),
           ]).pipe(
-            filter(
-              ([summaryData, assemblyData, macromolecules, carbohydrates]) =>
-                summaryData !== undefined && assemblyData !== undefined && macromolecules !== undefined && carbohydrates !== undefined
-            ),
+            filter((inputs) => inputs.every((input) => input !== undefined)),
             take(1)
           ) // take a snapshot
       ),
-      map(([summaryData, assemblyData, macromolecules, carbohydrates]) => {
-        if (summaryData === undefined || assemblyData === undefined || macromolecules === undefined || carbohydrates === undefined)
+      map(([summaryData, assemblyData, macromolecules, carbohydrates, coverage]) => {
+        if (summaryData === undefined || assemblyData === undefined || macromolecules === undefined || carbohydrates === undefined || coverage === undefined)
           throw 'missing data to process macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, coverage);
         const processedMacromolecules = generateProcessedMacromolecules(macromoleculesWithPrefAssembly, preferredAssembly, carbohydrates);
         return EntryActions.getProcessedMacromoleculesSuccess({ processedMacromolecules });
       }),
@@ -1240,16 +1238,7 @@ export class EntryEffects {
             this.store.select(EntrySelectors.pfamMapping),
             this.store.select(EntrySelectors.macroMolecules),
           ]).pipe(
-            filter(
-              ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings, macromolecules]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                polymerCoverage !== undefined &&
-                cathMappings !== undefined &&
-                scopMappings !== undefined &&
-                pfamMappings !== undefined &&
-                macromolecules !== undefined
-            ),
+            filter((inputs) => inputs.every((input) => input !== undefined)),
             take(1)
           ) // take a snapshot
       ),
@@ -1265,7 +1254,7 @@ export class EntryEffects {
         )
           throw 'missing data to process Domains';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const processedDomains = generateProcessedDomains(
           cathMappings,
@@ -1389,17 +1378,7 @@ export class EntryEffects {
             this.store.select(EntrySelectors.macroMolecules),
             this.store.select(EntrySelectors.carbohydrates),
           ]).pipe(
-            filter(
-              ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings, macromolecules, carbohydrates]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                polymerCoverage !== undefined &&
-                cathMappings !== undefined &&
-                scopMappings !== undefined &&
-                pfamMappings !== undefined &&
-                macromolecules !== undefined &&
-                carbohydrates !== undefined
-            ),
+            filter((inputs) => inputs.every((input) => input !== undefined)),
             take(1)
           ) // take a snapshot
       ),
@@ -1416,7 +1395,7 @@ export class EntryEffects {
         )
           throw 'missing data to process DomainsWithMacromols';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const processedMacromolecules = generateProcessedMacromolecules(macromoleculesWithPrefAssembly, preferredAssembly, carbohydrates);
         const processedDomains = generateProcessedDomains(
