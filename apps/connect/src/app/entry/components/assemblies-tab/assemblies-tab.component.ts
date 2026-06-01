@@ -167,15 +167,16 @@ export class AssembliesTabComponent {
 
     effect(() => {
       for (const ass of this.assemblyDetails() ?? []) {
-        console.log('ass:', ass);
-        const unsortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(1, [{ struct_asym_id: 'A' } as any], ass);
-        for (const instances of unsortedSymmOpListForEachLigOrMod) {
-          console.log(`ligand instances (${instances.length}):\n`, ...instances);
-        }
+        console.log('--------\nAss:', ass.assembly_id, ass);
+        // const unsortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(1, [{ struct_asym_id: 'A' } as any], ass);
+        // for (const instances of unsortedSymmOpListForEachLigOrMod) {
+        //   console.log(`ligand instances (${instances.length}):\n`, ...instances);
+        // }
 
-        const in_chains = ['A', 'A-2', 'A-3', 'A-4', 'B', 'B-2', 'C', 'D-X'];
-        const instancesByChain = generateSymmetryOperatorsDict({ entity_id: 1, in_chains, in_struct_asyms: in_chains } as Molecule, ass);
-        console.log(`macromolecule instances:`);
+        const entity_id = 2;
+        const in_chains = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const instancesByChain = generateSymmetryOperatorsDict({ entity_id, in_chains, in_struct_asyms: in_chains } as Molecule, ass);
+        console.log(`macromolecule instances (entity ${entity_id}):`);
         for (const chain in instancesByChain) {
           const instances = instancesByChain[chain];
           console.log(`    ${chain} (${instances.length}):`, ...instances);

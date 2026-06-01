@@ -2,7 +2,7 @@ import { Molecule } from '../../data-models/molecule.model';
 import { UniProtMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
 import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
-import { AssemblyData } from '../../data-models/assembly.model';
+import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
 import { Filter, LabelUniProtMappingRows, UniProtMappingRows } from './models/other-models';
 import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { DEFAULT_SET_25 } from '@pdbe-lib/molstar-for-apps';
@@ -532,44 +532,51 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
 }
 
 export function generateSymmetryOperatorsDict(macromolecule: Molecule, preferredAssembly: AssemblyData) {
-  const chainToSymmOp: { [key: string]: string[] } = {};
-  const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === macromolecule.entity_id);
-  if (assemblyEntityOfMacromolSearch.length === 0) return chainToSymmOp;
-  else if (assemblyEntityOfMacromolSearch.length > 1) console.warn('Warning: multiple assembly entities found for single macromolecule');
-  const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
-  // has any symmetry op = inverse of has no symmetry op
-  const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
-  if (hasSymmetryOp === false) return chainToSymmOp;
+  const assemblyEntityOfMacromol = preferredAssembly.entities.find((ent) => ent.entity_id === macromolecule.entity_id);
+  if (!assemblyEntityOfMacromol) {
+    return {};
+  }
+  const hasSymmetryOp = assemblyEntityOfMacromol.in_chains.some((chainidWithOp) => chainidWithOp.includes('-'));
+  if (!hasSymmetryOp) {
+    return {};
+  }
 
+  const chainToSymmOp: { [key: string]: string[] } = {};
   for (let chainIdx = 0; chainIdx < macromolecule.in_chains.length; chainIdx++) {
     const chainId = macromolecule.in_chains[chainIdx];
     const structAsymId = macromolecule.in_struct_asyms[chainIdx];
-    const assemblyStructAsymsWithOp = assemblyEntityOfMacromol.in_chains.filter((chainidWithOp) => chainidWithOp.split('-')[0] === structAsymId);
-
-    const noStructAsymsWithOp = assemblyStructAsymsWithOp.length === 0;
-    const onlyCurrentChainId = assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] === structAsymId;
-    const onlyCurrentChainWithOp =
-      assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] !== structAsymId && assemblyStructAsymsWithOp[0].includes('-');
-
-    if (noStructAsymsWithOp || onlyCurrentChainId) {
-      console.warn(`Warning: no chains with symmetry operator found for chain ${chainId}. Skipping...`);
-      continue;
+    const symmetryInstances = generateSymmetryOperators(assemblyEntityOfMacromol, chainId, structAsymId);
+    if (symmetryInstances) {
+      chainToSymmOp[chainId] = symmetryInstances;
     }
-    if (onlyCurrentChainWithOp) {
-      const symmetryOperator = assemblyStructAsymsWithOp[0].split('-')[1];
-      chainToSymmOp[chainId] = [`ASM-${symmetryOperator}`];
-      continue;
-    }
-
-    const operatorsList = ['All'];
-    for (const assemblyStructAsymWithOp of assemblyStructAsymsWithOp) {
-      const symmetryOperator = assemblyStructAsymWithOp === structAsymId ? '1' : assemblyStructAsymWithOp.split('-')[1];
-
-      operatorsList.push(`ASM-${symmetryOperator}`);
-    }
-    chainToSymmOp[chainId] = operatorsList;
   }
   return chainToSymmOp;
+}
+
+function generateSymmetryOperators(assemblyEntityOfMacromol: AssemblyEntity, chainId: string, structAsymId: string) {
+  const assemblyStructAsymsWithOp = assemblyEntityOfMacromol.in_chains.filter((chainidWithOp) => chainidWithOp.split('-')[0] === structAsymId);
+
+  const noStructAsymsWithOp = assemblyStructAsymsWithOp.length === 0;
+  const onlyCurrentChainId = assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] === structAsymId;
+  const onlyCurrentChainWithOp =
+    assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] !== structAsymId && assemblyStructAsymsWithOp[0].includes('-');
+
+  if (noStructAsymsWithOp || onlyCurrentChainId) {
+    console.warn(`Warning: no chains with symmetry operator found for chain ${chainId}. Skipping...`);
+    return undefined;
+  }
+  if (onlyCurrentChainWithOp) {
+    const symmetryOperator = assemblyStructAsymsWithOp[0].split('-')[1];
+    return [`ASM-${symmetryOperator}`];
+  }
+
+  const operatorsList = ['All'];
+  for (const assemblyStructAsymWithOp of assemblyStructAsymsWithOp) {
+    const symmetryOperator = assemblyStructAsymWithOp === structAsymId ? '1' : assemblyStructAsymWithOp.split('-')[1];
+
+    operatorsList.push(`ASM-${symmetryOperator}`);
+  }
+  return operatorsList;
 }
 
 export function generateProcessedMacromolecules(macromolecules: Molecule[], preferredAssembly: AssemblyData, carbohydrates?: CarbohydrateMolecule[]) {
@@ -601,10 +608,6 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], pref
       },
       'selectionsInPrefAssembly'
     );
-
-    console.log('generateProcessedMacromolecules', molecule);
-    console.log('generateProcessedMacromolecules', selectionData.selections, selectionData.selectionNames, selectionData.selectionsInPrefAssembly);
-    console.log('generateProcessedMacromolecules SORTED:', selections, selectionNames, selectionsInPrefAssembly);
 
     processedMacromolecules.push({
       name: {
