@@ -221,27 +221,6 @@ export const SymmetryOperatorMapping = {
   },
 } as const;
 
-/** Splits on the first occurrence of `separator`. This is diferent from `str.split(separator, 1)`!
- * ```
- * > split('A', '-')
- * ['A', undefined]
- *
- * > split('A-B', '-')
- * ['A', 'B']
- *
- * > split('A-B-C', '-')  // 'A-B-C'.split('-', 1) would return ['A', 'B']
- * ['A', 'B-C']
- * ```
- */
-export function splitOnce(str: string, separator: string): [string, string | undefined] {
-  const sepPosition = str.indexOf(separator);
-  if (sepPosition >= 0) {
-    return [str.slice(0, sepPosition), str.slice(sepPosition + 1, undefined)];
-  } else {
-    return [str, undefined];
-  }
-}
-
 /** Try to guess symmetry instance ID of the implicitely named symmetry instance from all other symmetry instances.
  * ```
  * > guessMissingSymmetryInstanceId(['ASM-2', 'ASM-3', 'ASM-4']) // most cases
@@ -307,4 +286,26 @@ export function guessMissingSymmetryInstanceId(presentSymmetryInstanceIds: strin
   }
 
   throw new Error('Could not guess missing symmetry assembly ID (unknown case).');
+}
+
+/** Retrieve list of symmetry instance IDs from renamed chains. All renamed chains must be unique and must have the same original chain ID.
+ * ```
+ * > getSymmetryInstancesFromRenamedChains(['A', 'A-2', 'A-3', 'A-4'])
+ * ['ASM-1', 'ASM-2', 'ASM-3', 'ASM-4']
+ * ```
+ * */
+export function getSymmetryInstancesFromRenamedChains(renamedChains: string[]) {
+  const explicitCases = renamedChains
+    .filter((renamedChain) => renamedChain.includes('-'))
+    .map((renamedChain) => 'ASM-' + renamedChain.split('-').slice(1, undefined).join('-')); // Has to work also for instance IDs with multiple operators, e.g. ASM-2-61
+
+  if (explicitCases.length === renamedChains.length) {
+    // All instances explicitely named (e.g. A-1, A-2, A-3, A-4)
+    return sortSymmetryInstanceIds(explicitCases);
+  } else {
+    // One of the instances is not explicitely named (e.g. A, A-2, A-3, A-4)
+    const implicitInstanceId = guessMissingSymmetryInstanceId(explicitCases);
+    explicitCases.push(implicitInstanceId);
+    return sortSymmetryInstanceIds(explicitCases);
+  }
 }

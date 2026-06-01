@@ -39,6 +39,8 @@ export interface Molecule {
   // augmented data from processing not in API
   in_struct_asyms_in_pref_assembly?: boolean[];
   in_chains_in_pref_assembly?: boolean[];
+  /** Mapping of auth_asym_id to label_asym_id */
+  auth_asym_id_to_label_asym_id?: { [authAsymId: string]: string };
 }
 
 export interface MoleculeSource {

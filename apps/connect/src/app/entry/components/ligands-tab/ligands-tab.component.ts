@@ -591,5 +591,3 @@ function getInteractionLegendItems(colors: Record<string, string>, labels: Recor
     color: colors[key] || '#000000', // default color if not found
   }));
 }
-
-// TODO: @adam Fix macromolecule (and maybe ligand (generateSymmetryOperatorsListForLigandMonomer)) ASMs for 1m4x

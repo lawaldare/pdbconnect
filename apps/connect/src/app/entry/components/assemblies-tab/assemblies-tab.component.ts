@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
@@ -20,9 +20,6 @@ import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
-import { generateSymmetryOperatorsListForLigand } from '../../store/data-processing/ligand-processing';
-import { generateSymmetryOperatorsDict } from '../../store/data-processing/macromolecule-processing';
-import { Molecule } from '../../data-models/molecule.model';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -163,25 +160,6 @@ export class AssembliesTabComponent {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
-    });
-
-    effect(() => {
-      for (const ass of this.assemblyDetails() ?? []) {
-        console.log('--------\nAss:', ass.assembly_id, ass);
-        // const unsortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(1, [{ struct_asym_id: 'A' } as any], ass);
-        // for (const instances of unsortedSymmOpListForEachLigOrMod) {
-        //   console.log(`ligand instances (${instances.length}):\n`, ...instances);
-        // }
-
-        const entity_id = 2;
-        const in_chains = ['A', 'B', 'C', 'D', 'E', 'F'];
-        const instancesByChain = generateSymmetryOperatorsDict({ entity_id, in_chains, in_struct_asyms: in_chains } as Molecule, ass);
-        console.log(`macromolecule instances (entity ${entity_id}):`);
-        for (const chain in instancesByChain) {
-          const instances = instancesByChain[chain];
-          console.log(`    ${chain} (${instances.length}):`, ...instances);
-        }
-      }
     });
   }
 
