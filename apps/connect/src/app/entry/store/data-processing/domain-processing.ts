@@ -467,53 +467,53 @@ export function generateDomainsTableFilters(
   return newFilters;
 }
 
-export function generateSymmetryOperatorsDictForDomain(segmentsEntityIds: number[], segmentsStructAsymIds: string[], preferredAssembly: AssemblyData) {
+export function generateSymmetryOperatorsForDomainSegments(segmentsEntityIds: number[], segmentsStructAsymIds: string[], preferredAssembly: AssemblyData) {
   const segmentsSymmOperators: string[][] = [];
   for (let iSeg = 0; iSeg < segmentsEntityIds.length; iSeg++) {
     const segmentEntityId = segmentsEntityIds[iSeg];
     const segmentStructAsymId = segmentsStructAsymIds[iSeg];
-    const currentSegmentSymmOperators: string[] = [];
-    const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === segmentEntityId);
-    if (assemblyEntityOfMacromolSearch.length === 0) {
-      segmentsSymmOperators.push([]);
-      continue;
-    } else if (assemblyEntityOfMacromolSearch.length > 1) console.warn('Warning: multiple assembly entities found for single macromolecule');
-    const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
-
-    const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
-    if (hasSymmetryOp === false) {
-      segmentsSymmOperators.push([]);
-      continue;
-    }
-
-    const prefAssemblyStructAsymsForSegment = assemblyEntityOfMacromol.in_chains.filter(
-      (structAsymIdWithOp) => structAsymIdWithOp.split('-')[0] === segmentStructAsymId
-    );
-
-    const noStructAsymsWithOp = prefAssemblyStructAsymsForSegment.length === 0;
-    const onlyCurrentChainId = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] === segmentStructAsymId;
-    const onlyCurrentChainWithOp = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] !== segmentStructAsymId;
-
-    if (noStructAsymsWithOp || onlyCurrentChainId) {
-      segmentsSymmOperators.push([]);
-      continue;
-    }
-    if (onlyCurrentChainWithOp) {
-      const symmetryOperator = prefAssemblyStructAsymsForSegment[0].split('-')[1];
-      segmentsSymmOperators.push([`ASM-${symmetryOperator}`]);
-      continue;
-    }
-    // All for default selection
-    currentSegmentSymmOperators.push('All');
-
-    // add each operator to list
-    for (const structAsymIdWithOp of prefAssemblyStructAsymsForSegment) {
-      const symmetryOperator = structAsymIdWithOp === segmentStructAsymId ? '1' : structAsymIdWithOp.split('-')[1];
-      currentSegmentSymmOperators.push(`ASM-${symmetryOperator}`);
-    }
-    segmentsSymmOperators.push(currentSegmentSymmOperators);
+    segmentsSymmOperators.push(generateSymmetryOperatorsForChain(segmentEntityId, segmentStructAsymId, preferredAssembly));
   }
   return segmentsSymmOperators;
+}
+
+function generateSymmetryOperatorsForChain(entityId: number, structAsymId: string, preferredAssembly: AssemblyData) {
+  const currentSegmentSymmOperators: string[] = [];
+  const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === entityId);
+  if (assemblyEntityOfMacromolSearch.length === 0) {
+    return [];
+  } else if (assemblyEntityOfMacromolSearch.length > 1) {
+    console.warn('Warning: multiple assembly entities found for single macromolecule');
+  }
+  const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
+
+  const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
+  if (hasSymmetryOp === false) {
+    return [];
+  }
+
+  const prefAssemblyStructAsymsForSegment = assemblyEntityOfMacromol.in_chains.filter((structAsymIdWithOp) => structAsymIdWithOp.split('-')[0] === structAsymId);
+
+  const noStructAsymsWithOp = prefAssemblyStructAsymsForSegment.length === 0;
+  const onlyCurrentChainId = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] === structAsymId;
+  const onlyCurrentChainWithOp = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] !== structAsymId;
+
+  if (noStructAsymsWithOp || onlyCurrentChainId) {
+    return [];
+  }
+  if (onlyCurrentChainWithOp) {
+    const symmetryOperator = prefAssemblyStructAsymsForSegment[0].split('-')[1];
+    return [`ASM-${symmetryOperator}`];
+  }
+  // All for default selection
+  currentSegmentSymmOperators.push('All');
+
+  // add each operator to list
+  for (const structAsymIdWithOp of prefAssemblyStructAsymsForSegment) {
+    const symmetryOperator = structAsymIdWithOp === structAsymId ? '1' : structAsymIdWithOp.split('-')[1];
+    currentSegmentSymmOperators.push(`ASM-${symmetryOperator}`);
+  }
+  return currentSegmentSymmOperators;
 }
 
 export function generateProcessedDomains(
@@ -559,7 +559,7 @@ export function generateProcessedDomains(
       // get list
       const segmentsEntityIds = segmentData.segmentsEntityIds;
       const segmentsStructAsymId = segmentData.segmentsStructAsymId;
-      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+      const symmOpListForSegments = generateSymmetryOperatorsForDomainSegments(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
 
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
@@ -615,7 +615,7 @@ export function generateProcessedDomains(
 
       const segmentsEntityIds = segmentData.segmentsEntityIds;
       const segmentsStructAsymId = segmentData.segmentsStructAsymId;
-      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+      const symmOpListForSegments = generateSymmetryOperatorsForDomainSegments(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
 
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
@@ -669,7 +669,7 @@ export function generateProcessedDomains(
 
       const segmentsEntityIds = segmentData.segmentsEntityIds;
       const segmentsStructAsymId = segmentData.segmentsStructAsymId;
-      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+      const symmOpListForSegments = generateSymmetryOperatorsForDomainSegments(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
 
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
