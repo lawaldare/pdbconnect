@@ -220,3 +220,91 @@ export const SymmetryOperatorMapping = {
     }
   },
 } as const;
+
+/** Splits on the first occurrence of `separator`. This is diferent from `str.split(separator, 1)`!
+ * ```
+ * > split('A', '-')
+ * ['A', undefined]
+ *
+ * > split('A-B', '-')
+ * ['A', 'B']
+ *
+ * > split('A-B-C', '-')  // 'A-B-C'.split('-', 1) would return ['A', 'B']
+ * ['A', 'B-C']
+ * ```
+ */
+export function splitOnce(str: string, separator: string): [string, string | undefined] {
+  const sepPosition = str.indexOf(separator);
+  if (sepPosition >= 0) {
+    return [str.slice(0, sepPosition), str.slice(sepPosition + 1, undefined)];
+  } else {
+    return [str, undefined];
+  }
+}
+
+/** Try to guess symmetry instance ID of the implicitely named symmetry instance from all other symmetry instances.
+ * ```
+ * > guessMissingSymmetryInstanceId(['ASM-2', 'ASM-3', 'ASM-4']) // most cases
+ * 'ASM-1'
+ *
+ * > guessMissingSymmetryInstanceId(['ASM-1-62', 'ASM-2-61', 'ASM-2-62', 'ASM-3-61', 'ASM-3-62', 'ASM-4-61', 'ASM-4-62'])) // case of 1m4x
+ * 'ASM-1-61'
+ * ```
+ */
+export function guessMissingSymmetryInstanceId(presentSymmetryInstanceIds: string[]) {
+  const DEFAULT_OPERATOR = '1'; // This is far from ideal, but it's not possible to guess the default operator, as the operator expression can be wild (1smv assembly 5: 'P', 1m4x assembly 2: '(61-88)', 1e94 assembly 2: '1,7,8,9,10,11')
+
+  if (presentSymmetryInstanceIds.length === 0) {
+    return 'ASM-' + DEFAULT_OPERATOR;
+  }
+
+  const presentCombos = presentSymmetryInstanceIds.map((instanceId) => instanceId.split('-').slice(1, undefined));
+  const order = presentCombos[0].length;
+  if (!presentCombos.every((combo) => combo.length === order))
+    throw new Error('Could not guess missing symmetry instance ID because not all instance IDs have the same number of operators.');
+
+  if (order === 1) {
+    // Instance ID ~ Symmetry operator
+    return 'ASM-' + DEFAULT_OPERATOR;
+  }
+
+  // Instance ID ~ Combination of symmetry operators
+  const operatorCountsOnPositions: { [op: string]: number }[] = [];
+  for (let position = 0; position < order; position++) {
+    const countsHere: { [op: string]: number } = {};
+    for (const combo of presentCombos) {
+      const operator = combo[position];
+      countsHere[operator] = (countsHere[operator] ?? 0) + 1;
+    }
+    operatorCountsOnPositions.push(countsHere);
+  }
+
+  const nCombosTheor = operatorCountsOnPositions.reduce((product, counts) => product * Object.keys(counts).length, 1);
+  if (nCombosTheor === presentSymmetryInstanceIds.length + 1) {
+    // Case '(1-60)(61-88)'
+    const missingOps: string[] = [];
+    for (let position = 0; position < order; position++) {
+      const operatorsHere = Object.keys(operatorCountsOnPositions[position]);
+      const countTheor = nCombosTheor / operatorsHere.length;
+      const missingOpHere = operatorsHere.find((op) => operatorCountsOnPositions[position][op] < countTheor);
+      if (missingOpHere === undefined) throw new Error('Could not guess missing symmetry assembly ID (counts do not match).');
+      missingOps.push(missingOpHere);
+    }
+    return 'ASM-' + missingOps.join('-');
+  }
+
+  if (nCombosTheor === presentSymmetryInstanceIds.length) {
+    // Case '(X0)(1-20)'
+    let positionToComplete = 0;
+    for (let position = 0; position < order; position++) {
+      if (Object.keys(operatorCountsOnPositions[position]).length > 1) {
+        positionToComplete = position;
+        break;
+      }
+    }
+    const missingOps = operatorCountsOnPositions.map((counts, position) => (position === positionToComplete ? DEFAULT_OPERATOR : Object.keys(counts)[0]));
+    return 'ASM-' + missingOps.join('-');
+  }
+
+  throw new Error('Could not guess missing symmetry assembly ID (unknown case).');
+}

@@ -5,6 +5,7 @@ import { LigandMonomer } from '../../data-models/ligand-monomers.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
+import { guessMissingSymmetryInstanceId, sortSymmetryInstanceIds } from '../../helpers/misc';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
 import { sortByBooleanFlag } from './domain-processing';
@@ -399,42 +400,31 @@ export type ProcessedModification = _ProcessedLigandOrMod<'modification', Modifi
 export type ProcessedLigandOrMod = ProcessedLigand | ProcessedModification;
 
 function generateSymmetryOperatorsListForLigandMonomer(entityId: number, ligandMonomer: LigandMonomer, preferredAssembly: AssemblyData): string[] {
-  const instanceStructAsym = ligandMonomer.struct_asym_id;
-
-  const currentLigMonomerSymmOperators: string[] = [];
-  const assemblyEntityOfLigandSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === entityId);
-  if (assemblyEntityOfLigandSearch.length === 0) {
+  const ligandEntity = preferredAssembly.entities.find((ent) => ent.entity_id === entityId);
+  if (!ligandEntity) {
     return [];
-  } else if (assemblyEntityOfLigandSearch.length > 1) {
-    console.warn('Warning: multiple assembly entities found for single macromolecule');
   }
-  const assemblyEntityOfLigand = assemblyEntityOfLigandSearch[0];
+  /** Struct asym IDs of the ligand chain, optionally renamed by appending symmetry instance ID, e.g. A, A-2, A-3, A-4) */
+  const renamedChains = ligandEntity.in_chains.filter((renamedChain) => renamedChain.split('-')[0] === ligandMonomer.struct_asym_id);
 
-  const hasSymmetryOp = assemblyEntityOfLigand.in_chains.some((chainidWithOp) => chainidWithOp.includes('-'));
-  if (!hasSymmetryOp) {
+  const hasSymmetryOps = renamedChains.some((renamedChain) => renamedChain.includes('-'));
+  if (!hasSymmetryOps) {
     return [];
   }
 
-  const prefAssemblyStructAsymsForLigand = assemblyEntityOfLigand.in_chains.filter((structAsymIdWithOp) => structAsymIdWithOp.split('-')[0] === instanceStructAsym);
+  const explicitCases = renamedChains
+    .filter((renamedChain) => renamedChain.includes('-'))
+    .map((renamedChain) => 'ASM-' + renamedChain.split('-').slice(1, undefined).join('-')); // Has to work also for instance IDs with multiple operators, e.g. ASM-2-61
 
-  const noStructAsymsWithOp = prefAssemblyStructAsymsForLigand.length === 0;
-  const onlyCurrentChainId = prefAssemblyStructAsymsForLigand.length === 1 && prefAssemblyStructAsymsForLigand[0] === instanceStructAsym;
-  const onlyCurrentChainWithOp = prefAssemblyStructAsymsForLigand.length === 1 && prefAssemblyStructAsymsForLigand[0] !== instanceStructAsym;
-
-  if (noStructAsymsWithOp || onlyCurrentChainId) {
-    return [];
+  if (explicitCases.length === renamedChains.length) {
+    // All instances explicitely named (e.g. A-1, A-2, A-3, A-4)
+    return sortSymmetryInstanceIds(explicitCases);
+  } else {
+    // One of the instances is not explicitely named (e.g. A, A-2, A-3, A-4)
+    const implicitInstanceId = guessMissingSymmetryInstanceId(explicitCases);
+    explicitCases.push(implicitInstanceId);
+    return sortSymmetryInstanceIds(explicitCases);
   }
-  if (onlyCurrentChainWithOp) {
-    const symmetryOperator = prefAssemblyStructAsymsForLigand[0].split('-')[1];
-    return [`ASM-${symmetryOperator}`];
-  }
-
-  // add each operator to list
-  for (const structAsymIdWithOp of prefAssemblyStructAsymsForLigand) {
-    const symmetryOperator = structAsymIdWithOp === instanceStructAsym ? '1' : structAsymIdWithOp.split('-')[1];
-    currentLigMonomerSymmOperators.push(`ASM-${symmetryOperator}`);
-  }
-  return currentLigMonomerSymmOperators;
 }
 
 export function generateSymmetryOperatorsListForLigand(entityId: number, ligandMonomersForEntity: LigandMonomer[], preferredAssembly: AssemblyData) {

@@ -9,7 +9,6 @@ import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/c
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { dashboardStatLinks, entryAssembliesTooltips } from '../../entry-constant';
 import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
@@ -21,6 +20,9 @@ import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
+import { generateSymmetryOperatorsListForLigand } from '../../store/data-processing/ligand-processing';
+import { generateSymmetryOperatorsDict } from '../../store/data-processing/macromolecule-processing';
+import { Molecule } from '../../data-models/molecule.model';
 
 @Component({
   selector: 'pdbc-assemblies-tab',
@@ -39,6 +41,7 @@ export class AssembliesTabComponent {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly assemblySummaryDict = toSignal(this.globalStore.select(EntrySelectors.complexPagesSummary));
+  public readonly assemblyDetails = toSignal(this.globalStore.select(EntrySelectors.assemblies));
 
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
@@ -64,10 +67,10 @@ export class AssembliesTabComponent {
     return isSlow === false || forceLoad === true;
   });
 
-  private procAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
-  public hasLoadedAssemblies = computed(() => this.procAssemblies() !== undefined);
+  public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
+  public hasLoadedAssemblies = computed(() => this.processedAssemblies() !== undefined);
   public hasAssemblies = computed(() => {
-    const rows = this.procAssemblies();
+    const rows = this.processedAssemblies();
     if (rows === undefined) return false;
     return rows.length > 0;
   });
@@ -78,7 +81,6 @@ export class AssembliesTabComponent {
   }
 
   public readonly symmetry = toSignal(this.globalStore.select(EntrySelectors.symmetry));
-  public readonly processedAssemblies = toSignal(this.globalStore.select(EntrySelectors.processedAssemblies));
 
   public readonly entryAssembliesTooltips = entryAssembliesTooltips;
 
@@ -161,6 +163,24 @@ export class AssembliesTabComponent {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+    });
+
+    effect(() => {
+      for (const ass of this.assemblyDetails() ?? []) {
+        console.log('ass:', ass);
+        const unsortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(1, [{ struct_asym_id: 'A' } as any], ass);
+        for (const instances of unsortedSymmOpListForEachLigOrMod) {
+          console.log(`ligand instances (${instances.length}):\n`, ...instances);
+        }
+
+        const in_chains = ['A', 'A-2', 'A-3', 'A-4', 'B', 'B-2', 'C', 'D-X'];
+        const instancesByChain = generateSymmetryOperatorsDict({ entity_id: 1, in_chains, in_struct_asyms: in_chains } as Molecule, ass);
+        console.log(`macromolecule instances:`);
+        for (const chain in instancesByChain) {
+          const instances = instancesByChain[chain];
+          console.log(`    ${chain} (${instances.length}):`, ...instances);
+        }
+      }
     });
   }
 

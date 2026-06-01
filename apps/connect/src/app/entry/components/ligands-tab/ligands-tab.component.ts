@@ -592,4 +592,4 @@ function getInteractionLegendItems(colors: Record<string, string>, labels: Recor
   }));
 }
 
-// TODO: @adam Fix macromolecule (and maybe ligand) ASMs for 1m4x
+// TODO: @adam Fix macromolecule (and maybe ligand (generateSymmetryOperatorsListForLigandMonomer)) ASMs for 1m4x
