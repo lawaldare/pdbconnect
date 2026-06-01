@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-import Clarity from '@microsoft/clarity';
+import * as Clarity from '@microsoft/clarity';
 
 @Injectable({ providedIn: 'root' })
 export class ClarityConsentService {
@@ -24,15 +24,15 @@ export class ClarityConsentService {
     this.sendClarityConsentSignal(true);
     this.initializeClarity();
     try {
-      Clarity.event('clarity-consent-accepted');
+      Clarity.default.event('clarity-consent-accepted');
       // eslint-disable-next-line no-empty
     } catch {}
   }
 
   private initializeClarity(): void {
-    if (typeof Clarity.init === 'function' && !(window as any).clarityInitialized) {
+    if (typeof Clarity.default.init === 'function' && !(window as any).clarityInitialized) {
       (window as any).clarityInitialized = true;
-      Clarity.init(this.clarityProjectId());
+      Clarity.default.init(this.clarityProjectId());
     }
   }
 

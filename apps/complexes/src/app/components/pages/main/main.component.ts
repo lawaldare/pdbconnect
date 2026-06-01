@@ -42,7 +42,7 @@ import { HelpIconForMolstarService } from '@pdbe-lib/molstar-for-apps';
 import { ComplexUtilService } from '../../../services/complex-util.service';
 import { ComplexIdHistory } from '../../../models/complexId-history.model';
 import { environment } from '../../../../environments/environment';
-import Clarity from '@microsoft/clarity';
+import * as Clarity from '@microsoft/clarity';
 import { LoadingState } from '../../../enums/loading-state.enum';
 
 enum ComplexIdHistoryStatus {
@@ -105,7 +105,7 @@ export class MainComponent implements OnInit {
 
   public readonly status = LoadingState;
   public selectedTab = signal<number>(0);
-  private complexId = signal<string>('');
+  public complexId = signal<string>('');
 
   public readonly complexIdHistoryStatus = ComplexIdHistoryStatus;
 
@@ -143,7 +143,7 @@ export class MainComponent implements OnInit {
 
     if (isPlatformBrowser(this.platformId)) {
       this.isDesktop.set(window.innerWidth > 768);
-      Clarity.init(environment.clarityProjectIdForComplexPages);
+      Clarity.default.init(environment.clarityProjectIdForComplexPages);
       this.clarityConsentService.init(environment.clarityProjectIdForComplexPages);
     }
 
