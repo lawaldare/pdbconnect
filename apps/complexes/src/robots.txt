@@ -1,0 +1,11 @@
+# Allow all search engine bots to index our structural metadata
+User-agent: *
+Allow: /pdbe/pdbe-kb/complexes/
+Allow: /pdbe/pdbe-kb/complexes/*
+
+# Prevent crawlers from hammering internal search queries or api points if exposed
+Disallow: /pdbe/pdbe-kb/complexes/api/
+Disallow: /*?search=
+
+# Direct search bots straight to our structured index mapping
+Sitemap: https://www.ebi.ac.uk/pdbe/pdbe-kb/complexes/sitemap.xml

@@ -13,6 +13,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
   ScrollPositionService,
+  SeoService,
   SurveyConfig,
   SurveyPopupComponent,
   SurveyService,
@@ -78,6 +79,7 @@ export class MainComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly gAS = inject(GoogleAnalyticsService);
   public readonly clarityConsentService = inject(ClarityConsentService);
+  private readonly seoService = inject(SeoService);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly bioschemasService = inject(ComplexBioschemasService);
@@ -95,7 +97,6 @@ export class MainComponent implements OnInit {
   public readonly scrollService = inject(ScrollPositionService);
 
   public summaryData = toSignal(this.globalStore.select(ComplexSelectors.complexData).pipe(filter(Boolean)));
-  public complexId = toSignal(this.globalStore.select(ComplexSelectors.complexId));
   public loaded = toSignal(this.globalStore.select(ComplexSelectors.loadingState));
 
   public supercomplexInteractions = toSignal(this.globalStore.select(ComplexSelectors.superComplexInteractions));
@@ -104,6 +105,7 @@ export class MainComponent implements OnInit {
 
   public readonly status = LoadingState;
   public selectedTab = signal<number>(0);
+  private complexId = signal<string>('');
 
   public readonly complexIdHistoryStatus = ComplexIdHistoryStatus;
 
@@ -149,6 +151,7 @@ export class MainComponent implements OnInit {
       .pipe(
         switchMap((params) => {
           const complexId = params['complexId'].toUpperCase();
+          this.complexId.set(complexId);
           this.globalStore.dispatch(ComplexActions.setCurrentComplexId({ complexId }));
           this.globalStore.dispatch(ComplexActions.getComplexIdHistory());
           return this.globalStore.select(ComplexSelectors.history).pipe(filter(Boolean));
@@ -171,6 +174,13 @@ export class MainComponent implements OnInit {
       .subscribe(() => {
         this.bioschemasService.buildBioschemasJSON(this.renderer);
         this.complexMetaTagService.buildMetaTags();
+        if (this.summaryData()) {
+          this.seoService.update({
+            title: `PDB ${this.complexId()}: ${this.summaryData()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            description: `PDB ${this.complexId()}: ${this.summaryData()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            url: `${environment.baseUrl}pdbe/pdbe-kb/complexes/${this.complexId()}`,
+          });
+        }
         this.launchSurveyForComplexesPage(this.complexId() ?? '', this.isDesktop());
       });
   }
