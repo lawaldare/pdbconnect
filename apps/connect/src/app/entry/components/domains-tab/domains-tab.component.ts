@@ -341,16 +341,16 @@ export class DomainsTabComponent {
   /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
   public readonly altSequences = computed<AlternativeNumbering[] | undefined>(() => {
     const residueListing = this.residueListing();
-    if (!residueListing) return undefined;
-    if (residueListing.length === 0) return [];
-    const authNumbering = createAuthAlternateNumbering(residueListing);
+    if (!residueListing || residueListing.chain_id !== this.currentSelectionChainId()) return undefined;
+    if (residueListing.residues.length === 0) return [];
+    const authNumbering = createAuthAlternateNumbering(residueListing.residues);
     return [authNumbering];
   });
 
   public readonly nonObserved = computed<number[] | undefined>(() => {
     const residueListing = this.residueListing();
-    if (!residueListing) return undefined;
-    return getNonObserved(residueListing);
+    if (!residueListing || residueListing.chain_id !== this.currentSelectionChainId()) return undefined;
+    return getNonObserved(residueListing.residues);
   });
 
   constructor() {

@@ -3,22 +3,14 @@
 
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, catchError, map, of, shareReplay, switchMap, throwError } from 'rxjs';
-import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
-import { XRayRefine } from '../data-models/x-ray-refine.model';
-import { CitationDetail } from '../data-models/publication.model';
-import { RelatedPublication } from '../data-models/related-publications.model';
-import { PfamMappings, CathMappings, ScopMappings, InterProMappings, RfamMappings } from '../data-models/domains.model';
-import { ComplexDetails } from '../data-models/complex-details.model';
+import { catchError, map, Observable, of, shareReplay, switchMap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { AssemblyData, Symmetry } from '../data-models/assembly.model';
-import { PisaAssembly } from '../data-models/pisa-assembly.model';
+import { BoundMolecule } from '../data-models/bound-molecule.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
-import { Molecule } from '../data-models/molecule.model';
-import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
-import { ECMapping, GOMapping, SummaryStats, UniProtMapping } from '../data-models/uniprot-mapping.model';
-import { PdbRedoQualityScores, ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
-import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
+import { ComplexDetails } from '../data-models/complex-details.model';
+import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
+import { CathMappings, InterProMappings, PfamMappings, RfamMappings, ScopMappings } from '../data-models/domains.model';
 import {
   BMRBExperimentRawData,
   EMPIARExperimentRawData,
@@ -26,18 +18,25 @@ import {
   PDBExperimentRawData,
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
-import { EntryStatus } from '../data-models/status.model';
-import { environment } from '../../../environments/environment';
-import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
-import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
-import { LLMAnnotation } from '../data-models/llm-model';
-import { ResidueListed, ResidueListing } from '../data-models/residue-listing.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
-import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
-import { BoundMolecule } from '../data-models/bound-molecule.model';
-import { Depiction } from '../data-models/structure.model';
+import { LLMAnnotation } from '../data-models/llm-model';
 import { MDDBLink } from '../data-models/mddb.model';
+import { ModifiedResidue } from '../data-models/modified-residues.model';
+import { Molecule } from '../data-models/molecule.model';
+import { PisaAssembly } from '../data-models/pisa-assembly.model';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { CitationDetail } from '../data-models/publication.model';
+import { RelatedPublication } from '../data-models/related-publications.model';
+import { ResidueListing, ResidueListingChain } from '../data-models/residue-listing.model';
+import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
+import { EntryStatus } from '../data-models/status.model';
+import { Depiction } from '../data-models/structure.model';
+import { PdbRedoQualityScores, ProcessedQualityScores, SummaryQualityScores } from '../data-models/summary-quality-scores.model';
+import { EntrySummary, ProcessedSummary } from '../data-models/summary.model';
+import { ECMapping, GOMapping, SummaryStats, UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { XRayRefine } from '../data-models/x-ray-refine.model';
 // import { Router } from '@angular/router';
 
 @Injectable({
@@ -424,10 +423,10 @@ export class EntryApiService {
       );
   }
 
-  public getResiduesForChain(entryId: string, chainId: string): Observable<ResidueListed[]> {
+  public getResiduesForChain(entryId: string, chainId: string): Observable<ResidueListingChain> {
     return this.http.get<Record<string, ResidueListing>>(`${this.BASE_API_V2}pdb/entry/residue_listing/${entryId}/chain/${chainId}`).pipe(
       map((data) => {
-        return data[entryId]['molecules'][0]['chains'][0]['residues'] || [];
+        return data[entryId]['molecules'][0]['chains'][0];
       })
     );
   }

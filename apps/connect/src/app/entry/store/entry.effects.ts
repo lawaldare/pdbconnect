@@ -1,17 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { EntryStoreState } from './entry-store.model';
-import { EntryActions } from './entry.actions';
 import { catchError, combineLatest, filter, forkJoin, map, mergeMap, of, switchMap, take } from 'rxjs';
-import { EntryApiService } from '../services/entry-api.service';
-import { EntrySelectors } from './entry.selectors';
-import { AnyExperimentDetail } from '../data-models/experimental-details.model';
-import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
+import { AnyExperimentDetail } from '../data-models/experimental-details.model';
+import { MoleculeSource } from '../data-models/molecule.model';
+import { CitationDetail } from '../data-models/publication.model';
+import { EntryApiService } from '../services/entry-api.service';
 import { PvDataApiService } from '../services/entry-pv-nightingale-api.service';
 import { EntryUtilService } from '../services/entry-util.service';
-import { processFilesData, processResidueOutliersData } from './data-processing/others-processing';
 import {
   generateAssembliesCards,
   generateAssembliesTableFilters,
@@ -19,16 +16,7 @@ import {
   getPreferredAssemblyDatum,
   processPreferredAssemblyData,
 } from './data-processing/assembly-processing';
-import {
-  generateMacromoleculesCards,
-  generateMacromoleculesTableFilters,
-  generateProcessedMacromolecules,
-  getUniProtMappingsForMacromolecule,
-  mapMacromoleculesByPreferredAssembly,
-  mapMacromoleculesChainsToEntityId,
-  mapPolymerCoverageByPreferredAssembly,
-  processMacromoleculesDescriptions,
-} from './data-processing/macromolecule-processing';
+import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
 import {
   generateLigandsAndModsTableFilters,
   generateLigandsCards,
@@ -38,9 +26,20 @@ import {
   mapLigandsByPreferredAssembly,
   mapModificationsByPreferredAssembly,
 } from './data-processing/ligand-processing';
-import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
-import { MoleculeSource } from '../data-models/molecule.model';
 import { filterMacromoleculesForLLM } from './data-processing/llm-processing';
+import {
+  generateMacromoleculesCards,
+  generateMacromoleculesTableFilters,
+  generateProcessedMacromolecules,
+  mapMacromoleculesByPreferredAssembly,
+  mapMacromoleculesChainsToEntityId,
+  mapPolymerCoverageByPreferredAssembly,
+  processMacromoleculesDescriptions,
+} from './data-processing/macromolecule-processing';
+import { processFilesData, processResidueOutliersData } from './data-processing/others-processing';
+import { EntryStoreState } from './entry-store.model';
+import { EntryActions } from './entry.actions';
+import { EntrySelectors } from './entry.selectors';
 
 @Injectable()
 export class EntryEffects {
@@ -1357,6 +1356,12 @@ export class EntryEffects {
 
         const filteredMacromolecules = filterMacromoleculesForLLM(macromolecules, llmAnnotations, preferredAssembly, uniprotMappings, polymerCoverage);
         const processedMacromoleculesForLLM = generateProcessedMacromolecules(filteredMacromolecules, preferredAssembly, carbohydrates);
+        // console.log('getProcessedMacromolsForLLM$', macromolecules, llmAnnotations)
+        // for (const a of sortBy(llmAnnotations.slice(), a => a.pdbChain)) {
+        //   console.log('   ', a.pdbChain, a.pdbResidue, a.uniprotAccession, a.uniprotResidue)
+        // }
+        // console.log('filteredMacromolecules:', filteredMacromolecules)
+        // console.log('processedMacromoleculesForLLM:', processedMacromoleculesForLLM)
         return EntryActions.getProcessedMacromolsForLLMSuccess({ processedMacromoleculesForLLM });
       }),
       catchError(() => of(EntryActions.getProcessedMacromolsForLLMFailure()))
