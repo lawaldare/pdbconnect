@@ -13,7 +13,18 @@ export function convertOutliersToSmartSequenceAnnotation(
   modelId = '1',
   outliers?: ResidueWiseOutliersMolecule[]
 ): SmartSequenceAnnotation | undefined {
-  if (!outliers) return undefined;
+  if (!outliers) {
+    // Return dummy value to avoid blocking UI and having to provide fallback value if data fetch fails
+    return {
+      name: 'Validation',
+      identifier: 'pdbe-validation',
+      scaleType: 'ordinal',
+      scaleDomain: ['Loading validation data...'],
+      scaleRange: ['#FFFFFF00'],
+      rendering: 'Background',
+      data: [],
+    };
+  }
   const residueOutlierMap = new Map<number, Set<string>>();
 
   // Traverse and collect outlier types by residue index

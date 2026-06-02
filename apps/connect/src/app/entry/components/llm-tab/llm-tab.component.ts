@@ -445,19 +445,6 @@ export class LLMTabComponent implements OnInit {
     const sequence = macromolecule.additionalData.molecule.sequence;
     if (!sequence) return;
 
-    // wait max 10s for residueWiseOutliers to populate
-    let outliers = this.residueWiseOutliers();
-    if (outliers === undefined) {
-      outliers = await firstValueFrom(
-        interval(200).pipe(
-          map(() => this.residueWiseOutliers()),
-          filter((o) => o !== undefined), // stop when defined
-          take(1), // only take the first defined
-          timeout({ first: 10000, with: () => of([]) }) // fallback if still undefined
-        )
-      );
-    }
-
     const chainId = this.dropdown.selectedOption()?.data.authAsymId;
     if (chainId === undefined) return;
 
