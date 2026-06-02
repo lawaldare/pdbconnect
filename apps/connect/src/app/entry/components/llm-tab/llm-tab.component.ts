@@ -14,9 +14,8 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
 import { LLMAnnotation } from '../../data-models/llm-model';
-import { CitationDetail } from '../../data-models/publication.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
 import { Dropdown, groupBy, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
@@ -375,6 +374,10 @@ export class LLMTabComponent implements OnInit {
       if (!macromolecule) return;
       await this.triggerMacromoleculeUpdateSideEffects(macromolecule);
     });
+
+    effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
+    effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
+    effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
   }
 
   ngOnInit(): void {
@@ -394,8 +397,12 @@ export class LLMTabComponent implements OnInit {
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
 
-  public currentSelectionEntityId = signal<string | undefined>(undefined);
-  public currentSelectionChainId = signal<string | undefined>(undefined);
+  public currentSelectionChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
+  public currentSelectionEntityId = computed<string | undefined>(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    return String(macromolecule.additionalData.molecule.entity_id);
+  });
 
   public sequenceDetails = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
@@ -411,7 +418,6 @@ export class LLMTabComponent implements OnInit {
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
     this.resetAnnotationFilter();
 
-    await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
   }
 
@@ -466,17 +472,12 @@ export class LLMTabComponent implements OnInit {
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
 
-    await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
   }
 
   public async onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdown.select(event);
     this.resetAnnotationFilter();
-
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return;
-    await this.renderVisualisations(macromolecule);
   }
 
   public toggleSidebar() {
@@ -489,20 +490,6 @@ export class LLMTabComponent implements OnInit {
     this.utilService.copy(text);
   }
 
-  private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
-    await this.setCurrentSelectionData(macromolecule);
-  }
-
-  private async setCurrentSelectionData(macromolecule: ProcessedMacromolecule) {
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
-
-    this.currentSelectionEntityId.set(`${entityId}`);
-    this.currentSelectionChainId.set(chainId);
-    this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
-    this.visInteractivity.currentSelectionChainId.set(chainId);
-  }
-
   private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
@@ -510,7 +497,7 @@ export class LLMTabComponent implements OnInit {
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return undefined;
 
-    const llmAnnotations = this.allAnnotations(); // TODO: only take annotation for the current chain
+    const llmAnnotations = this.primaryAnnotationsInCurrentChain();
     const assemblyId = this.displayedAssemblyId();
     const instanceId = this.selectedInstanceId();
 

@@ -91,7 +91,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
-  private readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing)); // TODO: make this bound to a chain, to avoid show data from previous chain before fetch completes
+  private readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
