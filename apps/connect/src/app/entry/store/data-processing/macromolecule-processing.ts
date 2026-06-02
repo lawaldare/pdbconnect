@@ -544,7 +544,7 @@ export function generateSymmetryOperatorsDict(macromolecule: Molecule, assemblyE
     return {};
   }
 
-  const chainToSymmOp: { [key: string]: string[] } = {};
+  const chainToSymmOp: { [authAsymId: string]: string[] } = {};
   for (const chainId of macromolecule.in_chains) {
     // This cannot be done by iterating in_chains and in_struct_asyms at the same time because they are not necessarily in the same order (see 7p19 entity 2: B [auth E], D [auth C])
     const structAsymId = macromolecule.auth_asym_id_to_label_asym_id[chainId];

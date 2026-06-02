@@ -894,5 +894,3 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     });
   }
 }
-
-// TODO: Fix wrong inPrefAssembly for macromolecule 2 in 7p19 (same on other tabs)
