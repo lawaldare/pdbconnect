@@ -3,7 +3,7 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -323,6 +323,13 @@ export class LLMTabComponent implements OnInit {
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
+
+    // Update visualizations (sequence viewer, table) when entity changes
+    effect(async () => {
+      const macromolecule = this.currentMacromoleculeDatum();
+      if (!macromolecule) return;
+      await this.triggerMacromoleculeUpdateSideEffects(macromolecule);
+    });
   }
 
   ngOnInit(): void {
@@ -331,7 +338,6 @@ export class LLMTabComponent implements OnInit {
       const datum = this.macromoleculeTableRows()[idx];
       if (datum) {
         this.currentMacromoleculeDatum.set(datum);
-        await this.triggerMacromoleculeUpdateSideEffects(datum);
       }
     });
 
@@ -542,3 +548,11 @@ export class LLMTabComponent implements OnInit {
     });
   }
 }
+
+// TODO: fix label-auth-asym-id mess
+// 7p19:
+// - Entity 1: A [auth A], C [auth B]
+// - Entity 2: B [auth E], D [auth C]
+// 6qb:
+// - Entity 1: A [auth A], C [auth B]
+// - Entity 2: B [auth X]
