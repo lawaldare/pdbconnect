@@ -1,10 +1,11 @@
-import { AssemblyData } from '../../data-models/assembly.model';
+import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
+import { generateSymmetryOperatorsForChain } from './macromolecule-processing';
 import { Filter } from './models/other-models';
 import { DomainsBoundaries, ProcessedDomain, ProcessedMacromolecule } from './models/processed-entities.model';
 
@@ -468,52 +469,22 @@ export function generateDomainsTableFilters(
 }
 
 export function generateSymmetryOperatorsForDomainSegments(segmentsEntityIds: number[], segmentsStructAsymIds: string[], preferredAssembly: AssemblyData) {
+  // Index entities to avoid using .find repeatedly
+  const assemblyEntitiesById: { [entityId: number]: AssemblyEntity } = {};
+  for (const entity of preferredAssembly.entities) {
+    assemblyEntitiesById[entity.entity_id] = entity;
+  }
+
   const segmentsSymmOperators: string[][] = [];
+  const cachedOperators: { [structAsymId: string]: string[] } = {};
   for (let iSeg = 0; iSeg < segmentsEntityIds.length; iSeg++) {
-    const segmentEntityId = segmentsEntityIds[iSeg];
-    const segmentStructAsymId = segmentsStructAsymIds[iSeg];
-    segmentsSymmOperators.push(generateSymmetryOperatorsForChain(segmentEntityId, segmentStructAsymId, preferredAssembly));
+    const entityId = segmentsEntityIds[iSeg];
+    const assemblyEntity = assemblyEntitiesById[entityId];
+    const structAsymId = segmentsStructAsymIds[iSeg];
+    cachedOperators[structAsymId] ??= generateSymmetryOperatorsForChain(assemblyEntity, structAsymId) ?? [];
+    segmentsSymmOperators.push(cachedOperators[structAsymId]);
   }
   return segmentsSymmOperators;
-}
-
-function generateSymmetryOperatorsForChain(entityId: number, structAsymId: string, preferredAssembly: AssemblyData) {
-  const currentSegmentSymmOperators: string[] = [];
-  const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === entityId);
-  if (assemblyEntityOfMacromolSearch.length === 0) {
-    return [];
-  } else if (assemblyEntityOfMacromolSearch.length > 1) {
-    console.warn('Warning: multiple assembly entities found for single macromolecule');
-  }
-  const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
-
-  const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
-  if (hasSymmetryOp === false) {
-    return [];
-  }
-
-  const prefAssemblyStructAsymsForSegment = assemblyEntityOfMacromol.in_chains.filter((structAsymIdWithOp) => structAsymIdWithOp.split('-')[0] === structAsymId);
-
-  const noStructAsymsWithOp = prefAssemblyStructAsymsForSegment.length === 0;
-  const onlyCurrentChainId = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] === structAsymId;
-  const onlyCurrentChainWithOp = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] !== structAsymId;
-
-  if (noStructAsymsWithOp || onlyCurrentChainId) {
-    return [];
-  }
-  if (onlyCurrentChainWithOp) {
-    const symmetryOperator = prefAssemblyStructAsymsForSegment[0].split('-')[1];
-    return [`ASM-${symmetryOperator}`];
-  }
-  // All for default selection
-  currentSegmentSymmOperators.push('All');
-
-  // add each operator to list
-  for (const structAsymIdWithOp of prefAssemblyStructAsymsForSegment) {
-    const symmetryOperator = structAsymIdWithOp === structAsymId ? '1' : structAsymIdWithOp.split('-')[1];
-    currentSegmentSymmOperators.push(`ASM-${symmetryOperator}`);
-  }
-  return currentSegmentSymmOperators;
 }
 
 export function generateProcessedDomains(

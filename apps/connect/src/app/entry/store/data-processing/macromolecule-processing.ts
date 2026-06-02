@@ -533,14 +533,13 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
   return newFilters;
 }
 
-export function generateSymmetryOperatorsDict(macromolecule: Molecule, preferredAssembly: AssemblyData) {
+export function generateSymmetryOperatorsDict(macromolecule: Molecule, assemblyEntity: AssemblyEntity | undefined) {
   if (!macromolecule.auth_asym_id_to_label_asym_id) throw new Error('macromolecule.auth_asym_id_to_label_asym_id is missing');
 
-  const assemblyEntityOfMacromol = preferredAssembly.entities.find((ent) => ent.entity_id === macromolecule.entity_id);
-  if (!assemblyEntityOfMacromol) {
+  if (!assemblyEntity) {
     return {};
   }
-  const hasSymmetryOp = assemblyEntityOfMacromol.in_chains.some((chainidWithOp) => chainidWithOp.includes('-'));
+  const hasSymmetryOp = assemblyEntity.in_chains.some((chainidWithOp) => chainidWithOp.includes('-'));
   if (!hasSymmetryOp) {
     return {};
   }
@@ -549,7 +548,7 @@ export function generateSymmetryOperatorsDict(macromolecule: Molecule, preferred
   for (const chainId of macromolecule.in_chains) {
     // This cannot be done by iterating in_chains and in_struct_asyms at the same time because they are not necessarily in the same order (see 7p19 entity 2: B [auth E], D [auth C])
     const structAsymId = macromolecule.auth_asym_id_to_label_asym_id[chainId];
-    const symmetryInstances = generateSymmetryOperatorsForChain(assemblyEntityOfMacromol, structAsymId);
+    const symmetryInstances = generateSymmetryOperatorsForChain(assemblyEntity, structAsymId);
     if (symmetryInstances) {
       chainToSymmOp[chainId] = symmetryInstances;
     }
@@ -557,7 +556,7 @@ export function generateSymmetryOperatorsDict(macromolecule: Molecule, preferred
   return chainToSymmOp;
 }
 
-function generateSymmetryOperatorsForChain(assemblyEntity: AssemblyEntity, structAsymId: string) {
+export function generateSymmetryOperatorsForChain(assemblyEntity: AssemblyEntity, structAsymId: string) {
   const renamedChains = assemblyEntity.in_chains.filter((renamedChain) => renamedChain.split('-')[0] === structAsymId);
   if (renamedChains.length === 0) {
     // This chain is not in preferred assembly
@@ -575,6 +574,13 @@ function generateSymmetryOperatorsForChain(assemblyEntity: AssemblyEntity, struc
 
 export function generateProcessedMacromolecules(macromolecules: Molecule[], preferredAssembly: AssemblyData, carbohydrates?: CarbohydrateMolecule[]) {
   if ((<any>carbohydrates).empty === true) carbohydrates = [];
+
+  // Index entities to avoid using .find repeatedly
+  const assemblyEntitiesById: { [entityId: number]: AssemblyEntity } = {};
+  for (const entity of preferredAssembly.entities) {
+    assemblyEntitiesById[entity.entity_id] = entity;
+  }
+
   const processedMacromolecules: ProcessedMacromolecule[] = [];
   for (const molecule of macromolecules) {
     let moleculeLength = molecule.length ?? 0;
@@ -592,7 +598,8 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], pref
     const selectionData = generateMolstarSelectionsForMacromolecule(molecule, carbohydrate);
 
     const colorEntityIdx = molecule.entity_id - 1;
-    const chainSymmOperators = generateSymmetryOperatorsDict(molecule, preferredAssembly);
+    const assemblyEntity = assemblyEntitiesById[molecule.entity_id];
+    const chainSymmOperators = generateSymmetryOperatorsDict(molecule, assemblyEntity);
 
     const { selections, selectionNames, selectionsInPrefAssembly } = sortByBooleanFlag(
       {
