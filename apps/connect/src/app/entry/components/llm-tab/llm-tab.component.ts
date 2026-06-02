@@ -114,10 +114,6 @@ export class LLMTabComponent implements OnInit {
 
   public selectionStats: { [key: string]: any } | undefined;
 
-  public filteredLLMAnnotations = signal<LLMAnnotation[]>([]);
-  public groupedAnnotations = signal<LLMAnnotation[]>([]);
-  private mappedAnnotations = signal<LLMAnnotation[]>([]);
-
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
   public uniprotMappedData = computed(() => {
@@ -158,14 +154,43 @@ export class LLMTabComponent implements OnInit {
     return filteredIsoformsMapping;
   });
 
-  public readonly primaryPublication = signal({} as CitationDetail | null);
+  public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
+
   private readonly destroyRef = inject(DestroyRef);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
 
-  public readonly llmAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
+  /** List of all annotations (for all chains and all entities) */
+  public readonly allAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
+
+  /**  List of annotations from primary citation (for all chains and all entities) */
+  private readonly primaryAnnotations = computed<LLMAnnotation[]>(() => this.allAnnotations()?.filter((a) => a.primaryCitation === 'Y') ?? []);
+
+  /** Annotations from primary citation, grouped by chain */
+  private readonly primaryAnnotationsByChain = computed<{ [labelAsymId: string]: LLMAnnotation[] }>(() => {
+    return groupBy(this.primaryAnnotations(), (annot) => annot.pdbChain);
+  });
+
+  /** Annotations from primary citation in the current selected chain */
+  private readonly primaryAnnotationsInCurrentChain = computed<LLMAnnotation[]>(() => {
+    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
+    if (chainId === undefined) return [];
+    return this.primaryAnnotationsByChain()[chainId] ?? []; // TODO: this must be indexed by labelAsymId !!!
+  });
+
+  /** Annotations from primary citation in the current selected chain, filtered by the currently selected residue (if any) */
+  public readonly filteredAnnotations = computed<LLMAnnotation[]>(() => {
+    const annotationsInChain = this.primaryAnnotationsInCurrentChain();
+    const residueFilter = this.annotationResidueFilter();
+    if (residueFilter === undefined) {
+      return annotationsInChain;
+    } else {
+      const filtered = annotationsInChain.filter((a) => a.pdbResidue === residueFilter);
+      return removeDuplicatesByKey(filtered, 'sentence');
+    }
+  });
 
   public readonly tabDataLoaded = computed(() => this.processedMacromoleculesForLLM() !== undefined);
   public readonly macromoleculeTableRows = computed(() => this.processedMacromoleculesForLLM() ?? []);
@@ -251,7 +276,8 @@ export class LLMTabComponent implements OnInit {
   });
 
   public numberOfAnnotatedResids = computed(() => {
-    return this.llmAnnotations()?.filter((annotation, index, self) => index === self.findIndex((a) => a.pdbResidue === annotation.pdbResidue)).length;
+    // TODO: fix this monstrosity
+    return this.allAnnotations()?.filter((annotation, index, self) => index === self.findIndex((a) => a.pdbResidue === annotation.pdbResidue)).length;
   });
 
   private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
@@ -296,25 +322,19 @@ export class LLMTabComponent implements OnInit {
 
   public readonly visInteractivity = inject(VisualisationInteractivityService);
 
-  private resetAnnotationListByCurrentChain(resetGroupedList: boolean) {
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
-    const groupedAnnotations = chainId !== undefined ? this.groupedFilteredLLMAnnotations()[chainId] : [];
-    this.filteredLLMAnnotations.set(groupedAnnotations);
-    if (resetGroupedList) this.groupedAnnotations.set(groupedAnnotations);
-  }
+  /** For filtering annotations in the table by pdbResidue (label_seq_id) */
+  private annotationResidueFilter = signal<number | undefined>(undefined);
 
-  @HostListener('document:llm-reset-list', ['$event'])
-  public resetAnnotationList(event: Event) {
-    this.resetAnnotationListByCurrentChain(false);
+  @HostListener('document:llm-reset-list')
+  public resetAnnotationFilter() {
+    this.annotationResidueFilter.set(undefined);
   }
 
   @HostListener('document:llm-filter-list', ['$event'])
   public filterAnnotationList(event: Event) {
-    const eventData = (event as any).detail.eventData;
+    const eventData = (event as any).detail.eventData; // TODO: type
     const residueNumber = eventData.residueNumber;
-    const allAnnotations = this.groupedAnnotations();
-    const filteredByResidue = allAnnotations.filter((a: LLMAnnotation) => a.pdbResidue === residueNumber);
-    this.filteredLLMAnnotations.set(removeDuplicatesByKey(filteredByResidue, 'sentence'));
+    this.annotationResidueFilter.set(residueNumber);
   }
 
   constructor() {
@@ -346,21 +366,6 @@ export class LLMTabComponent implements OnInit {
       await this.updateBackgroundAnnotation();
     });
 
-    combineLatest([this.globalStore.select(EntrySelectors.llmAnnotations), this.globalStore.select(EntrySelectors.primaryPublication)])
-      .pipe(
-        filter(([llmAnnotations, primaryPublication]) => {
-          return llmAnnotations !== undefined;
-        }),
-        map(([llmAnnotations, primaryPublication]) => {
-          this.primaryPublication.set(primaryPublication ?? ({} as CitationDetail));
-          const annotations = llmAnnotations?.filter((a: any) => a.primaryCitation === 'Y');
-          this.filteredLLMAnnotations.set(annotations ?? []);
-          this.mappedAnnotations.set(annotations ?? []);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({});
-
     this.residueListingObservable
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -377,14 +382,10 @@ export class LLMTabComponent implements OnInit {
           this.altSequences.set([]);
           this.nonObserved.set([]);
         }
-      });
+      }); // TODO: to computed?
   }
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
-
-  private groupedFilteredLLMAnnotations = computed<{ [labelAsymId: string]: LLMAnnotation[] }>(() => {
-    return groupBy(this.mappedAnnotations(), (annot) => annot.pdbChain);
-  });
 
   public currentSelectionEntityId = signal<string | undefined>(undefined);
   public currentSelectionChainId = signal<string | undefined>(undefined);
@@ -401,7 +402,7 @@ export class LLMTabComponent implements OnInit {
   public selectionTypeText?: string;
 
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
-    this.resetAnnotationListByCurrentChain(true);
+    this.resetAnnotationFilter();
 
     await this.renderVisualisations(macromolecule);
     await this.updateBackgroundAnnotation();
@@ -434,9 +435,9 @@ export class LLMTabComponent implements OnInit {
 
     const modelId = this.currentModelId$.value || '1';
     const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
-    this.backgroundAnnotation.set(annotation);
+    this.backgroundAnnotation.set(annotation); // TODO: to computed?
 
-    const groupedLLMAnnotations: LLMAnnotation[] = this.groupedFilteredLLMAnnotations()[chainId];
+    const groupedLLMAnnotations: LLMAnnotation[] = this.primaryAnnotationsByChain()[chainId];
     this.llmAnnotationForSeq.set(getCircleAnnotationsForSeqViewer(groupedLLMAnnotations));
 
     this.globalStore.dispatch(
@@ -452,12 +453,7 @@ export class LLMTabComponent implements OnInit {
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
-    if (chainId !== undefined) {
-      const groupedAnnotations = this.groupedFilteredLLMAnnotations()[chainId];
-      this.filteredLLMAnnotations.set(groupedAnnotations);
-    }
+    this.resetAnnotationFilter();
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
@@ -469,6 +465,7 @@ export class LLMTabComponent implements OnInit {
 
   public async onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdown.select(event);
+    this.resetAnnotationFilter();
 
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
@@ -506,7 +503,7 @@ export class LLMTabComponent implements OnInit {
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return undefined;
 
-    const llmAnnotations = this.llmAnnotations();
+    const llmAnnotations = this.allAnnotations(); // TODO: only take annotation for the current chain
     const assemblyId = this.displayedAssemblyId();
     const instanceId = this.selectedInstanceId();
 

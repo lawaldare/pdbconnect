@@ -184,7 +184,7 @@ export function getCircleAnnotationsForSeqViewer(groupedLLMAnnotations: LLMAnnot
   };
 }
 
-export function removeDuplicatesByKey(array: any[], key: string): any[] {
+export function removeDuplicatesByKey<T>(array: T[], key: keyof T): T[] {
   const seen = new Set();
   return array.filter((item) => {
     const keyValue = item[key];
