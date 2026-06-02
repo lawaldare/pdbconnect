@@ -48,6 +48,7 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
 import { colDefs, gridOptions } from './ag-grid';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -254,7 +255,20 @@ export class LLMTabComponent implements OnInit {
     return this.sequenceDetails()?.indexWithMultipleResidues;
   });
 
-  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public backgroundAnnotation = computed<SmartSequenceAnnotation | undefined>(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    const sequence = macromolecule.additionalData.molecule.sequence;
+    if (!sequence) return undefined;
+
+    const outliers = this.residueWiseOutliers();
+    const entityId = macromolecule.additionalData.molecule.entity_id;
+    const chainId = this.currentSelectionChainId();
+    if (chainId === undefined) return undefined;
+    const modelId = this.currentModelId() ?? '1';
+    return convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
+  });
+
   public llmAnnotationForSeq = signal<SmartSequenceAnnotation | undefined>(undefined);
 
   /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
@@ -321,7 +335,8 @@ export class LLMTabComponent implements OnInit {
   }
   private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
-  public currentModelId$ = new BehaviorSubject<string>('1');
+  private currentModelId$ = new BehaviorSubject<string>('1');
+  private currentModelId = toSignal(this.currentModelId$);
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -366,6 +381,9 @@ export class LLMTabComponent implements OnInit {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+
+      // Once molstar has rendered, initializes mutation observer for NMR model Id
+      initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
     });
 
     // Update visualizations (sequence viewer, table) when entity changes
@@ -422,8 +440,6 @@ export class LLMTabComponent implements OnInit {
   }
 
   private async updateBackgroundAnnotation() {
-    this.backgroundAnnotation.set(undefined);
-
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
     const sequence = macromolecule.additionalData.molecule.sequence;
@@ -442,13 +458,8 @@ export class LLMTabComponent implements OnInit {
       );
     }
 
-    const entityId = macromolecule?.additionalData.molecule.entity_id ?? 1;
     const chainId = this.dropdown.selectedOption()?.data.authAsymId;
     if (chainId === undefined) return;
-
-    const modelId = this.currentModelId$.value || '1';
-    const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
-    this.backgroundAnnotation.set(annotation); // TODO: to computed?
 
     const groupedLLMAnnotations: LLMAnnotation[] = this.primaryAnnotationsByChain()[chainId];
     this.llmAnnotationForSeq.set(getCircleAnnotationsForSeqViewer(groupedLLMAnnotations));
