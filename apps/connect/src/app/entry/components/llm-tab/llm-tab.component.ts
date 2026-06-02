@@ -166,11 +166,11 @@ export class LLMTabComponent implements OnInit {
   public readonly allAnnotations = toSignal(this.globalStore.select(EntrySelectors.llmAnnotations));
 
   /**  List of annotations from primary citation (for all chains and all entities) */
-  private readonly primaryAnnotations = computed<LLMAnnotation[]>(() => this.allAnnotations()?.filter((a) => a.primaryCitation === 'Y') ?? []);
+  private readonly primaryAnnotations = computed<LLMAnnotation[] | undefined>(() => this.allAnnotations()?.filter((a) => a.primaryCitation === 'Y'));
 
   /** Annotations from primary citation, grouped by chain */
   private readonly primaryAnnotationsByChain = computed<{ [labelAsymId: string]: LLMAnnotation[] }>(() => {
-    return groupBy(this.primaryAnnotations(), (annot) => annot.pdbChain);
+    return groupBy(this.primaryAnnotations() ?? [], (annot) => annot.pdbChain);
   });
 
   /** Annotations from primary citation in the current selected chain */
@@ -275,9 +275,21 @@ export class LLMTabComponent implements OnInit {
     );
   });
 
+  /** Number of unique annotated residues (residues with the same number in different chains count as only one residue if they belong to the same entity) */
   public numberOfAnnotatedResids = computed(() => {
-    // TODO: fix this monstrosity
-    return this.allAnnotations()?.filter((annotation, index, self) => index === self.findIndex((a) => a.pdbResidue === annotation.pdbResidue)).length;
+    const primaryAnnotations = this.primaryAnnotations();
+    const macromolecules = this.processedMacromoleculesForLLM();
+    if (!primaryAnnotations || !macromolecules) return undefined;
+
+    const labelAsymIdToEntityId: { [labelAsymId: string]: number } = {};
+    for (const macro of macromolecules) {
+      for (const labelAsymId of macro.additionalData.molecule.in_struct_asyms) {
+        labelAsymIdToEntityId[labelAsymId] = macro.additionalData.molecule.entity_id;
+      }
+    }
+
+    const uniqueAnnotResidues = new Set(primaryAnnotations.map((a) => `${labelAsymIdToEntityId[a.pdbChain]}/${a.pdbResidue}`));
+    return uniqueAnnotResidues.size;
   });
 
   private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
