@@ -149,7 +149,7 @@
           [entityId]="currentSelectionEntityId()!"
           [chainId]="currentSelectionChainId()!"
           [backgroundDataInput]="backgroundAnnotation()"
-          [altSequences]="altSequences()"
+          [altSequences]="altSequences() ?? []"
           [nonObserved]="nonObserved()!"
           [indexWithMultipleResidues]="sequenceDetail()!.indexWithMultipleResidues"
         ></lib-smart-seq-viewer>

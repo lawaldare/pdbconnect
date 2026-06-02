@@ -91,7 +91,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
-  public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
+  private readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing)); // TODO: make this bound to a chain, to avoid show data from previous chain before fetch completes
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
@@ -523,8 +523,20 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
   });
 
-  public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
-  public nonObserved = signal<number[] | undefined>(undefined);
+  /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
+  public readonly altSequences = computed<AlternativeNumbering[] | undefined>(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing) return undefined;
+    if (residueListing.length === 0) return [];
+    const authNumbering = createAuthAlternateNumbering(residueListing);
+    return [authNumbering];
+  });
+
+  public readonly nonObserved = computed<number[] | undefined>(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing) return undefined;
+    return getNonObserved(residueListing);
+  });
 
   public seqViewerReady = computed(() => {
     const hasSequence = this.macromoleculeSequence() !== undefined;
@@ -624,24 +636,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
           );
         }
       });
-
-    this.residueListingObservable
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        distinctUntilChanged(),
-        filter((resList) => resList !== undefined)
-      )
-      .subscribe((residueListing) => {
-        if (residueListing.length > 0) {
-          const authNumbering = createAuthAlternateNumbering(residueListing);
-          const nonObservedResidues = getNonObserved(residueListing);
-          this.altSequences.set([authNumbering]);
-          this.nonObserved.set(nonObservedResidues);
-        } else {
-          this.altSequences.set([]);
-          this.nonObserved.set([]);
-        }
-      });
   }
 
   getStatValue(id: string): number | undefined {
@@ -654,8 +648,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     const chainId = this.currentSelectionChainId();
     if (chainId === undefined) return;
 
-    this.altSequences.set(undefined);
-    this.nonObserved.set(undefined);
     this.globalStore.dispatch(EntryActions.getResidueListing({ chainId: chainId }));
 
     // updates layout display details on new macromolecule

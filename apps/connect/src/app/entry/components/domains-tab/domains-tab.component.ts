@@ -222,7 +222,7 @@ export class DomainsTabComponent {
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly macromolecules = toSignal(this.globalStore.select(EntrySelectors.macroMolecules));
-  public readonly residueListingObs = this.globalStore.select(EntrySelectors.residueListing);
+  private readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
 
@@ -337,8 +337,21 @@ export class DomainsTabComponent {
   });
 
   public currentDomainsDatum = signal<ProcessedDomain | undefined>(undefined);
-  public altSequences = signal<AlternativeNumbering[]>([]);
-  public nonObserved = signal<number[] | undefined>(undefined);
+
+  /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
+  public readonly altSequences = computed<AlternativeNumbering[] | undefined>(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing) return undefined;
+    if (residueListing.length === 0) return [];
+    const authNumbering = createAuthAlternateNumbering(residueListing);
+    return [authNumbering];
+  });
+
+  public readonly nonObserved = computed<number[] | undefined>(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing) return undefined;
+    return getNonObserved(residueListing);
+  });
 
   constructor() {
     combineLatest([this.compCommunication.domainSelection$.pipe(debounceTime(50), distinctUntilChanged()), toObservable(this.domainTableRows)])
@@ -350,18 +363,8 @@ export class DomainsTabComponent {
         const datum = rows[idx!];
         if (datum) {
           this.currentDomainsDatum.set(datum);
-          this.triggerDomainUpdateSideEffects(datum);
         }
       });
-
-    this.residueListingObs.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((residueListing) => {
-      if (!residueListing) this.altSequences.set([]);
-      const authNumbering = createAuthAlternateNumbering(residueListing);
-      this.altSequences.set([authNumbering]);
-
-      const nonObservedResidues = getNonObserved(residueListing);
-      this.nonObserved.set(nonObservedResidues);
-    });
 
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
@@ -410,20 +413,12 @@ export class DomainsTabComponent {
     }
   }
 
-  async triggerDomainUpdateSideEffects(domain: ProcessedDomain) {
-    // reset alt sequences
-    this.altSequences.set([]);
-  }
-
   private getAuthorNumberingForChain(chainId: string) {
     this.globalStore.dispatch(EntryActions.getResidueListing({ chainId: chainId }));
   }
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-
-    // reset alt sequences
-    this.altSequences.set([]);
   }
 
   public onSymmetryDropdownSelect(event: string) {
