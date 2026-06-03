@@ -1,0 +1,93 @@
+main {
+  padding: 12px;
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    span {
+      color: #3b6fb6;
+      text-overflow: ellipsis;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+      cursor: pointer;
+    }
+  }
+
+  h2 {
+    color: #1a1c1a;
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 39px;
+  }
+
+  p.entry-title {
+    color: #1a1c1a;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 28.5px;
+  }
+
+  h3 {
+    color: #1a1c1a;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 31.2px;
+    margin-bottom: 12px;
+    margin-top: 32px;
+  }
+
+  p.publication-title,
+  p.pmid-title,
+  p.journal-info,
+  p.background {
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+  }
+
+  p.background {
+    margin-bottom: 12px !important;
+  }
+
+  h4 {
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 27.2px;
+    margin-top: 12px;
+
+    &.figures {
+      margin-bottom: 12px;
+    }
+  }
+
+  p.figure-footer {
+    color: #54585a;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22.4px;
+  }
+
+  span.related-entry-toggle {
+    color: #3b6fb6;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+    display: block;
+    cursor: pointer;
+  }
+
+  figure {
+    display: flex;
+    justify-content: center;
+
+    img {
+      height: 351px;
+      cursor: pointer;
+    }
+  }
+}

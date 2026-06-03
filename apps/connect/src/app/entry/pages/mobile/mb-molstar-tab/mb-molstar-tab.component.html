@@ -1,0 +1,70 @@
+<main>
+  <nav>
+    <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+    <span (click)="goBackToOverviewPage()">Back to entry overview </span>
+  </nav>
+  <h1>3D view - pdb_0000{{entryId()}}</h1>
+
+  <section class="chips">
+    @for(chip of mobileTabChips; track chip.id){
+    <span class="chip" #chipEl [attr.data-id]="chip.id" [class.active]="chip.id === selectedTabName()" (click)="onTabClick(chip)">{{chip.label}}</span>
+    }
+  </section>
+
+  <div class="container-3d">
+    <!-- <div class="molstar-parent" id="parent-molstar-container">
+      <div class="molstar-container" #molstarContainer id="molstar-mobile-element"></div>
+    </div> -->
+    @if (inPrefAssembly() === false && hasClosedMessage() === false ) {
+    <section class="info-banner">
+      <img class="close-btn" (click)="compCommunication.mobileHasClosedMessage.set(true)" src="/assets/images/mobile/mb-close.svg" alt="close icon" />
+      <p>
+        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        Current selection is <b>not</b> included in the
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+          >preferred complex</a
+        >
+        (most probable biological form identified for this entry). <br />
+        3D viewer below now displaying the full entry model file.
+      </p>
+    </section>
+    } @if (!configForMolstar() || slowNetwork() === undefined || checkedWebGl() === undefined) {
+    <div [style.width]="'100%'">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '480px', }"></ngx-skeleton-loader>
+    </div>
+    } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
+    <div class="molstar-parent">
+      <lib-pdbe-molstar
+        class="molstar-container"
+        #molstarComponent
+        [id]="'mobile-molstar'"
+        [molstarConfig]="configForMolstar()"
+        [height]="'100%'"
+        [seqOnExpanded]="true"
+        [isMobile]="true"
+      ></lib-pdbe-molstar>
+    </div>
+    } @else if (!isWebGlEnabled()) {
+    <div class="molstar-not-loaded">
+      <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+      <div>
+        <h4 class="heading-4">3D viewer not supported in this browser</h4>
+        <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+        <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+          Learn how to enable WebGL
+          <i class="icon icon-link icon-common"></i>
+        </a>
+      </div>
+    </div>
+    } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
+    <div class="molstar-not-loaded">
+      <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
+      <div>
+        <h4 class="heading-4">3D viewer paused due to slow connection</h4>
+        <p>Loading may take longer than usual.</p>
+      </div>
+      <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
+    </div>
+    }
+  </div>
+</main>

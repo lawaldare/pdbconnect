@@ -1,0 +1,177 @@
+<div>
+  <section class="desktop-view">
+    <pdbc-pdbe-header-logo-menu class="entry-page-logo" [headerConfig]="pdbeLogoConfig"></pdbc-pdbe-header-logo-menu>
+    <pdb-search-app class="entry-page-search" [uiSearchConfig]="pdbeSearchConfig" [apiSearchConfig]="apiSearchConfig" />
+    @if(showNotificationBanner()) {
+    <lib-notification />
+    } @if (pageView() === 'SUCCESS' && isDesktop()) {
+    <section class="entry-page-container container-padding">
+      <pdbc-entry-page-header />
+      <main>
+        <mat-tab-group #tabs (selectedTabChange)="selectTab($event)" [selectedIndex]="selectedTabIndex()" mat-stretch-tabs="false" mat-align-tabs="start">
+          <mat-tab>
+            <ng-template mat-tab-label> Summary </ng-template>
+            <ng-template matTabContent> <pdbc-summary-tab /> </ng-template>
+          </mat-tab>
+          <mat-tab label="Model Quality">
+            <ng-template matTabContent> <pdbc-experiments-validation /> </ng-template>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              Complexes @if(hasLoadedAssemblies() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else if(hasAssemblies() === false) {
+              <div class="tab-tag na">N/A</div>
+              }
+            </ng-template>
+            <ng-template matTabContent> <pdbc-assemblies-tab /> </ng-template>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              Macromolecules @if(hasLoadedMacromolecules() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else if(hasMacromolecules() === false) {
+              <div class="tab-tag na">N/A</div>
+              } @else if (hasMacromolecules() === true) {
+              <!-- <div
+                class="tab-tag new"
+                matTooltipClass="complex-name-tooltip"
+                [matTooltip]="'A new Protvista version is now available on this tab, with improved visualization and interactivity features.'"
+                matTooltipPosition="below"
+              >
+                New
+              </div> -->
+              }
+            </ng-template>
+            <ng-template matTabContent>
+              <pdbc-macromolecules-tab
+                #MacromoleculesTabComp
+                pdbcVisualisationInteractivity
+                [parentType]="'macromolecules'"
+                [hasSeqViewer]="true"
+                [hasNewProtvista]="true"
+                [hasLLMTable]="false"
+                [checkRNATopoViewer]="true"
+                [checkTopoViewer]="true"
+              />
+            </ng-template>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              Ligands and Environments @if(hasLoadedLigands() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else if(hasLigands() === false) {
+              <div class="tab-tag na">N/A</div>
+              }
+            </ng-template>
+            <ng-template matTabContent> <pdbc-ligands-tab /> </ng-template>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              Domains @if(hasLoadedDomains() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else if(hasDomains() === false) {
+              <div class="tab-tag na">N/A</div>
+              }
+            </ng-template>
+            <ng-template matTabContent>
+              <pdbc-domains-tab
+                #DomainsTabComp
+                pdbcVisualisationInteractivity
+                [parentType]="'domains'"
+                [hasSeqViewer]="true"
+                [hasNewProtvista]="true"
+                [hasLLMTable]="false"
+                [checkRNATopoViewer]="false"
+                [checkTopoViewer]="false"
+              />
+            </ng-template>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              Text Annotations (AI) @if(hasLoadedAnnotations() === false) {
+              <mat-progress-spinner [mode]="'indeterminate'" [diameter]="'17'"></mat-progress-spinner>
+              } @else if(hasAnnotations() === false) {
+              <div class="tab-tag na">N/A</div>
+              }
+            </ng-template>
+            <ng-template matTabContent>
+              @if(llmAnnotations()!== undefined){ @if(llmAnnotations()!.length > 0){
+              <pdbc-llm-tab
+                #LLMTabComp
+                pdbcVisualisationInteractivity
+                [parentType]="'llm'"
+                [hasSeqViewer]="true"
+                [hasNewProtvista]="true"
+                [hasLLMTable]="true"
+                [checkRNATopoViewer]="false"
+                [checkTopoViewer]="false"
+              />
+              } @else {
+              <h5>
+                The residue and annotation lists are empty likely because the publication text either lacked explicit residue mentions, used mismatched numbering, or
+                wasn't open access. Additionally, the annotation pipeline may have failed to extract or map relevant information to the structure.
+              </h5>
+              } }
+            </ng-template>
+          </mat-tab>
+          <mat-tab label="Citations">
+            <ng-template matTabContent> <pdbc-citations-tab /> </ng-template>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>
+              Other Resources
+              <div
+                class="tab-tag new"
+                matTooltipClass="complex-name-tooltip"
+                [matTooltip]="'• New tab added to provide quick access to external resources related to a PDB entry.\n• Links are dynamically displayed based on availability for each entry.'"
+                matTooltipPosition="below"
+              >
+                New
+              </div>
+            </ng-template>
+            <ng-template matTabContent> <pdbc-other-resources-tab /> </ng-template>
+          </mat-tab>
+        </mat-tab-group>
+      </main>
+    </section>
+    } @else if (pageView() === 'LOADING') {
+    <section class="entry-page-container">
+      <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+    </section>
+    } @else if(pageView() === 'ERROR') {
+    <pdbc-error-page [asPage]="false" />
+    }
+  </section>
+</div>
+<div class="mobile-view">
+  @if(isDesktop() === false) {
+  <lib-mobile-header [headerConfig]="mobileHeaderConfig" />
+  <pdbc-mobile-main />
+  }
+</div>
+@if (pageView() === 'OTHER') {
+<pdbc-entry-main-alternative [entryStatus]="entryStatus()" />
+}
+
+<lib-data-privacy-banner privacyNoticeUrl="assets/data-privacy/entry-pages-data-privacy.pdf" pageId="dataProtectionAgreedForEntryPages" />
+<lib-survey-popup />
+
+@if(helpIconForMolstarService.showHelpIcon()){
+<div class="help-button" (click)="openHelpModal()">Help</div>
+}
+
+<!-- Help Panel -->
+<div class="help-panel" [class.active]="tutorialTourService.showHelpGuideModal()">
+  <div class="help-header">
+    <span>Help</span>
+    <span class="close-btn" (click)="closeHelpGuideModal()">&times;</span>
+  </div>
+  <div class="help-body">
+    <span class="action" (click)="tutorialTourService.startTourFromHelp()">Take on-page tour</span>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSe_cs6jrhCM8I7G8zsbtTQWEOjGmR07tC6aJDTrN62gyQ8e0A/viewform?usp=header" target="_blank"
+      >Give your feedback <i style="margin-left: 5px" class="icon icon-link icon-common"></i
+    ></a>
+    <p>We’re working to add more content to the Help section. Stay tuned!</p>
+  </div>
+</div>

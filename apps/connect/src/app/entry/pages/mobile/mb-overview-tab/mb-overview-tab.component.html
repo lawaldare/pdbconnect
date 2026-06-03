@@ -1,0 +1,104 @@
+<main>
+  <h2>pdb_0000{{entryId()}}</h2>
+  <p class="entry-title">{{summary()?.entryTitle}}</p>
+
+  <!-- Table of contents navigation -->
+  <pdbc-mb-table-of-contents
+    tableTitle="In this overview page"
+    gasEventToLog="ep_mobile_quick_access_click"
+    [navigationLinks]="navigationLinks"
+  ></pdbc-mb-table-of-contents>
+
+  <!-- Structure overview -->
+  <h3 id="structure-overview">Structure overview</h3>
+  @defer (on viewport) {
+  <pdbc-mb-structure-overview></pdbc-mb-structure-overview>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <!-- Molstar Gallery -->
+  @defer (on viewport) { @if (slowNetwork() === undefined || checkedWebGl() === undefined) {
+  <!-- Loading state -->
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '200px' }"></ngx-skeleton-loader>
+  } @else if (slowNetwork() === false && isWebGlEnabled()) {
+  <!-- Good network and WebGl support -->
+  <lib-molstar-gallery [entryId]="entryStoreId() ?? ''" />
+  } @else {
+  <!-- Bad network or no WebGl support -->
+  @if (imageGallery().length > 0) {
+  <pdbc-mb-slow-network-image-gallery [images]="imageGallery()"></pdbc-mb-slow-network-image-gallery>
+  } }
+  <button class="vf-button vf-button--primary" (click)="openMolstarPage()">View 3D and annotations</button>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '200px' }"></ngx-skeleton-loader>
+  }
+
+  <!-- Primary publication -->
+  <h3 id="primary-publication">Primary publication</h3>
+  @defer (on viewport) {
+  <pdbc-mb-primary-publication></pdbc-mb-primary-publication>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <!-- PDB model quality summary -->
+
+  <h3 id="model-quality-summary">PDB model quality summary</h3>
+  @defer (on viewport) {
+  <pdbc-mb-model-quality-summary-overview></pdbc-mb-model-quality-summary-overview>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+  <!-- Assembly -->
+
+  <h3 id="assembly">Complex (preferred)</h3>
+  @defer (on viewport) {
+  <pdbc-mb-overview-assembly></pdbc-mb-overview-assembly>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <!-- Macromolecules -->
+  <section id="macromolecules">
+    @defer (on viewport) {
+    <pdbc-mb-overview-macromolecules></pdbc-mb-overview-macromolecules>
+    } @placeholder {
+    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+    }
+  </section>
+
+  <!-- Ligands and modifications -->
+  <section id="ligands-and-modifications">
+    @defer (on viewport) {
+    <pdbc-mb-overview-ligands-and-mods></pdbc-mb-overview-ligands-and-mods>
+    } @placeholder {
+    <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+    }
+  </section>
+
+  <!-- Other resources -->
+  <h3 id="related-databases">Other resources</h3>
+  @defer (on viewport) {
+  <pdbc-mb-other-resources-preview></pdbc-mb-other-resources-preview>
+  } @placeholder {
+  <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '100px' }"></ngx-skeleton-loader>
+  }
+
+  <!-- <section class="related-databases">
+    @if ((summary()?.relatedStructures ?? []).length) {
+    <div class="info">
+      <p class="info__title">EMDB entry</p>
+      <p class="info__content">
+        <a [href]="'https://www.ebi.ac.uk/emdb/' + summary()!.relatedStructures[0].accession" target="_blank">{{ summary()!.relatedStructures[0].accession }}</a>
+      </p>
+    </div>
+    }
+    <div class="info">
+      <p class="info__title">Entry DOI</p>
+      <p class="info__content">
+        <a [href]="'https://dx.doi.org/10.2210/pdb' + entryId() + '/pdb'" target="_blank">10.2210/pdb{{ entryId() }}/pdb </a>
+      </p>
+    </div>
+  </section> -->
+</main>

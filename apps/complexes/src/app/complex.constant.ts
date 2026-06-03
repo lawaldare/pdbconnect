@@ -36,7 +36,7 @@ export const headerComplexLogoMenuConfig = {
   logoType: 'PDBe-KB',
   headerTitle: 'Complex',
   urls: [
-    { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/', openInNewTab: true },
+    { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe/', openInNewTab: true },
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
     { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
   ],

@@ -1,76 +1,109 @@
-import { scaleOrdinal, scaleQuantile } from 'd3-scale';
-import { BehaviorSubject } from 'rxjs';
 import {
   AlternativeNumbering,
   SmartSequenceAnnotation,
   SmartSequenceAnnotationForEvent,
-  SmartSequenceAnnotationRenderingTypes,
   SmartSequenceVisOptions,
   TooltipFormatting,
-} from './seq-viewer-models';
-import { validateAlternativeNumberings, validateAnnotations, validateNonObserved } from './seq-viewer-validation';
+} from './data-processing/seq-viewer-models';
+import { validateAlternativeNumberings, validateAnnotations, validateNonObserved } from './data-processing/seq-viewer-validation';
+import {
+  calculateCanvasHeightForFullSequence,
+  calculateHorizontalCenterMargin,
+  calculateLineBoxLayout,
+  calculateCanvasBoxPerLines,
+  LineBoxLayoutData,
+  calculateBoxMaxDimensions,
+  calculateNumberingBoxMaxHeight,
+} from './layout/seq-viewer-layout-utils';
+import {
+  createFlexBoxWrapper,
+  createScrollableCanvasWrapper,
+  createSidebarPanel,
+  createTooltipElement,
+  createWarningDiv,
+} from './rendering/seq-viewer-ui-main-panels';
+import { createHiPPICanvas } from './rendering/canvas/seq-viewer-canvas-renderer';
+import {
+  processBgAnnotations,
+  processCircleAboveAnnotations,
+  processDistStarAboveAnnotations,
+  processHexagonAboveAnnotations,
+  processUnderlineAnnotations,
+} from './data-processing/seq-viewer-annotation-processing';
+import { buildSidebarContent, getSidebarPanelEmptyState } from './rendering/seq-viewer-ui-sidebar';
+import { drawResidue } from './rendering/canvas/seq-viewer-residue-renderer';
+import { SmartSeqViewerEventManager } from './events/seq-viewer-evt-manager';
 
 export class SmartSequenceVisualisation {
-  private sequence: string;
-  private alternativeNumberings?: AlternativeNumbering[];
-  private nonObservedResidues?: number[];
+  public sequence: string;
+  public alternativeNumberings?: AlternativeNumbering[];
+  public nonObservedResidues?: number[];
+  public indexWithMultipleResiduesData?: {
+    [key: string]: {
+      three_letter_code: string;
+      one_letter_code: string;
+      parent_chem_comp_ids: string[];
+    };
+  };
 
-  private entityId?: string;
-  private chainId?: string;
+  public entityId?: string;
+  public chainId?: string;
   private containerId: string;
-  private grouping = true;
+  public grouping = true;
   private groupingLineBreak = false;
   private responsive = true;
-  private externalEvents = false;
-  private hoverTooltips = true;
-  private tooltipFormatting: TooltipFormatting;
+  public externalEvents = false;
+  public hoverTooltips = true;
+  public tooltipFormatting: TooltipFormatting;
   private scrollContainerMaxHeight = 160;
-  private isNucleic = false;
-  private useAuthNumbers = false;
-  private helpLogoSrc: string | undefined = undefined;
+  public isNucleic = false;
+  public useAuthNumbers = false;
+  public helpLogoSrc: string | undefined = undefined;
   private authOffset: string | undefined = undefined;
 
   private fontFamily = 'IBM Plex Sans';
   private fontSize = 14;
   private characterBgPadding = 2;
   private originalMargins = { top: 4, bottom: 4, left: 4, right: 4 };
-  private margins = { top: 4, bottom: 4, left: 4, right: 4 };
+  public margins = { top: 4, bottom: 4, left: 4, right: 4 };
   private resizeObserver: ResizeObserver | null = null;
   private resizeDebounceTimer: number | null = null;
 
   private residueNumberingFreq = 10; // Number of residues to add numbering above
   private currentResidueNumberingFreq: number | null = null;
-  private residueGroupSize = 10; // Number of residues per group
-  private currentGroupSize: number | null = null;
-  private residueGroupRightMargin = 16; // Pixels between residue groups
-  private lineBottomMargin = 6; // Pixels between lines
+  public residueGroupSize = 10; // Number of residues per group
+  public currentGroupSize: number | null = null;
+  public residueGroupRightMargin = 16; // Pixels between residue groups
+  public lineBottomMargin = 6; // Pixels between lines
   private numberingFontSize = 12; // Smaller font size for numbering
   // private numberingHeight = 12; // Space above sequences for numbers
   private numberingVerticalSpacing = 0; // Space between sequences and numbers, auto-calculated
 
-  private maxBoxWidth = -1;
-  private maxBoxHeight = -1;
+  public maxBoxWidth = -1;
+  public maxBoxHeight = -1;
   private characterWidthMap = new Map<string, number>();
 
-  private maxNumberingBoxHeight = -1;
+  public maxNumberingBoxHeight = -1;
 
-  private canvas!: HTMLCanvasElement;
+  public canvas!: HTMLCanvasElement;
   private canvasWidth = 0;
   private canvasHeight = 0;
   private canvasTextLines: number | undefined = undefined;
   private fullGroupsPerLine: number | undefined = undefined;
   private notDrawnWidth: number | undefined = undefined;
-  private canvasBoxPerLines: number | undefined = undefined;
+  public canvasBoxPerLines: number | undefined = undefined;
 
-  private chunkedSequence: string[] = [];
+  public chunkedSequence: string[] = [];
   private currentStartLine = 0;
   private currentEndLine = 0;
 
-  private annotations: SmartSequenceAnnotation[] = [];
+  public annotations: SmartSequenceAnnotation[] = [];
   private hasCircleAnnotation = false;
-  private backgroundColorMap: Map<number, string> | undefined;
-  private underlineColorMap: Map<number, string> | undefined;
-  private circleColorMap: Map<number, string> | undefined;
+  public backgroundColorMap: Map<number, string> | undefined;
+  public underlineColorMap: Map<number, string> | undefined;
+  public circleColorMap: Map<number, string> | undefined;
+  public distStarColorMap: Map<number, string> | undefined;
+  public hexagonColorMap: Map<number, string> | undefined;
 
   // private defaultBgColour = '#f0f0f0';
   private defaultBgColour = 'rgba(255, 255, 255, 0.0)';
@@ -78,25 +111,22 @@ export class SmartSequenceVisualisation {
   private circleAnnotationMarginTop = 3;
   private circleAnnotationMarginBottom = 0;
 
-  private currentHoveredResidue: number | null = null;
-  private currentClickedResidue: number | null = null;
+  public eventManager = new SmartSeqViewerEventManager(this);
 
   private clickedBorderColour = '';
   private clickedBorderWidth = 2;
-  private hoverBorderWidth = 2;
+  public hoverBorderWidth = 2;
   private residueRects = new Map<number, { x: number; y: number; width: number; height: number }>();
-  private residueHover$ = new BehaviorSubject<{ residueIndex: number; annotations: SmartSequenceAnnotationForEvent[] | null } | null>(null);
-  private residueClick$ = new BehaviorSubject<{ residueIndex: number; annotations: SmartSequenceAnnotationForEvent[] | null } | null>(null);
   private externalEventListeners: { type: string; listener: EventListener }[] = [];
 
-  private tooltipEl: HTMLDivElement | null = null;
-  private sidebarPanel: HTMLDivElement | null = null;
+  public tooltipEl: HTMLDivElement | null = null;
+  public sidebarPanel: HTMLDivElement | null = null;
   private sidebarPanelWidth = 250;
   private visualisationAndSidebarContainer: HTMLDivElement | null = null;
   private visualisationContainer: HTMLDivElement | null = null;
   private warningDiv: HTMLDivElement | null = null;
 
-  private annotationRenderers: Map<string, (ann: SmartSequenceAnnotationForEvent, residueIndex: number) => string> = new Map();
+  public annotationRenderers: Map<string, (ann: SmartSequenceAnnotationForEvent, residueIndex: number) => string> = new Map();
 
   private boundOnMouseMove!: (e: MouseEvent) => void;
   private boundOnMouseLeave!: (e: MouseEvent) => void;
@@ -108,11 +138,19 @@ export class SmartSequenceVisualisation {
     alternativeNumberings?: AlternativeNumbering[],
     nonObservedResidues?: number[],
     initialAnnotations: SmartSequenceAnnotation[] = [],
+    indexWithMultipleResiduesData?: {
+      [key: string]: {
+        three_letter_code: string;
+        one_letter_code: string;
+        parent_chem_comp_ids: string[];
+      };
+    },
     entityId?: string,
     chainId?: string,
     options?: SmartSequenceVisOptions
   ) {
     this.sequence = sequence;
+    this.indexWithMultipleResiduesData = indexWithMultipleResiduesData;
     this.containerId = containerId;
 
     this.grouping = options?.grouping !== false;
@@ -144,6 +182,7 @@ export class SmartSequenceVisualisation {
     container.style.width = '100%';
     container.style.maxWidth = '100%';
 
+    // ------- Validate annotations data START -------
     const altNumVal = validateAlternativeNumberings(this.sequence, alternativeNumberings || []);
     this.authOffset = altNumVal.authOffset;
 
@@ -154,33 +193,54 @@ export class SmartSequenceVisualisation {
 
     validateAnnotations(initialAnnotations);
     this.annotations = [...initialAnnotations];
+    // -------  END -------
 
-    this.visualisationAndSidebarContainer = this.createFlexBoxWrapper();
-    this.visualisationContainer = this.createScrollableCanvasWrapper();
-    this.warningDiv = this.createWarningDiv();
-    this.sidebarPanel = this.createSidebarPanel();
+    // ------- DOM elements creation START -------
+    this.visualisationAndSidebarContainer = createFlexBoxWrapper(this.scrollContainerMaxHeight);
+    this.visualisationContainer = createScrollableCanvasWrapper(this.scrollContainerMaxHeight);
+    this.warningDiv = createWarningDiv();
+    this.sidebarPanel = createSidebarPanel(this.sidebarPanelWidth);
+    this.sidebarPanel.innerHTML = getSidebarPanelEmptyState(this.annotations, this.nonObservedResidues);
 
     container.appendChild(this.visualisationAndSidebarContainer);
     // container.appendChild(this.sidebarPanel);
     this.visualisationAndSidebarContainer.appendChild(this.visualisationContainer);
     this.visualisationAndSidebarContainer.appendChild(this.sidebarPanel);
+    // -------  END -------
 
+    // ------- Initial dimensions calculations START -------
     const width = this.visualisationAndSidebarContainer.offsetWidth - this.sidebarPanelWidth;
-    //
     this.canvasWidth = width;
     this.canvasHeight = 0;
 
-    this.calcBoxMaxDimensions();
-    this.calcNumberingBoxMaxHeight();
-    this.processAnnotations();
-    // First pass: calculate layout to determine canvasBoxPerLines
-    this.setCanvasBoxPerLines();
-    this.horizontalCenterMargins();
-    // Recalculate height after layout for non-scroll mode
-    // chunkedSequence is populated and canvasTextLines is correct
-    this.canvasHeight = this.calcCanvasHeightForFullSequence();
-    // recalculate layout with the correct canvasHeight
-    this.calculateLineBoxLayout();
+    const boxDimensionData = calculateBoxMaxDimensions(this.fontSize, this.fontFamily, this.characterBgPadding);
+    if (boxDimensionData) {
+      this.maxBoxWidth = boxDimensionData.maxBoxWidth;
+      this.maxBoxHeight = boxDimensionData.maxBoxHeight;
+      this.characterWidthMap = boxDimensionData.characterWidthMap;
+    }
+
+    const hasCircle = this.annotations.map((annotation) => annotation.rendering).indexOf('CircleAbove') > -1;
+    const resNumBoxDimensionData = calculateNumberingBoxMaxHeight(this.numberingFontSize, this.fontFamily, this.characterBgPadding, this.lineBottomMargin, hasCircle);
+    if (resNumBoxDimensionData) {
+      (this.maxNumberingBoxHeight = resNumBoxDimensionData.maxNumberingBoxHeight),
+        (this.numberingVerticalSpacing = resNumBoxDimensionData.numberingVerticalSpacing),
+        (this.lineBottomMargin = resNumBoxDimensionData.lineBottomMargin);
+    }
+    // -------  END -------
+
+    // ------- Annotations processing START -------
+    this.backgroundColorMap = processBgAnnotations(this.annotations);
+    this.underlineColorMap = processUnderlineAnnotations(this.annotations);
+    const circleAnnotationsData = processCircleAboveAnnotations(this.annotations);
+    this.circleColorMap = circleAnnotationsData.circleColorMap;
+    this.hasCircleAnnotation = circleAnnotationsData.hasCircleAnnotation;
+    this.distStarColorMap = processDistStarAboveAnnotations(this.annotations);
+    this.hexagonColorMap = processHexagonAboveAnnotations(this.annotations);
+    // -------  END -------
+
+    this.calculateLayout(false);
+
     if (this.authOffset && this.authOffset !== '0') {
       const inclusionExplanation =
         this.authOffset === 'non-trivial'
@@ -188,42 +248,57 @@ export class SmartSequenceVisualisation {
           : '';
       this.warningDiv.textContent = `Note: There is a ${this.authOffset} offset between author-provided numbering used in the sequence below and sequential residue numbering.${inclusionExplanation}`;
     }
+    if (this.sequence.includes('*')) {
+      const commaSepPositions = this.indexWithMultipleResiduesData ? Object.keys(this.indexWithMultipleResiduesData).join(', ') : 'unknown';
+      this.warningDiv.textContent += ` Note: The sequence contains wildcard characters (*) at position${
+        commaSepPositions.includes(',') ? 's' : ''
+      } ${commaSepPositions} representing non-standard residues with multiple parent residues.`;
+    }
 
     this.visualisationContainer.appendChild(this.warningDiv);
-    this.canvas = this.createHiPPICanvas(this.canvasWidth, this.canvasHeight);
+    this.canvas = createHiPPICanvas(this.canvasWidth, this.canvasHeight);
     this.registerCanvasMouseEvents();
     this.visualisationContainer.appendChild(this.canvas);
     if (this.hoverTooltips) {
-      this.createTooltipElement(this.visualisationContainer);
+      this.tooltipEl = createTooltipElement(this.visualisationContainer);
     }
 
     // this.showSidebar(undefined); // show default placeholder
-    this.unselectResidueState();
+    this.eventManager.unselectResidueState();
     this.draw();
     this.setupResizeObserver();
     // this.onContainerResize();
     this.registerExternalEventsListeners();
   }
 
-  private setGroupSize(num: number) {
-    this.residueGroupSize = num;
-    this.residueNumberingFreq = num;
-  }
+  private calculateLayout(recalculate: boolean) {
+    const canvasBoxData = this.calculateCanvasBoxPerLines();
+    if (this.grouping) this.fullGroupsPerLine = canvasBoxData.fullGroupsPerLine;
+    if (this.grouping) this.notDrawnWidth = canvasBoxData.notDrawnWidth;
+    this.canvasBoxPerLines = canvasBoxData.canvasBoxPerLines;
 
-  private horizontalCenterMargins() {
-    if (!this.notDrawnWidth) return;
-    this.margins.left = this.originalMargins.left + Math.floor(this.notDrawnWidth / 2);
-  }
-
-  private recalculateLayout() {
-    this.setCanvasBoxPerLines();
-    this.horizontalCenterMargins();
-    this.calculateLineBoxLayout();
-    this.canvasHeight = this.calcCanvasHeightForFullSequence();
-
-    // freeze current group size & numbering frequency for consistency
-    this.currentGroupSize = this.residueGroupSize;
-    this.currentResidueNumberingFreq = this.residueNumberingFreq;
+    this.margins.left = calculateHorizontalCenterMargin(this.originalMargins.left + 0, this.notDrawnWidth);
+    if (recalculate === false) {
+      // Recalculate height after layout for non-scroll mode
+      // chunkedSequence is populated and canvasTextLines is correct
+      this.canvasHeight = this.calculateCanvasHeightForFullSequence();
+      // This early calc makes sure calculateLineBoxLayout has correct canvasHeight
+    }
+    const layoutData = this.calculateLineBoxLayout();
+    if (layoutData) {
+      this.canvasTextLines = layoutData.canvasTextLines;
+      this.chunkedSequence = layoutData.chunkedSequence;
+      this.currentStartLine = layoutData.currentStartLine;
+      this.currentEndLine = layoutData.currentEndLine;
+      this.currentGroupSize = layoutData.currentGroupSize;
+      this.currentResidueNumberingFreq = layoutData.currentResidueNumberingFreq;
+    }
+    if (recalculate === true) {
+      this.canvasHeight = this.calculateCanvasHeightForFullSequence();
+      // freeze current group size & numbering frequency for consistency
+      this.currentGroupSize = this.residueGroupSize;
+      this.currentResidueNumberingFreq = this.residueNumberingFreq;
+    }
   }
 
   public onContainerResize() {
@@ -233,16 +308,18 @@ export class SmartSequenceVisualisation {
     const newCanvasWidth = this.visualisationAndSidebarContainer.offsetWidth - this.sidebarPanelWidth;
 
     // decide group size for this width
-    if (newCanvasWidth > 820) this.setGroupSize(10);
-    else if (newCanvasWidth > 735) this.setGroupSize(12);
-    else if (newCanvasWidth > 625) this.setGroupSize(10);
-    else if (newCanvasWidth > 495) this.setGroupSize(12);
-    else if (newCanvasWidth > 415) this.setGroupSize(10);
-    else if (newCanvasWidth > 310) this.setGroupSize(15);
-    else if (newCanvasWidth > 210) this.setGroupSize(10);
-    else this.setGroupSize(8);
+    let num = 8;
+    if (newCanvasWidth > 820) num = 10;
+    else if (newCanvasWidth > 735) num = 12;
+    else if (newCanvasWidth > 625) num = 10;
+    else if (newCanvasWidth > 495) num = 12;
+    else if (newCanvasWidth > 415) num = 10;
+    else if (newCanvasWidth > 310) num = 15;
+    else if (newCanvasWidth > 210) num = 10;
+    this.residueGroupSize = num;
+    this.residueNumberingFreq = num;
 
-    // const newCanvasHeight = this.calcCanvasHeightForFullSequence();
+    // const newCanvasHeight = this.calculateCanvasHeightForFullSequence();
 
     // Skip if dimensions haven't changed
     // if (newCanvasWidth === this.canvasWidth && newCanvasHeight === this.canvasHeight) return;
@@ -250,65 +327,23 @@ export class SmartSequenceVisualisation {
 
     this.canvasWidth = newCanvasWidth;
     // this.canvasHeight = newCanvasHeight;
-    this.recalculateLayout();
+    this.calculateLayout(true);
 
-    // this.setCanvasBoxPerLines();
-    // this.horizontalCenterMargins();
-    // this.calculateLineBoxLayout();
     // remove only the old canvas, keep warningDiv intact
     if (this.canvas && this.visualisationContainer.contains(this.canvas)) {
       this.visualisationContainer.removeChild(this.canvas);
     }
 
-    this.canvas = this.createHiPPICanvas(this.canvasWidth, this.canvasHeight);
+    this.canvas = createHiPPICanvas(this.canvasWidth, this.canvasHeight);
     this.registerCanvasMouseEvents();
 
     // add sidebar panel
-    const sel = this.currentClickedResidue ? this.currentClickedResidue : undefined;
+    const sel = this.eventManager.currentClickedResidue ? this.eventManager.currentClickedResidue : undefined;
     this.showSidebar(sel); // show default placeholder
 
     this.visualisationContainer.appendChild(this.canvas);
 
     this.draw();
-  }
-
-  private createFlexBoxWrapper(): HTMLDivElement {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'flexbox-wrapper';
-    wrapper.style.display = 'flex';
-    wrapper.style.height = `${this.scrollContainerMaxHeight}px`;
-    wrapper.style.width = '100%';
-    wrapper.style.maxWidth = '100%';
-    wrapper.style.background = '#f3f3f3';
-    // wrapper.style.overflowY = 'scroll';
-    wrapper.style.overflowY = 'hidden';
-    return wrapper;
-  }
-
-  private createScrollableCanvasWrapper(): HTMLDivElement {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'canvas-wrapper';
-    wrapper.style.width = 'calc(100% - 250px)';
-    wrapper.style.maxWidth = 'calc(100% - 250px)';
-    wrapper.style.overflowY = 'auto';
-    wrapper.style.overflowX = 'hidden';
-    wrapper.style.maxHeight = `${this.scrollContainerMaxHeight}px`;
-    return wrapper;
-  }
-
-  private createWarningDiv(): HTMLDivElement {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'warning-div';
-    wrapper.style.borderLeftColor = '#E58C17';
-    wrapper.style.borderLeftWidth = '4px';
-    wrapper.style.borderLeftStyle = 'solid';
-    wrapper.style.paddingLeft = '6px';
-    wrapper.style.fontSize = '14px';
-    wrapper.style.lineHeight = '22.4px';
-    wrapper.style.marginBottom = '4px';
-    wrapper.style.marginTop = '4px';
-    wrapper.style.color = '#373A36';
-    return wrapper;
   }
 
   private setupResizeObserver() {
@@ -338,146 +373,15 @@ export class SmartSequenceVisualisation {
     }
   }
 
-  private processAnnotations() {
-    this.backgroundColorMap = this.processBgAnnotations();
-    this.underlineColorMap = this.processUnderlineAnnotations();
-    this.circleColorMap = this.processCircleAboveAnnotations();
-  }
-
-  private processBgAnnotations(): Map<number, string> {
-    const backgroundColorMap = new Map<number, string>();
-    const bgAnnotation = this.annotations.find((a) => a.rendering === 'Background');
-
-    if (!bgAnnotation) return backgroundColorMap;
-
-    let scale: (value: any) => string;
-
-    if (bgAnnotation.scaleType === 'ordinal') {
-      const domain = bgAnnotation.scaleDomain === 'auto' ? [...new Set(bgAnnotation.data.map((d) => d.value))] : bgAnnotation.scaleDomain;
-
-      scale = scaleOrdinal<string, string>().domain(domain).range(bgAnnotation.scaleRange);
-    } else if (bgAnnotation.scaleType === 'quantile') {
-      const numericValues = bgAnnotation.data.map((d) => parseFloat(d.value)).filter((v) => !isNaN(v));
-      if (numericValues.length === 0) return backgroundColorMap;
-
-      const domain = bgAnnotation.scaleDomain === 'auto' ? numericValues : bgAnnotation.scaleDomain.map((v) => parseFloat(v)).filter((v) => !isNaN(v));
-
-      scale = scaleQuantile<string>().domain(domain).range(bgAnnotation.scaleRange);
-    } else {
-      console.warn(`Unsupported scaleType: ${bgAnnotation.scaleType}`);
-      return backgroundColorMap;
-    }
-
-    for (const d of bgAnnotation.data) {
-      const color = scale(d.value);
-      if (color) {
-        backgroundColorMap.set(d.residueIndex, color);
-      }
-    }
-
-    return backgroundColorMap;
-  }
-
-  private processUnderlineAnnotations(): Map<number, string> {
-    const underlineColorMap = new Map<number, string>();
-    const underlineAnnotation = this.annotations.find((a) => a.rendering === 'Underline');
-
-    if (!underlineAnnotation) return underlineColorMap;
-
-    let scale: (value: any) => string;
-
-    if (underlineAnnotation.scaleType === 'ordinal') {
-      const domain = underlineAnnotation.scaleDomain === 'auto' ? [...new Set(underlineAnnotation.data.map((d) => d.value))] : underlineAnnotation.scaleDomain;
-
-      scale = scaleOrdinal<string, string>().domain(domain).range(underlineAnnotation.scaleRange);
-    } else if (underlineAnnotation.scaleType === 'quantile') {
-      const numericValues = underlineAnnotation.data.map((d) => parseFloat(d.value)).filter((v) => !isNaN(v));
-      if (numericValues.length === 0) return underlineColorMap;
-
-      const domain = underlineAnnotation.scaleDomain === 'auto' ? numericValues : underlineAnnotation.scaleDomain.map((v) => parseFloat(v)).filter((v) => !isNaN(v));
-
-      scale = scaleQuantile<string>().domain(domain).range(underlineAnnotation.scaleRange);
-    } else {
-      console.warn(`Unsupported scaleType for Underline: ${underlineAnnotation.scaleType}`);
-      return underlineColorMap;
-    }
-
-    for (const d of underlineAnnotation.data) {
-      const color = scale(d.value);
-      if (color) {
-        underlineColorMap.set(d.residueIndex, color);
-      }
-    }
-
-    return underlineColorMap;
-  }
-
-  private processCircleAboveAnnotations(): Map<number, string> {
-    const circleColorMap = new Map<number, string>();
-    const circleAnnotation = this.annotations.find((a) => a.rendering === 'CircleAbove');
-
-    this.hasCircleAnnotation = false;
-    if (!circleAnnotation) return circleColorMap;
-
-    this.hasCircleAnnotation = true;
-
-    let scale: (value: any) => string;
-
-    if (circleAnnotation.scaleType === 'ordinal') {
-      const domain = circleAnnotation.scaleDomain === 'auto' ? [...new Set(circleAnnotation.data.map((d) => d.value))] : circleAnnotation.scaleDomain;
-
-      scale = scaleOrdinal<string, string>().domain(domain).range(circleAnnotation.scaleRange);
-    } else if (circleAnnotation.scaleType === 'quantile') {
-      const numericValues = circleAnnotation.data.map((d) => parseFloat(d.value)).filter((v) => !isNaN(v));
-      if (numericValues.length === 0) return circleColorMap;
-
-      const domain = circleAnnotation.scaleDomain === 'auto' ? numericValues : circleAnnotation.scaleDomain.map((v) => parseFloat(v)).filter((v) => !isNaN(v));
-
-      scale = scaleQuantile<string>().domain(domain).range(circleAnnotation.scaleRange);
-    } else {
-      console.warn(`Unsupported scaleType for CircleAbove: ${circleAnnotation.scaleType}`);
-      return circleColorMap;
-    }
-
-    for (const d of circleAnnotation.data) {
-      const color = scale(d.value);
-      if (color) {
-        circleColorMap.set(d.residueIndex, color);
-      }
-    }
-
-    return circleColorMap;
-  }
-
   public getResidueHoverObservable() {
-    return this.residueHover$.asObservable();
+    return this.eventManager.residueHover$.asObservable();
   }
 
   public getResidueSelectionObservable() {
-    return this.residueClick$.asObservable();
+    return this.eventManager.residueClick$.asObservable();
   }
 
-  private getAnnotationsForResidue(residueIndex: number): SmartSequenceAnnotationForEvent[] {
-    const matching: SmartSequenceAnnotationForEvent[] = [];
-
-    for (const annotation of this.annotations) {
-      const datum = annotation.data.find((d) => d.residueIndex === residueIndex);
-      if (datum) {
-        matching.push({
-          name: annotation.name,
-          identifier: annotation.identifier,
-          scaleType: annotation.scaleType,
-          scaleDomain: annotation.scaleDomain,
-          scaleRange: annotation.scaleRange,
-          rendering: annotation.rendering,
-          datum,
-        });
-      }
-    }
-    return matching;
-  }
-
-  private centeredCoordsAtResidue(residueIndex: number) {
+  public scrollAndCenterToResidue(residueIndex: number) {
     if (!this.visualisationContainer) return;
     if (!this.canvasBoxPerLines || !this.canvasTextLines) return;
 
@@ -497,488 +401,87 @@ export class SmartSequenceVisualisation {
     this.visualisationContainer.scrollTo({ top: clampedScroll, behavior: 'smooth' });
   }
 
-  private getResidueAtCoords(x: number, y: number): number | null {
-    const { top: marginTop, left: marginLeft } = this.margins;
-    const lineHeight = this.maxBoxHeight + this.maxNumberingBoxHeight + this.lineBottomMargin;
-
-    const lineIndex = Math.floor((y - marginTop) / lineHeight);
-    if (lineIndex < 0 || lineIndex >= this.chunkedSequence.length) return null;
-
-    const yStart = marginTop + lineIndex * lineHeight;
-    let xCursor = marginLeft;
-    const sequenceLine = this.chunkedSequence[lineIndex];
-    const residueGlobalIndex = lineIndex * this.canvasBoxPerLines!;
-
-    for (let i = 0; i < sequenceLine.length; i++) {
-      const residueIndex = residueGlobalIndex + i + 1;
-
-      // if (this.grouping && i > 0 && i % this.residueGroupSize === 0) {
-      const grpSize = this.currentGroupSize ? this.currentGroupSize : this.residueGroupSize;
-      if (this.grouping && i > 0 && i % grpSize === 0) {
-        xCursor += this.residueGroupRightMargin;
-      }
-
-      const box = {
-        x: xCursor,
-        y: yStart + this.maxNumberingBoxHeight,
-        width: this.maxBoxWidth,
-        height: this.maxBoxHeight,
-      };
-
-      if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) {
-        return residueIndex;
-      }
-
-      xCursor += this.maxBoxWidth + this.hoverBorderWidth;
-    }
-
-    return null;
-  }
-
-  private onMouseMove(event: MouseEvent) {
-    const rect = this.canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    const residueIndex = this.getResidueAtCoords(x, y);
-
-    if (residueIndex !== null) {
-      if (this.currentHoveredResidue !== residueIndex) {
-        this.currentHoveredResidue = residueIndex;
-        const eventData = {
-          residueIndex,
-          annotations: this.getAnnotationsForResidue(residueIndex),
-        };
-        this.residueHover$.next(eventData);
-        if (this.externalEvents) this.triggerExternalEvents('hover', residueIndex);
-        this.canvas.style.cursor = 'pointer';
-        this.draw();
-        if (this.hoverTooltips && this.tooltipEl) {
-          const content = this.buildTooltipContent(residueIndex);
-          if (content) this.showTooltip(content, x, y);
-        }
-      }
-    } else {
-      if (this.currentHoveredResidue !== null) {
-        this.currentHoveredResidue = null;
-        this.residueHover$.next(null);
-        if (this.externalEvents) this.triggerExternalEvents('hover');
-        this.canvas.style.cursor = 'default';
-        this.draw();
-        if (this.hoverTooltips && this.tooltipEl) this.tooltipEl.style.display = 'none';
-      }
-    }
-  }
-
-  private onMouseLeave() {
-    if (this.currentHoveredResidue !== null) {
-      this.currentHoveredResidue = null;
-      this.residueHover$.next(null);
-      if (this.externalEvents) this.triggerExternalEvents('hover');
-      this.canvas.style.cursor = 'default';
-      this.draw();
-      if (this.hoverTooltips && this.tooltipEl) this.tooltipEl.style.display = 'none';
-    }
-  }
-
-  private onClick(event: MouseEvent) {
-    const rect = this.canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    const residueIndex = this.getResidueAtCoords(x, y);
-
-    if (residueIndex !== null) {
-      if (this.currentClickedResidue === residueIndex) {
-        this.unselectResidueState();
-      } else {
-        this.currentClickedResidue = null;
-        this.draw();
-        this.selectResidueState(residueIndex);
-      }
-    }
-  }
-
-  private triggerExternalEvents(eventType: 'hover' | 'click', residueIndex?: number) {
-    if (this.entityId === undefined || this.chainId === undefined) {
-      console.warn('Cannot trigger external events without entityId and chainId');
-      return;
-    }
-
-    const eventData = residueIndex
-      ? {
-          entityId: this.entityId,
-          chainId: this.chainId,
-          residueNumber: residueIndex,
-        }
-      : {
-          entityId: this.entityId,
-          chainId: this.chainId,
-        };
-
-    if (eventType === 'hover' && residueIndex) {
-      // for Molstar, Topology Viewer, etc
-      const eventObj = new CustomEvent('protvista-mouseover', {
-        detail: {
-          start: `${residueIndex}`,
-          end: `${residueIndex}`,
-          feature: {
-            entityId: this.entityId,
-            chainId: this.chainId,
-          },
-        },
-        bubbles: true,
-        cancelable: true,
-      });
-      document.dispatchEvent(eventObj);
-
-      // for new Sequence Track Viewer
-      const hoverEvent = new CustomEvent('smartSeqViewerMouseover', {
-        detail: { eventData },
-        bubbles: true,
-        cancelable: true,
-      });
-      document.dispatchEvent(hoverEvent);
-    } else if (eventType === 'hover') {
-      // for Molstar, Topology Viewer, etc
-      const eventObj = new CustomEvent('protvista-mouseout');
-      document.dispatchEvent(eventObj);
-
-      // for new Sequence Track Viewer
-      const hoverEvent = new CustomEvent('smartSeqViewerMouseout', {
-        detail: { eventData },
-        bubbles: true,
-        cancelable: true,
-      });
-      document.dispatchEvent(hoverEvent);
-    } else if (eventType === 'click' && residueIndex) {
-      // for Molstar, Topology Viewer, etc
-      const eventObj = new CustomEvent('protvista-click', {
-        detail: {
-          start: `${residueIndex}`,
-          end: `${residueIndex}`,
-          feature: {
-            entityId: this.entityId,
-            chainId: this.chainId,
-          },
-        },
-        bubbles: true,
-        cancelable: true,
-      });
-      document.dispatchEvent(eventObj);
-    }
-    // unsupported by molstar
-    // else if (eventType === 'click') {
-    //   console.log("does NOT has residue index")
-    //   // for Molstar, Topology Viewer, etc
-    //   const eventObj = new CustomEvent('protvista-click', {
-    //     detail: null,
-    //     bubbles: true,
-    //     cancelable: true,
-    //   });
-    //   document.dispatchEvent(eventObj);
-    // }
-  }
-
-  private dispatchSelectEvent(residueIndex: number) {
-    const eventData = residueIndex
-      ? {
-          entityId: this.entityId,
-          chainId: this.chainId,
-          residueNumber: residueIndex,
-        }
-      : {
-          entityId: this.entityId,
-          chainId: this.chainId,
-        };
-    const residue = this.sequence[residueIndex - 1];
-    const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
-    const title = `${residueName} ${residueIndex}`;
-
-    // for new Sequence Track Viewer and LLM tab
-    const detail = { eventData, title };
-    const clickEvent = new CustomEvent('smartSeqViewerSelect', {
-      detail: detail,
-      bubbles: true,
-      cancelable: true,
-    });
-    document.dispatchEvent(clickEvent);
-  }
-
-  private dispatchDeselectEvent() {
-    const clickEvent = new CustomEvent('smartSeqViewerUnselect', {
-      detail: null,
-      bubbles: true,
-      cancelable: true,
-    });
-    document.dispatchEvent(clickEvent);
-  }
-
-  private handleExternalMouseoverEvent(event: Event) {
-    const detail = (event as any).eventData || (event as CustomEvent).detail?.feature;
-    if (!detail) return;
-
-    const entityId = detail.entity_id || detail.entityId;
-    const chainId = detail.auth_asym_id || detail.chainId;
-    const residueNumber = detail.residueNumber || parseInt(detail.start) || detail.label_seq_ids?.[0];
-
-    if (entityId !== this.entityId || chainId !== this.chainId || residueNumber === undefined) return;
-
-    this.currentHoveredResidue = residueNumber;
-    const annotations = this.getAnnotationsForResidue(residueNumber);
-    this.residueHover$.next({ residueIndex: residueNumber, annotations });
-    this.draw();
-  }
-
-  private handleExternalMouseoutEvent(_event: Event) {
-    // const detail = (event as CustomEvent).detail?.eventData || (event as CustomEvent).detail?.feature;
-    // if (!detail) return;
-
-    // const entityId = detail.entityId;
-    // const chainId = detail.chainId;
-
-    // if (entityId !== this.entityId || chainId !== this.chainId) return;
-
-    this.currentHoveredResidue = null;
-    this.residueHover$.next(null);
-    this.draw();
-  }
-
-  private handleExternalClickEvent(event: any) {
-    const detail = event.eventData || event.detail?.eventData;
-    if (!detail) return;
-
-    const entityKey = detail['entityId'] ? 'entityId' : 'entity_id';
-    let chainKey = detail['chainId'] ? 'chainId' : 'chain_id';
-    if (chainKey === 'chain_id') chainKey = detail['chain_id'] ? 'chain_id' : 'auth_asym_id';
-
-    const entityId = detail[entityKey] !== 'ignore' ? detail[entityKey] : this.entityId;
-    const chainId = detail[chainKey] !== 'ignore' ? detail[chainKey] : this.chainId;
-    const residueNumber = detail.residueNumber || parseInt(detail.start) || detail.label_seq_id;
-
-    if (entityId !== this.entityId || chainId !== this.chainId || residueNumber === undefined) return;
-
-    if (detail.unselect !== 'ignore') {
-      const doNotReport = detail.doNotReport;
-      this.unselectResidueState(doNotReport);
-      return;
-    }
-    if (residueNumber !== this.currentClickedResidue) {
-      this.selectResidueState(residueNumber, true, true);
-    }
-    this.draw();
-  }
-
-  private showTooltip(content: string, x: number, y: number) {
-    this.tooltipEl!.innerHTML = content;
-    this.tooltipEl!.style.display = 'block';
-
-    const GAP = 10;
-
-    requestAnimationFrame(() => {
-      const tooltipWidth = this.tooltipEl!.offsetWidth;
-      const tooltipHeight = this.tooltipEl!.offsetHeight;
-      const container = this.tooltipEl!.parentElement!;
-      const containerRect = container.getBoundingClientRect();
-
-      let left = x + GAP;
-      let top = y + GAP;
-
-      const willOverflowRight = left + tooltipWidth > containerRect.width;
-      const willOverflowBottom = top + tooltipHeight > containerRect.height;
-
-      if (willOverflowRight) {
-        left = x - tooltipWidth - GAP;
-        if (left < 0) left = containerRect.width - tooltipWidth - GAP; // fallback clamp
-      }
-
-      if (willOverflowBottom) {
-        top = y - tooltipHeight - GAP;
-        if (top < 0) top = containerRect.height - tooltipHeight - GAP; // fallback clamp
-      }
-
-      this.tooltipEl!.style.left = `${left}px`;
-      this.tooltipEl!.style.top = `${top}px`;
-    });
-  }
-
-  private showSidebar(residueIndex?: number) {
+  public showSidebar(residueIndex?: number) {
     if (typeof residueIndex !== 'number') return;
     if (!this.sidebarPanel) return;
 
-    const content = this.buildSidebarContent(residueIndex);
+    const content = buildSidebarContent(
+      residueIndex,
+      this.sequence,
+      this.isNucleic,
+      this.sidebarPanel,
+      this.eventManager,
+      this.useAuthNumbers,
+      this.annotations,
+      this.helpLogoSrc,
+      this.nonObservedResidues,
+      this.backgroundColorMap,
+      this.underlineColorMap,
+      this.circleColorMap,
+      this.distStarColorMap,
+      this.hexagonColorMap,
+      this.annotationRenderers,
+      this.alternativeNumberings,
+      this.indexWithMultipleResiduesData
+    );
     this.sidebarPanel.scrollTop = 0;
 
     this.sidebarPanel.innerHTML = content;
     this.attachSidebarHelpIconEvents();
     this.onContainerResize(); // re-layout with sidebar visible
-
-    // const box = this.residueRects.get(residueIndex);
-    // if (!box) return;
-
-    // // const container = document.getElementById(this.containerId);
-    // if (!this.visualisationContainer || !this.sidebarPanel) return;
-
-    // this.sidebarPanel.innerHTML = this.buildSidebarContent(residueIndex);
-    // this.attachSidebarHelpIconEvents();
   }
 
-  private calcBoxMaxDimensions() {
-    const tempCanvas = document.createElement('canvas');
-    const ctx = tempCanvas.getContext('2d');
-
-    if (!ctx) {
-      console.warn('2D context not available for font measurement.');
-      return;
-    }
-
-    ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-    let maxWidth = 0;
-    let maxHeight = 0;
-
-    const metricsCache: TextMetrics[] = [];
-
-    for (let charCode = 65; charCode <= 90; charCode++) {
-      // A-Z
-      const char = String.fromCharCode(charCode);
-      const metrics = ctx.measureText(char);
-      metricsCache.push(metrics);
-
-      const width = metrics.width;
-      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-
-      if (width > maxWidth) maxWidth = width;
-      if (height > maxHeight) maxHeight = height;
-      this.characterWidthMap.set(char, width);
-    }
-
-    this.maxBoxWidth = Math.ceil(maxWidth + this.characterBgPadding * 2);
-    this.maxBoxHeight = Math.ceil(maxHeight + this.characterBgPadding * 2);
-  }
-
-  private calcNumberingBoxMaxHeight() {
-    const tempCanvas = document.createElement('canvas');
-    const ctx = tempCanvas.getContext('2d');
-
-    if (!ctx) {
-      console.warn('2D context not available for font measurement.');
-      return;
-    }
-
-    ctx.font = `${this.numberingFontSize}px ${this.fontFamily}`;
-
-    let maxHeight = 0;
-
-    // We can safely use digits 0–9 for measuring numbering height
-    for (let charCode = 48; charCode <= 57; charCode++) {
-      // '0' to '9'
-      const char = String.fromCharCode(charCode);
-      const metrics = ctx.measureText(char);
-      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-      if (height > maxHeight) {
-        maxHeight = height;
+  private calculateCanvasHeightForFullSequence(): number {
+    return calculateCanvasHeightForFullSequence(
+      this.maxBoxWidth,
+      this.sequence.length,
+      this.canvasWidth,
+      this.residueGroupSize,
+      this.currentGroupSize ?? this.residueGroupSize,
+      this.hoverBorderWidth,
+      this.maxNumberingBoxHeight,
+      this.maxBoxHeight,
+      this.lineBottomMargin,
+      this.margins,
+      this.grouping,
+      {
+        residueGroupSize: this.residueGroupSize,
+        residueGroupRightMargin: this.residueGroupRightMargin,
+        fullGroupsPerLine: this.fullGroupsPerLine ?? 0,
       }
-    }
-
-    // If circle annotations present, add extra spacing
-    const hasCircle = this.annotations.map((annotation) => annotation.rendering).indexOf('CircleAbove') > -1;
-    if (hasCircle === true) {
-      this.numberingVerticalSpacing = 4;
-      this.lineBottomMargin += 4;
-    }
-
-    this.maxNumberingBoxHeight = Math.ceil(maxHeight + this.characterBgPadding * 2) + this.numberingVerticalSpacing;
+    );
   }
 
-  private calcCanvasHeightForFullSequence(): number {
-    let x = this.margins.left;
-    let lineCount = 1;
-    const groupSize = this.currentGroupSize ?? this.residueGroupSize;
-
-    for (let i = 1; i <= this.sequence.length; i++) {
-      if (x + this.maxBoxWidth > this.canvasWidth - this.margins.right) {
-        x = this.margins.left;
-        lineCount++;
-      }
-
-      x += this.maxBoxWidth + this.hoverBorderWidth;
-
-      // Add spacing after group
-      if (this.grouping && i % groupSize === 0) {
-        x += this.residueGroupRightMargin;
-      }
-    }
-
-    // const extraCircleHeight = this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0;
-
-    const totalLineHeight = this.maxNumberingBoxHeight + this.maxBoxHeight + this.lineBottomMargin;
-
-    return this.margins.top + lineCount * totalLineHeight + this.margins.bottom;
-  }
-
-  private setCanvasBoxPerLines() {
-    const { left: marginLeft, right: marginRight, top: marginTop, bottom: marginBottom } = this.margins;
-
-    const availableWidth = this.canvasWidth - marginLeft - marginRight;
-    const effectiveBoxWidth = this.maxBoxWidth + this.hoverBorderWidth;
-
-    if (this.groupingLineBreak) {
-      this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth); // spacing handled during drawing
-    } else if (this.grouping) {
-      const groupBoxWidth = this.residueGroupSize * effectiveBoxWidth + this.residueGroupRightMargin;
-      this.fullGroupsPerLine = Math.floor((availableWidth + this.residueGroupRightMargin) / groupBoxWidth);
-      this.notDrawnWidth = Math.floor(availableWidth + this.residueGroupRightMargin) - this.fullGroupsPerLine * groupBoxWidth;
-      this.canvasBoxPerLines = this.fullGroupsPerLine * this.residueGroupSize;
-    } else {
-      this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth);
-    }
+  private calculateCanvasBoxPerLines() {
+    const canvasBoxData = calculateCanvasBoxPerLines(this.canvasWidth, this.maxBoxWidth, this.hoverBorderWidth, this.margins, this.groupingLineBreak, this.grouping, {
+      residueGroupSize: this.residueGroupSize,
+      residueGroupRightMargin: this.residueGroupRightMargin,
+    });
+    return canvasBoxData;
   }
 
   private calculateLineBoxLayout() {
-    if (this.maxBoxWidth <= 0 || this.maxBoxHeight <= 0 || this.maxNumberingBoxHeight <= 0) {
-      console.warn('Box or numbering dimensions not calculated yet.');
-      return;
-    }
-    if (!this.canvasBoxPerLines || isNaN(this.canvasBoxPerLines) || this.canvasBoxPerLines <= 0) {
-      console.warn('canvasBoxPerLines is invalid:', this.canvasBoxPerLines);
-      return;
-    }
-
-    const { left: _marginLeft, right: _marginRight, top: marginTop, bottom: marginBottom } = this.margins;
-
-    // const availableWidth = this.canvasWidth - marginLeft - marginRight;
-    // const effectiveBoxWidth = this.maxBoxWidth + this.hoverBorderWidth;
-
-    // if (this.groupingLineBreak) {
-    //   this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth); // spacing handled during drawing
-    // } else if (this.grouping) {
-    //   const groupBoxWidth = this.residueGroupSize * effectiveBoxWidth + this.residueGroupRightMargin;
-    //   const fullGroupsPerLine = Math.floor((availableWidth + this.residueGroupRightMargin) / groupBoxWidth);
-    //   this.canvasBoxPerLines = fullGroupsPerLine * this.residueGroupSize;
-    // } else {
-    //   this.canvasBoxPerLines = Math.floor(availableWidth / effectiveBoxWidth);
-    // }
-
-    // const extraCircleHeight = this.hasCircleAnnotation ? this.circleAnnotationRadius * 2 + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom : 0;
-    const totalLineHeight = this.maxNumberingBoxHeight + this.maxBoxHeight + this.lineBottomMargin;
-    this.canvasTextLines = Math.floor((this.canvasHeight - marginTop - marginBottom + this.lineBottomMargin) / totalLineHeight);
-
-    if (this.groupingLineBreak) {
-      this.chunkedSequence = [this.sequence]; // single chunk, flat loop
-    } else {
-      this.chunkedSequence = [];
-      for (let i = 0; i < this.sequence.length; i += this.canvasBoxPerLines!) {
-        this.chunkedSequence.push(this.sequence.slice(i, i + this.canvasBoxPerLines!));
+    const layoutData: LineBoxLayoutData | undefined = calculateLineBoxLayout(
+      this.maxBoxWidth,
+      this.maxBoxHeight,
+      this.maxNumberingBoxHeight,
+      this.canvasBoxPerLines,
+      this.sequence,
+      this.lineBottomMargin,
+      this.margins,
+      this.canvasHeight,
+      this.groupingLineBreak,
+      this.currentGroupSize,
+      this.currentResidueNumberingFreq,
+      {
+        residueGroupSize: this.residueGroupSize,
+        residueNumberingFreq: this.residueNumberingFreq,
       }
-      this.currentGroupSize = this.residueGroupSize;
-      this.currentResidueNumberingFreq = this.residueNumberingFreq;
-    }
-
-    this.currentStartLine = 0;
-    this.currentEndLine = this.groupingLineBreak ? this.canvasTextLines : Math.min(this.canvasTextLines, this.chunkedSequence.length);
+    );
+    return layoutData;
   }
 
-  private draw() {
+  public draw() {
     const ctx = this.canvas.getContext('2d');
     if (!ctx) {
       console.warn('Canvas context not available.');
@@ -995,6 +498,47 @@ export class SmartSequenceVisualisation {
     const { left: marginLeft, top: marginTop } = this.margins;
 
     const lineHeight = this.maxBoxHeight + this.maxNumberingBoxHeight + this.lineBottomMargin;
+    const residueDrawConfigs = {
+      nonObservedResidues: this.nonObservedResidues,
+
+      backgroundColorMap: this.backgroundColorMap,
+      underlineColorMap: this.underlineColorMap,
+      circleColorMap: this.circleColorMap,
+      distStarColorMap: this.distStarColorMap,
+      hexagonColorMap: this.hexagonColorMap,
+
+      currentHoveredResidue: this.eventManager.currentHoveredResidue,
+      currentClickedResidue: this.eventManager.currentClickedResidue,
+
+      clickedBorderColour: this.clickedBorderColour,
+      clickedBorderWidth: this.clickedBorderWidth,
+
+      maxNumberingBoxHeight: this.maxNumberingBoxHeight,
+      maxBoxWidth: this.maxBoxWidth,
+      maxBoxHeight: this.maxBoxHeight,
+
+      defaultBgColour: this.defaultBgColour,
+
+      fontSize: this.fontSize,
+      fontFamily: this.fontFamily,
+
+      numberingFontSize: this.numberingFontSize,
+      numberingVerticalSpacing: this.numberingVerticalSpacing,
+
+      characterBgPadding: this.characterBgPadding,
+
+      circleAnnotationRadius: this.circleAnnotationRadius,
+      circleAnnotationMarginTop: this.circleAnnotationMarginTop,
+      circleAnnotationMarginBottom: this.circleAnnotationMarginBottom,
+
+      residueNumberingFreq: this.residueNumberingFreq,
+      currentResidueNumberingFreq: this.currentResidueNumberingFreq,
+
+      useAuthNumbers: this.useAuthNumbers,
+      alternativeNumberings: this.alternativeNumberings,
+
+      sequenceLength: this.sequence.length,
+    };
 
     if (this.groupingLineBreak) {
       // Draw entire sequence with dynamic line wrapping and group margin
@@ -1015,7 +559,7 @@ export class SmartSequenceVisualisation {
         }
 
         // Draw background, borders, character, annotations (like before)
-        this.drawResidue(ctx, x, y, char, residueIndex);
+        drawResidue(ctx, x, y, char, residueIndex, residueDrawConfigs);
 
         this.residueRects.set(residueIndex, {
           x,
@@ -1053,7 +597,7 @@ export class SmartSequenceVisualisation {
             x += this.residueGroupRightMargin;
           }
 
-          this.drawResidue(ctx, x, yStart, char, residueIndex);
+          drawResidue(ctx, x, yStart, char, residueIndex, residueDrawConfigs);
 
           this.residueRects.set(residueIndex, {
             x,
@@ -1068,173 +612,10 @@ export class SmartSequenceVisualisation {
     }
   }
 
-  private getAltNumber(residueIndex: number, altType: 'auth' | 'uniprot') {
-    if (!this.alternativeNumberings) return `${residueIndex}`;
-    for (const alternativeNumbering of this.alternativeNumberings) {
-      if (alternativeNumbering.identifier === altType) {
-        // only getting numbering from first alt sequence
-        return `${alternativeNumbering.alternativeSequence[0][residueIndex - 1]}`;
-      }
-    }
-    return `${residueIndex}`;
-  }
-
-  private createCheckeredPattern(ctx: CanvasRenderingContext2D, baseColor: string): CanvasPattern {
-    const size = 6; // size of the small squares
-    const patternCanvas = document.createElement('canvas');
-    patternCanvas.width = size * 2;
-    patternCanvas.height = size * 2;
-    const pctx = patternCanvas.getContext('2d')!;
-
-    const lighter = this.lightenColor(baseColor, 0.2);
-
-    // Fill with baseColor
-    pctx.fillStyle = baseColor;
-    pctx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
-
-    // Draw lighter squares
-    pctx.fillStyle = lighter;
-    pctx.fillRect(0, 0, size, size);
-    pctx.fillRect(size, size, size, size);
-
-    return ctx.createPattern(patternCanvas, 'repeat')!;
-  }
-
-  private createStripedPattern(ctx: CanvasRenderingContext2D, baseColor: string): CanvasPattern {
-    const size = 6; // tile size controls stripe spacing
-    const patternCanvas = document.createElement('canvas');
-    patternCanvas.width = size;
-    patternCanvas.height = size;
-    const pctx = patternCanvas.getContext('2d')!;
-
-    const stripeColor = this.lightenColor(baseColor, 0.3);
-
-    // fill base
-    pctx.fillStyle = baseColor;
-    pctx.fillRect(0, 0, size, size);
-
-    // draw multiple diagonal lines that wrap around the tile
-    pctx.strokeStyle = stripeColor;
-    pctx.lineWidth = 2;
-
-    pctx.beginPath();
-    pctx.moveTo(0, size / 2);
-    pctx.lineTo(size / 2, 0);
-    pctx.moveTo(size / 2, size);
-    pctx.lineTo(size, size / 2);
-    pctx.stroke();
-
-    return ctx.createPattern(patternCanvas, 'repeat')!;
-  }
-
-  private drawResidue(ctx: CanvasRenderingContext2D, x: number, yStart: number, char: string, residueIndex: number) {
-    const isNonObserved = this.nonObservedResidues?.includes(residueIndex) ?? false;
-
-    // Get annotation color and override to white if residue is non-observed
-    const bgAnnotationColor = this.backgroundColorMap!.get(residueIndex);
-    // if (isNonObserved) bgAnnotationColor = '#ffffff';
-
-    // Draw background rectangle according to annotation
-    ctx.fillStyle = bgAnnotationColor ?? this.defaultBgColour;
-    ctx.fillRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
-
-    // Draw light grey cross if residue is non-observed
-    if (isNonObserved) {
-      // let nonObservedBg = '#d0d0d0';
-      // if (bgAnnotationColor) {
-      //   nonObservedBg = this.colorIsDarkAdvanced(bgAnnotationColor) ? '#000' : '#FFF';
-      // }
-      // ctx.strokeStyle = nonObservedBg;
-      // ctx.lineWidth = 3;
-      // ctx.beginPath();
-      // ctx.moveTo(x, yStart + this.maxNumberingBoxHeight);
-      // ctx.lineTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
-      // ctx.moveTo(x + this.maxBoxWidth, yStart + this.maxNumberingBoxHeight);
-      // ctx.lineTo(x, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight);
-      // ctx.stroke();
-
-      const base = bgAnnotationColor ?? '#d0d0d0';
-      const pattern = this.createStripedPattern(ctx, base);
-      ctx.fillStyle = pattern;
-      ctx.fillRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
-    }
-
-    // Decide residue text color between black and white based on background
-    let residueFontColour = '#000';
-    if (bgAnnotationColor) {
-      residueFontColour = this.colorIsDarkAdvanced(bgAnnotationColor) ? '#FFF' : '#000';
-    }
-    ctx.fillStyle = residueFontColour;
-
-    // If residue is selected or hovered set fontWeight to bold ...
-    let fontWeight = '';
-    if (residueIndex === this.currentHoveredResidue || residueIndex === this.currentClickedResidue) {
-      fontWeight = 'bold ';
-      // ... and draw a bold black rectangle around background
-      ctx.strokeStyle = this.clickedBorderColour || '#000';
-      ctx.lineWidth = this.clickedBorderWidth;
-      ctx.strokeRect(x, yStart + this.maxNumberingBoxHeight, this.maxBoxWidth, this.maxBoxHeight);
-    }
-
-    // Draw residue letter
-    ctx.font = `${fontWeight}${this.fontSize}px ${this.fontFamily}`;
-    ctx.fillText(char, x + this.maxBoxWidth / 2, yStart + this.maxNumberingBoxHeight + this.maxBoxHeight / 2);
-
-    // Draw circle annotations on top of residue
-    ctx.fillStyle = '#000';
-    const circleColor = this.circleColorMap!.get(residueIndex);
-    if (circleColor) {
-      const circleCenterX = x + this.maxBoxWidth / 2;
-      const circleCenterY = yStart + this.characterBgPadding + this.circleAnnotationMarginTop + this.circleAnnotationMarginBottom + this.circleAnnotationRadius * 2;
-      ctx.beginPath();
-      ctx.arc(circleCenterX, circleCenterY, this.circleAnnotationRadius, 0, 2 * Math.PI);
-      ctx.fillStyle = circleColor;
-      ctx.fill();
-      ctx.fillStyle = '#000';
-    }
-
-    // Draw underline annotations below residue
-    const underlineColor = this.underlineColorMap!.get(residueIndex);
-    if (underlineColor) {
-      const underlineY = yStart + this.maxNumberingBoxHeight + this.maxBoxHeight + 4;
-      ctx.strokeStyle = underlineColor;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(x + 2, underlineY);
-      ctx.lineTo(x + this.maxBoxWidth - 2, underlineY);
-      ctx.stroke();
-    }
-
-    // Draw number on top of residue if first, last or every this.residueNumberingFreq
-    const residueNumberLabel = this.useAuthNumbers ? this.getAltNumber(residueIndex, 'auth') : residueIndex.toString();
-    // if (residueIndex === 1 || residueIndex % this.residueNumberingFreq === 0 || residueIndex === this.sequence.length) {
-    const numberingFreq = this.currentResidueNumberingFreq ? this.currentResidueNumberingFreq : this.residueNumberingFreq;
-    if (residueIndex === 1 || residueIndex % numberingFreq === 0 || residueIndex === this.sequence.length) {
-      ctx.font = `${this.numberingFontSize}px ${this.fontFamily}`;
-      ctx.fillText(residueNumberLabel, x + this.maxBoxWidth / 2, yStart - this.numberingVerticalSpacing + this.maxNumberingBoxHeight / 2);
-      ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-    }
-  }
-
-  private createHiPPICanvas(width: number, height: number) {
-    const ratio = window.devicePixelRatio;
-    const canvas = document.createElement('canvas');
-
-    canvas.width = width * ratio;
-    canvas.height = height * ratio;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-
-    const context = canvas.getContext('2d');
-    if (context) context.scale(ratio, ratio);
-
-    return canvas;
-  }
-
   private registerCanvasMouseEvents() {
-    this.boundOnMouseMove = this.onMouseMove.bind(this);
-    this.boundOnMouseLeave = this.onMouseLeave.bind(this);
-    this.boundOnClick = this.onClick.bind(this);
+    this.boundOnMouseMove = this.eventManager.onMouseMove.bind(this.eventManager);
+    this.boundOnMouseLeave = this.eventManager.onMouseLeave.bind(this.eventManager);
+    this.boundOnClick = this.eventManager.onClick.bind(this.eventManager);
 
     this.canvas.addEventListener('mousemove', this.boundOnMouseMove);
     this.canvas.addEventListener('mouseleave', this.boundOnMouseLeave);
@@ -1245,369 +626,26 @@ export class SmartSequenceVisualisation {
     if (!this.externalEvents || this.entityId === undefined || this.chainId === undefined) return;
 
     const relevantEvents: [string, EventListener][] = [
-      ['PDB.RNA.viewer.mouseover', this.handleExternalMouseoverEvent.bind(this)],
-      ['PDB.topologyViewer.mouseover', this.handleExternalMouseoverEvent.bind(this)],
-      ['PDB.molstar.mouseover', this.handleExternalMouseoverEvent.bind(this)],
-      // ['protvista-mouseover', this.handleExternalMouseoverEvent.bind(this)],
+      ['PDB.RNA.viewer.mouseover', this.eventManager.handleExternalMouseoverEvent.bind(this.eventManager)],
+      ['PDB.topologyViewer.mouseover', this.eventManager.handleExternalMouseoverEvent.bind(this.eventManager)],
+      ['PDB.molstar.mouseover', this.eventManager.handleExternalMouseoverEvent.bind(this.eventManager)],
+      // ['protvista-mouseover', this.eventManager.handleExternalMouseoverEvent.bind(this.eventManager)],
 
-      ['PDB.RNA.viewer.mouseout', this.handleExternalMouseoutEvent.bind(this)],
-      ['PDB.topologyViewer.mouseout', this.handleExternalMouseoutEvent.bind(this)],
-      ['PDB.molstar.mouseout', this.handleExternalMouseoutEvent.bind(this)],
-      // ['protvista-mouseout', this.handleExternalMouseoutEvent.bind(this)],
+      ['PDB.RNA.viewer.mouseout', this.eventManager.handleExternalMouseoutEvent.bind(this.eventManager)],
+      ['PDB.topologyViewer.mouseout', this.eventManager.handleExternalMouseoutEvent.bind(this.eventManager)],
+      ['PDB.molstar.mouseout', this.eventManager.handleExternalMouseoutEvent.bind(this.eventManager)],
+      // ['protvista-mouseout', this.eventManager.handleExternalMouseoutEvent.bind(this.eventManager)],
 
-      ['to-seq-viewer-click', this.handleExternalClickEvent.bind(this)],
-      ['PDB.topologyViewer.click', this.handleExternalClickEvent.bind(this)],
-      // ['PDB.molstar.click', this.handleExternalClickEvent.bind(this)],
-      // ['protvista-click', this.handleExternalClickEvent.bind(this)],
+      ['to-seq-viewer-click', this.eventManager.handleExternalClickEvent.bind(this.eventManager)],
+      ['PDB.topologyViewer.click', this.eventManager.handleExternalClickEvent.bind(this.eventManager)],
+      // ['PDB.molstar.click', this.eventManager.handleExternalClickEvent.bind(this.eventManager)],
+      // ['protvista-click', this.eventManager.handleExternalClickEvent.bind(this.eventManager)],
     ];
 
     for (const [eventType, handler] of relevantEvents) {
       document.addEventListener(eventType, handler);
       this.externalEventListeners.push({ type: eventType, listener: handler });
     }
-  }
-
-  private createTooltipElement(container: HTMLElement) {
-    const tooltip = document.createElement('div');
-    tooltip.style.position = 'absolute';
-    tooltip.style.pointerEvents = 'none';
-    tooltip.style.background = '#fff';
-    tooltip.style.color = '#1a1c1a';
-    tooltip.style.borderRadius = '0px';
-    tooltip.style.padding = '10px';
-    tooltip.style.fontSize = '14px';
-    tooltip.style.fontFamily = "'IBM Plex Sans', Arial, Helvetica, sans-serif";
-    tooltip.style.boxShadow = '0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%)';
-    tooltip.style.zIndex = '9999';
-    tooltip.style.display = 'none';
-
-    container.style.position = 'relative'; // make container the positioning context
-    container.appendChild(tooltip);
-    this.tooltipEl = tooltip;
-  }
-
-  private buildTooltipContent(residueIndex: number): string | null {
-    const residue = this.sequence[residueIndex - 1];
-    if (!residue) return null;
-    const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
-
-    const authNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'auth');
-    const uniprotNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'uniprot');
-
-    const authId = authNumbering?.alternativeSequence?.[residueIndex - 1]?.[0];
-    const uniprotResIds = uniprotNumbering?.alternativeSequence?.[residueIndex - 1];
-    const uniprotIds = uniprotNumbering?.extraIdentifiers?.[residueIndex - 1];
-
-    let displayResnum = `${residueName} ${residueIndex}`;
-    let secondaryString = '';
-    let extraLineString = '';
-    let hasWarning = false;
-
-    // --- Preferred display ---
-    if (this.tooltipFormatting.preferred === 'auth' && authId) {
-      displayResnum = `${residueName} ${authId} (Auth)`;
-    } else if (this.tooltipFormatting.preferred === 'uniprot' && uniprotResIds && uniprotIds && uniprotResIds.length > 0 && uniprotIds.length > 0) {
-      displayResnum = `${residueName} ${uniprotResIds[0]} (${uniprotIds[0]})`;
-      if (uniprotIds.length > 1) hasWarning = true;
-    }
-
-    // --- Secondary line ---
-    if (this.tooltipFormatting.secondary === 'none') {
-      secondaryString = `Index: ${residueIndex}`;
-    } else if (this.tooltipFormatting.secondary === 'auth' && authId) {
-      secondaryString = ` Auth: ${authId}`;
-    } else if (this.tooltipFormatting.secondary === 'uniprot' && uniprotResIds && uniprotIds && uniprotResIds.length > 0 && uniprotIds.length > 0) {
-      secondaryString = ` ${uniprotIds[0]}: ${uniprotResIds[0]}`;
-      if (uniprotIds.length > 1) hasWarning = true;
-    }
-
-    // --- Extra line ---
-    if (this.tooltipFormatting.extraLine === 'none') {
-      extraLineString = `Index: ${residueIndex}`;
-    } else if (this.tooltipFormatting.extraLine === 'auth' && authId) {
-      extraLineString = `Auth: ${authId}`;
-    } else if (this.tooltipFormatting.extraLine === 'uniprot' && uniprotResIds && uniprotIds && uniprotResIds.length > 0 && uniprotIds.length > 0) {
-      extraLineString = `${uniprotIds[0]}: ${uniprotResIds[0]}`;
-      if (uniprotIds.length > 1) hasWarning = true;
-    }
-
-    // --- Optional warning line ---
-    const warningLine = hasWarning ? `<div style="color: #d32f2f; font-size: 14px;">⚠ Multiple UniProt mappings</div>` : '';
-
-    return `
-      <div style="font-weight: 500;">${displayResnum}</div>
-      <div style="font-size: 14px;">${secondaryString}</div>
-      <div style="font-size: 14px;">${extraLineString}</div>
-      ${warningLine}
-      <em style="font-size: 12px;">Click to view info</em>
-    `;
-  }
-
-  private getSidebarPanelEmptyState(): string {
-    let html = `<p style="margin: 0; font-weight: bold; font-size: 14px;">Click a residue for details</p>`;
-
-    const renderingIcons: Record<SmartSequenceAnnotationRenderingTypes, (color: string) => string> = {
-      Background: (color: string) => `<div style="display:inline-block;width:16px;height:16px;background:${color};margin-right:6px;border:1px solid #aaa;"></div>`,
-      Underline: (color: string) => `<div style="display:inline-block;width:16px;height:2px;background:${color};margin:0 6px 0 0;vertical-align:middle;"></div>`,
-      CircleAbove: (color: string) =>
-        `<div style="display:inline-block;width:12px;height:12px;background:${color};border-radius:50%;margin-right:6px;border:1px solid #aaa;"></div>`,
-      TextColour: () => '', // not rendered here
-    };
-
-    html += `<div style="margin-top: 8px;">`;
-    let hasWrittenContainer = false;
-    let hasWrittenAbsent = false;
-    for (const annotation of this.annotations) {
-      if (annotation.rendering === 'TextColour') continue;
-      // html += `<div style="font-weight: bold; line-height: 22.4px; font-size: 13px; margin: 0; margin-bottom: 4px;">${annotation.name}</div>`;
-
-      const domain = annotation.scaleDomain === 'auto' ? [...new Set(annotation.data.map((d) => d.value))] : annotation.scaleDomain;
-
-      if (!hasWrittenContainer) {
-        html += `<div style="display: flex; flex-direction: row; flex-wrap: wrap; row-gap: 2px; column-gap: 12px; margin: 4px;">`;
-        hasWrittenContainer = true;
-      }
-      for (let i = 0; i < domain.length; i++) {
-        const label = domain[i];
-        const color = annotation.scaleRange[i] || '#000';
-        const icon = renderingIcons[annotation.rendering](color);
-
-        html += `<div style="width: fit-content;">${icon}<span style="font-size: 13px;">${label}</span></div>`;
-      }
-    }
-    if (!hasWrittenAbsent && this.nonObservedResidues && this.nonObservedResidues.length > 0) {
-      const absentIcon = `
-        <div style="
-          display:inline-block;
-          width:16px;
-          height:16px;
-          margin-right: 2px;
-          border:1px solid #aaa;
-          background-color: #f2f2f2;
-          background-image: repeating-linear-gradient(
-            135deg,          /* smooth diagonal */
-            #b3b3b3 0,       /* stripe color */
-            #b3b3b3 3px,     /* stripe thickness */
-            transparent 3px, 
-            transparent 6px  /* spacing between stripes */
-          );
-        ">
-        </div>
-      `;
-      const absentLabel = 'Absent coordinates';
-      html += `<div style="width: fit-content;">${absentIcon}<span style="font-size: 13px;">${absentLabel}</span></div>`;
-      hasWrittenAbsent = true;
-    }
-    html += `</div>`;
-    html += `</div>`;
-
-    return html;
-  }
-
-  private createSidebarPanel() {
-    const panel = document.createElement('div');
-    panel.className = 'sidebar-panel';
-    panel.style.width = `${this.sidebarPanelWidth}px`;
-    panel.style.height = '100%';
-    panel.style.background = '#fafafa';
-    panel.style.border = '1px solid #ccc';
-    panel.style.overflowY = 'auto';
-    panel.style.overflowX = 'hidden';
-    panel.style.padding = '10px';
-    panel.innerHTML = this.getSidebarPanelEmptyState();
-    panel.style.display = 'block';
-
-    return panel;
-  }
-
-  private selectResidueState(residueIndex: number, doNotPropagate?: boolean, doNotReport?: boolean) {
-    this.currentHoveredResidue = null;
-    this.currentClickedResidue = residueIndex;
-    this.residueClick$.next({
-      residueIndex,
-      annotations: this.getAnnotationsForResidue(residueIndex),
-    });
-    if (this.externalEvents && !doNotPropagate) this.triggerExternalEvents('click', residueIndex);
-    if (!doNotReport) this.dispatchSelectEvent(residueIndex);
-    if (doNotPropagate && doNotReport) this.centeredCoordsAtResidue(residueIndex);
-    this.showSidebar(residueIndex);
-  }
-
-  private unselectResidueState(doNotReport?: boolean) {
-    if (!this.sidebarPanel) return;
-    // if (this.externalEvents) this.triggerExternalEvents('click', undefined);
-    this.sidebarPanel.innerHTML = this.getSidebarPanelEmptyState();
-    this.currentClickedResidue = null;
-    this.draw();
-    this.residueClick$.next(null);
-    if (!doNotReport) this.dispatchDeselectEvent();
-  }
-
-  private buildSidebarContent(residueIndex: number): string {
-    const residue = this.sequence[residueIndex - 1];
-    const residueName = this.isNucleic === false ? this.getResidueNameFromCode(residue) : residue;
-
-    // Inline close handler
-    const handleSidebarClose = () => {
-      if (this.sidebarPanel) {
-        // this.sidebarPanel.style.display = 'none';
-        this.unselectResidueState();
-      }
-    };
-
-    // Attach to window so the button onclick can reference it
-    (window as any).smartSeqSidebarClose = handleSidebarClose;
-
-    const residueNumberLabel = this.useAuthNumbers ? this.getAltNumber(residueIndex, 'auth') : residueIndex.toString();
-    let residueLabel = residueNumberLabel;
-    if (residueNumberLabel !== residueIndex.toString()) {
-      residueLabel = `${residueNumberLabel} (Auth)`;
-    }
-
-    // Open residue info div
-    let html = `<div style="margin-bottom: 6px;">`;
-
-    // Add residue label and close icon
-    html += '<div style="display: flex; justify-content: space-between; align-items: center;">';
-    html += '<div style="display: flex; gap: 4px;">';
-    html += `<h5 style="margin: 0;">${residueName} ${residueLabel}</h5>`;
-    if (residueLabel.includes('(Auth)')) {
-      const helpLogoSrc = this.helpLogoSrc || '';
-      const tooltipText = `Auth refers to the residue numbering as provided by the original authors of the PDB entry (${residueName} ${residueNumberLabel}). This numbering may differ from canonical or sequential numbering (${residueName} ${residueIndex}) due to biological context, insertions, or historical reasons.`;
-
-      html += `
-        <div style="position: relative; display: inline-block;">
-          <img src="${helpLogoSrc}" 
-              class="icon help-icon" 
-              alt="help icon" 
-              data-tooltip="${tooltipText}" />
-        </div>
-      `;
-    }
-    html += '</div>';
-    html += '<button onclick="smartSeqSidebarClose()" style="background: transparent; border: none; font-size: 20px; cursor: pointer;">×</button>';
-    html += '</div>';
-
-    // If Auth residue, add Seq residue numbering
-    if (residueLabel.includes('(Auth)')) {
-      html += `<h5 style="margin: 0;font-size: 16px;font-weight: normal;">${residueName} ${residueIndex}</h5>`;
-    }
-
-    // Close residue info div
-    html += '</div>';
-
-    // If Residue is non observed, add observation to this
-    const isNonObserved = this.nonObservedResidues?.includes(residueIndex) ?? false;
-    if (isNonObserved) {
-      const helpLogoSrc = this.helpLogoSrc || '';
-      const tooltipText = `Non-observed coordinates are parts of the molecule that were present in the experimental sample but could not be modeled usually due to lack of clear structural data evidence. This can happen because of instrinsic structural flexibility, disorder, or due to experimental limitations during structure determination.`;
-
-      const nonObservedHelpEl = `
-        <div style="position: relative; display: inline-block; top: -2px; left: -3px;">
-          <img src="${helpLogoSrc}" 
-              class="icon help-icon" 
-              alt="help icon" 
-              data-tooltip="${tooltipText}" />
-        </div>
-      `;
-
-      html += `<div style="margin: 0; font-size: 14px; margin-bottom: 4px;">
-        This residue's coordinates are partially or completely absent. ${nonObservedHelpEl}
-      </div>`;
-    }
-
-    // // UniProt
-    // const uniprotNumbering = this.alternativeNumberings?.find((n) => n.identifier === 'uniprot');
-    // const uniprotResIds = uniprotNumbering?.alternativeSequence?.[residueIndex - 1];
-    // const uniprotIds = uniprotNumbering?.extraIdentifiers?.[residueIndex - 1];
-    // if (uniprotResIds && uniprotIds) {
-    //   html += `<p><strong>UniProt:</strong></p><ul>`;
-    //   for (let i = 0; i < uniprotIds.length; i++) {
-    //     html += `<li><a href="https://www.uniprot.org/uniprotkb/${uniprotIds[i]}" target="_blank">${uniprotIds[i]}</a> - Residue: ${uniprotResIds[i]}</li>`;
-    //   }
-    //   if (uniprotIds.length === 0) {
-    //     html += `<li>No mappings</li>`;
-    //   }
-    //   html += `</ul>`;
-    // }
-
-    // Annotations
-    const annotations = this.getAnnotationsForResidue(residueIndex);
-    let hasAddedTitle = false;
-    let hasPdbeValTitle = false;
-    let hasPdbeDomTitle = false;
-    if (annotations.length > 0) {
-      for (const ann of annotations) {
-        if (ann.identifier.includes('pdbe-validation')) {
-          html += this.processPdbeValAnnotation(ann, residueIndex, hasPdbeValTitle);
-          hasPdbeValTitle = true;
-        } else if (ann.identifier.includes('pdbe-domains')) {
-          html += this.processPdbeDomAnnotation(ann, hasPdbeDomTitle);
-          hasPdbeDomTitle = true;
-        } else if (ann.identifier.includes('pdbe-llm-annotation')) {
-          html += this.processPdbeLLMAnnotation(ann);
-        } else {
-          html += this.processGenericAnnotation(ann, residueIndex, hasAddedTitle);
-          hasAddedTitle = true;
-        }
-      }
-    }
-    return html;
-  }
-
-  private getAnnotationColor(residueIndex: number, rendering: SmartSequenceAnnotationRenderingTypes): string | undefined {
-    if (rendering === 'Background') return this.backgroundColorMap?.get(residueIndex);
-    if (rendering === 'Underline') return this.underlineColorMap?.get(residueIndex);
-    if (rendering === 'CircleAbove') return this.circleColorMap?.get(residueIndex);
-    return undefined;
-  }
-
-  private processPdbeValAnnotation(ann: SmartSequenceAnnotationForEvent, residueIndex: number, hasAddedTitle: boolean) {
-    let html = '';
-    const extraData = ann.datum.extraData || undefined;
-    if (!extraData) return '';
-    const outlierCount = extraData.outlierTypes.length;
-    if (!hasAddedTitle) {
-      const color = this.getAnnotationColor(residueIndex, ann.rendering);
-      const colorRect = `<span style="display:inline-block;width:12px;height:12px;background:${color};margin-left:2px; margin-right:2px; border: 1.5px solid black;"></span>`;
-      const colourText = `${outlierCount} - ${colorRect}`;
-      html += `<p style="margin: 0; font-weight: 500; font-size: 16px;">Validation outliers (${colourText}):</p>`;
-    }
-    // const issuesNumber = extraData.outlierTypes.length === 0 ? 'No' : extraData.outlierTypes.length;
-    // const typesWord = extraData.outlierTypes.length === 1 ? 'type' : 'types';
-    // html += `<p style="margin: 0; font-size: 14px;">${issuesNumber} validation outlier ${typesWord} found for this residue</p>`;
-    if (outlierCount === 0) {
-      html += `<p style="margin: 0; font-size: 14px;">No validation outliers found for this residue</p>`;
-    } else if (outlierCount > 0) {
-      html += `<ul style="margin-bottom:4px;">`;
-      for (const outlierType of extraData.outlierTypes) {
-        html += `<li style="margin: 0; font-size: 14px;">${outlierType}</li>`;
-      }
-      html += `</ul>`;
-    }
-    return html;
-  }
-
-  private processPdbeDomAnnotation(ann: SmartSequenceAnnotationForEvent, hasAddedTitle: boolean) {
-    let html = '';
-    const extraData = ann.datum.extraData || undefined;
-    if (!extraData) return '';
-    if (!hasAddedTitle) {
-      html += `<p style="margin: 0; font-size: 14px;">
-        This is the <b>${extraData.ordinalLabel} residue</b> in <b>segment ${extraData.segmentIndex} (residues: ${extraData.segment})</b> of this <b>${extraData.source}</b> domain (<b>Domain name: ${extraData.domainName}</b>)
-      </p>`;
-    }
-    return html;
-  }
-
-  private processPdbeLLMAnnotation(ann: SmartSequenceAnnotationForEvent) {
-    const extraData = ann.datum.extraData || undefined;
-    if (!extraData) return '';
-    const annotationS = ann.datum.extraData.length > 1 ? 'annotations' : 'annotation';
-    const html = `<p style="margin: 0; font-weight: 500; font-size: 16px;">
-      ${ann.datum.extraData.length} text-mined ${annotationS}
-    </p>`;
-    return html;
   }
 
   /**
@@ -1632,26 +670,6 @@ export class SmartSequenceVisualisation {
    */
   public registerAnnotationRenderer(identifier: string, renderer: (ann: SmartSequenceAnnotationForEvent, residueIndex: number) => string) {
     this.annotationRenderers.set(identifier, renderer);
-  }
-
-  private processGenericAnnotation(ann: SmartSequenceAnnotationForEvent, residueIndex: number, hasAddedTitle: boolean) {
-    const customRenderer = this.annotationRenderers.get(ann.identifier);
-    if (customRenderer) {
-      return customRenderer(ann, residueIndex);
-    }
-
-    // fallback: default HTML
-    let html = '';
-    if (!hasAddedTitle) html += `<hr/><h5>Annotations</h5>`;
-
-    html += `<ul style="margin-bottom:10px;">`;
-    html += `<li><strong>Name</strong>: ${ann.name}</li>`;
-    html += `<li><strong>Value</strong>: ${ann.datum.value}</li>`;
-    const color = this.getAnnotationColor(residueIndex, ann.rendering);
-    html += `<li><strong>Colour</strong>: <div style="display:inline-block;width:12px;height:12px;background:${color};margin-right:6px;"></div></li>`;
-    html += `</ul>`;
-
-    return html;
   }
 
   private attachSidebarHelpIconEvents() {
@@ -1692,61 +710,6 @@ export class SmartSequenceVisualisation {
         tooltip.style.display = 'none';
       });
     });
-  }
-
-  private getResidueNameFromCode(code: string): string {
-    const map: { [key: string]: string } = {
-      A: 'Ala',
-      R: 'Arg',
-      N: 'Asn',
-      D: 'Asp',
-      C: 'Cys',
-      Q: 'Gln',
-      E: 'Glu',
-      G: 'Gly',
-      H: 'His',
-      I: 'Ile',
-      L: 'Leu',
-      K: 'Lys',
-      M: 'Met',
-      F: 'Phe',
-      P: 'Pro',
-      S: 'Ser',
-      T: 'Thr',
-      W: 'Trp',
-      Y: 'Tyr',
-      V: 'Val',
-    };
-    return map[code.toUpperCase()] || code;
-  }
-
-  private colorIsDarkAdvanced(bgColor: string) {
-    const color = bgColor.charAt(0) === '#' ? bgColor.substring(1, 7) : bgColor;
-    const r = parseInt(color.substring(0, 2), 16); // hexToR
-    const g = parseInt(color.substring(2, 4), 16); // hexToG
-    const b = parseInt(color.substring(4, 6), 16); // hexToB
-    const uicolors = [r / 255, g / 255, b / 255];
-    const c = uicolors.map((col) => {
-      if (col <= 0.03928) {
-        return col / 12.92;
-      }
-      return Math.pow((col + 0.055) / 1.055, 2.4);
-    });
-    const L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-    return L <= 0.179;
-  }
-
-  private lightenColor(hex: string, percent: number): string {
-    const num = parseInt(hex.replace('#', ''), 16);
-    let r = (num >> 16) + Math.round(255 * percent);
-    let g = ((num >> 8) & 0x00ff) + Math.round(255 * percent);
-    let b = (num & 0x0000ff) + Math.round(255 * percent);
-
-    r = r > 255 ? 255 : r;
-    g = g > 255 ? 255 : g;
-    b = b > 255 ? 255 : b;
-
-    return `rgb(${r},${g},${b})`;
   }
 
   public destroy() {

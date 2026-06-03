@@ -1,10 +1,9 @@
 import { Route } from '@angular/router';
 import { ErrorPageComponent } from './error-page/error-page.component';
-import { complexIdGuard } from './projects/complex/guards/complex.guard';
-import { TabRedirectComponent } from './projects/entry/redirects/all-redirects.component';
-import { SearchPageComponent } from './projects/entry/pages/search/search-page.component';
-import { ExternalRedirectComponent } from './projects/entry/redirects/external-redirect.component';
-import { SearchAppContainerComponent } from './projects/search-app/search-app-container/search-app-container.component';
+import { TabRedirectComponent } from './entry/redirects/all-redirects.component';
+import { ExternalRedirectComponent } from './entry/redirects/external-redirect.component';
+import { SearchAppContainerComponent } from './search-app/search-app-container/search-app-container.component';
+import { entryPageResolver } from './entry/resolvers/entry.resolver';
 
 // const hostname = document.location.hostname;
 // const isLocal = hostname === 'localhost';
@@ -81,36 +80,29 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'pdb/:entryId',
-    loadComponent: () => import('./projects/entry/pages/main/main.component').then((m) => m.EntryMainPageComponent),
+    loadComponent: () => import('./entry/pages/main/main.component').then((m) => m.EntryMainPageComponent),
+    resolve: {
+      initialData: entryPageResolver,
+    },
     title: 'PDBe Entry Pages',
   },
   {
     path: 'pdb/:entryId/3d',
-    loadComponent: () => import('./projects/entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
+    loadComponent: () => import('./entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
     title: 'PDBe Entry Pages - Molstar',
   },
   {
     path: 'view3D/:entryId',
-    loadComponent: () => import('./projects/entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
+    loadComponent: () => import('./entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
     title: 'PDBe Entry Pages - Molstar',
   },
   {
     path: 'view3D/:entryId/:rest',
-    loadComponent: () => import('./projects/entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
+    loadComponent: () => import('./entry/pages/3d/molstar-3d.component').then((m) => m.Entry3DPageComponent),
     title: 'PDBe Entry Pages - Molstar',
   },
-  {
-    path: 'chemicalCompound/show/:ligandId',
-    loadComponent: () => import('./projects/ligands/components/pages/main/main.component').then((m) => m.LigandsMainPageComponent),
-    title: 'PDBe-KB Ligand Pages (PDBeChem)',
-  },
+
   { path: 'error', component: ErrorPageComponent, title: 'Error Page' },
-  {
-    path: 'complexes/:complexId',
-    loadComponent: () => import('./projects/complex/components/pages/main/main.component').then((m) => m.MainComponent),
-    title: 'Complex Pages',
-    canActivate: [complexIdGuard],
-  },
 
   { path: '**', redirectTo: 'error' },
 ];

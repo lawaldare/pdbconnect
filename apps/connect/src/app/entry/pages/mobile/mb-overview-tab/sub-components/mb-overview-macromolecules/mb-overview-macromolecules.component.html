@@ -1,0 +1,23 @@
+<h3>Macromolecules ({{macromoleculeTableRows().length}})</h3>
+@if(macromoleculeTableRows().length){ @for(row of macromoleculeTableRows().slice(0, macromoleculeInitialCount()); track row.index ){
+<section class="macro-row-card">
+  <p class="m-title">{{row.name.molecule}}</p>
+  <p class="text">{{row.name.chains.length}} chains</p>
+  @let organismsWithStrains = uniqueOrganismsWithStrains()[row.index]; @if(organismsWithStrains.length){
+  <p class="text">Source organism{{ organismsWithStrains.length > 1 ? 's': '' }}:</p>
+  <p class="text">
+    @for (sourceOrganismWithStrain of organismsWithStrains; track sourceOrganismWithStrain) {
+    <span>
+      <em><a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank"> {{ sourceOrganismWithStrain.name }} </a></em>
+      @if(sourceOrganismWithStrain.strain) {(strain {{sourceOrganismWithStrain.strain}})}
+    </span>
+    }
+  </p>
+  }
+</section>
+
+} @if(macromoleculeTableRows().length > 5){
+<button class="vf-button vf-button--search-pdbe" (click)="toggleMacromoleculeList()">{{macromoleculeInitialCount() > 5 ? 'Hide' : 'Show'}} full list</button>
+} } @else if (loadedMacromolecules() === false) {
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}
