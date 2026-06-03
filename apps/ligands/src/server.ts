@@ -29,6 +29,23 @@ const angularApp = new AngularNodeAppEngine({
   trustProxyHeaders: true,
 } as any);
 
+// 🧠 GLOBAL PREFIX INJECTOR: Run this BEFORE static files or SSR blocks
+app.use((req, res, next) => {
+  const baseHref = '/pdbe-srv/pdbechem/chemicalCompound';
+
+  if (!req.url.startsWith(baseHref)) {
+    // 1. Reconstruct the full URL string (preserves query params if any)
+    const normalizedUrl = `${baseHref}${req.url.startsWith('/') ? '' : '/'}${req.url}`;
+
+    req.url = normalizedUrl;
+    // @ts-ignore - Override the path read by Angular's engine manifest
+    req.path = `${baseHref}${req.path.startsWith('/') ? '' : '/'}${req.path}`;
+
+    console.log(`🔧 Path Normalized inside Node: ${req.url}`);
+  }
+  next();
+});
+
 // Handles requests if Nginx leaves the full subpath intact
 app.use(
   '/pdbe-srv/pdbechem/chemicalCompound',
@@ -52,10 +69,7 @@ app.use(
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.use('*', (req, res, next) => {
-  console.log('ORIGINAL URL:', req.originalUrl);
-  console.log('PATH:', req.path);
-  console.log('URL:', req.url);
+app.get('*', (req, res, next) => {
   // Absolute safety net: Skip the SSR engine entirely if the request is trying to load a file
   if (req.path.includes('.')) {
     return next();
