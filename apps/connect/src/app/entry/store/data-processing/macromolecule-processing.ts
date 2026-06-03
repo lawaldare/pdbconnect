@@ -51,7 +51,7 @@ export function processMacromoleculesDescriptions(macromolecules: Molecule[]): M
   ];
 
   moleculeTypeConditions = moleculeTypeConditions.filter((condition) => {
-    const macromoleculesForCondition = (macromolecules ?? []).filter((mol) => condition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+    const macromoleculesForCondition = (macromolecules ?? []).filter((mol) => condition.moleculeTypes.includes(mol.molecule_type));
     return macromoleculesForCondition.length > 0;
   });
 
@@ -63,7 +63,7 @@ export function processMacromoleculesDescriptions(macromolecules: Molecule[]): M
   for (let i = 0; i < moleculeTypeConditions.length; i++) {
     const moleculeTypeCondition = moleculeTypeConditions[i];
     // filter the complete macromolecule list by the type
-    const filteredMacromolecules = (macromolecules ?? []).filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+    const filteredMacromolecules = (macromolecules ?? []).filter((mol) => moleculeTypeCondition.moleculeTypes.includes(mol.molecule_type));
 
     // add comma if this is between second and penultimate item
     if (i > 0 && i < moleculeTypeConditions.length - 1) macromoleculesDescription += ', ';
@@ -120,8 +120,8 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
     for (const mapping of uniprot.mappings) {
       if (mapping.entity_id !== entityId) return;
       // filter for preferredAssembly given that macromolecule already has filtered fields
-      if (allowedAsyms.indexOf(mapping.chain_id) === -1) continue;
-      if (allowedStructAsyms.indexOf(mapping.struct_asym_id) === -1) continue;
+      if (!allowedAsyms.includes(mapping.chain_id)) continue;
+      if (!allowedStructAsyms.includes(mapping.struct_asym_id)) continue;
 
       const identity = mapping.identity;
       const coverage = mapping.coverage;
@@ -515,7 +515,7 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
   // for each set of molecule types ...
   for (const moleculeTypeCondition of moleculeTypeConditions) {
     // ... filter the complete macromolecule list by this set of types
-    const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+    const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.includes(mol.molecule_type));
     // ... and create a filter based on these set of types and a dynamically generated description
     const plural = filteredMacromolecules.length > 1 ? 's' : '';
     if (filteredMacromolecules.length > 0) {

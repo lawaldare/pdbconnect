@@ -407,7 +407,7 @@ export class EntryEffects {
             ];
 
             const macroMolecules = molecules
-              .filter((mol) => macromoleculeSortedTypesArray.indexOf(mol.molecule_type) > -1)
+              .filter((mol) => macromoleculeSortedTypesArray.includes(mol.molecule_type))
               .sort((a, b) => macromoleculeSortedTypesArray.indexOf(a.molecule_type) - macromoleculeSortedTypesArray.indexOf(b.molecule_type));
 
             const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');

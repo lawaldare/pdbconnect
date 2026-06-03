@@ -405,20 +405,15 @@ export class MacromoleculesTabComponent implements OnInit {
     const uniprotsAllowed = this.uniprotsAllowed();
     if (!uniprotsAllowed) return [];
 
-    let isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
-    isoformsMappingKeys = isoformsMappingKeys.filter((isoform) => {
-      const hasAllowed = uniprotsAllowed.some((uniprot) => isoform.includes(uniprot));
-      return hasAllowed;
-    });
-
-    const filteredIsoformsMapping: any[] = [];
-
-    isoformsMappingKeys.forEach((uniprot: string) => {
-      if (uniprot.indexOf('-') !== -1) {
-        filteredIsoformsMapping.push({ ...this.isoformsMapping()?.[uniprot], uniprot });
+    const isoformsMapping = this.isoformsMapping();
+    if (!isoformsMapping) return [];
+    const isoformsMappingKeys = Object.keys(isoformsMapping).filter((isoform) => uniprotsAllowed.some((uniprot) => isoform.includes(uniprot)));
+    const filteredIsoformsMapping = [];
+    for (const uniprot of isoformsMappingKeys) {
+      if (uniprot.includes('-')) {
+        filteredIsoformsMapping.push({ ...isoformsMapping[uniprot], uniprot });
       }
-    });
-
+    }
     return filteredIsoformsMapping;
   });
 
@@ -503,7 +498,7 @@ export class MacromoleculesTabComponent implements OnInit {
     if (!mappedUnps) return false;
     if (!currentChain) return false;
 
-    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.includes(currentChain));
 
     if (mappingsForChains.length > 1 || mappingsForChains[0].uniprotSegments.length > 2) {
       return true;
@@ -521,7 +516,7 @@ export class MacromoleculesTabComponent implements OnInit {
     if (!currentChain) return undefined;
 
     const mappingsForChains = mappedUnps.labelUniProtMappings;
-    return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+    return mappingsForChains.filter((mapped) => mapped.chainIds.includes(currentChain));
   });
 
   /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */

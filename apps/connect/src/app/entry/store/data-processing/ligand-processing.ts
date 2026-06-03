@@ -205,7 +205,7 @@ export function filterLigandMonomersForMolecule(ligand: Molecule, ligandMonomers
       ligandMonomer.chain_id &&
       ligandMonomer.struct_asym_id &&
       ligandMonomer.entity_id === ligand.entity_id &&
-      ligand.in_struct_asyms.indexOf(ligandMonomer.struct_asym_id) > -1
+      ligand.in_struct_asyms.includes(ligandMonomer.struct_asym_id)
     );
   });
   return filteredLigandMonomersForMol;
@@ -432,7 +432,7 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
     const colorEntityIdx = ligand.entity_id - 1;
     let ligandColor = COLORBREWER_SET2_COLORS[colorEntityIdx % COLORBREWER_SET2_COLORS.length];
     const elementKeys = Object.keys(ELEMENT_COLORS_HEX);
-    if (elementKeys.indexOf(ligand.chem_comp_ids[0]) > -1) {
+    if (elementKeys.includes(ligand.chem_comp_ids[0])) {
       ligandColor = ELEMENT_COLORS_HEX[ligand.chem_comp_ids[0]];
     }
 

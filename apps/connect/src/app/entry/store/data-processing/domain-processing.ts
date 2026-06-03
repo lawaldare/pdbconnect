@@ -402,7 +402,7 @@ export function generateDomainsTableFilters(
       const filteredCathMapping = filterMappingObservedWithCoverage([mapping], polymerCoverage);
       if (filteredCathMapping.length === 0) continue;
 
-      if (domainIds.indexOf(mapping.domain!) === -1) {
+      if (!domainIds.includes(mapping.domain!)) {
         domainIds.push(mapping.domain!);
       }
     }
@@ -419,7 +419,7 @@ export function generateDomainsTableFilters(
       const filteredScopMapping = filterMappingObservedWithCoverage([mapping], polymerCoverage);
       if (filteredScopMapping.length === 0) continue;
 
-      if (domainIds.indexOf(mapping.scop_id!) === -1) {
+      if (!domainIds.includes(mapping.scop_id!)) {
         domainIds.push(mapping.scop_id!);
       }
     }
@@ -513,7 +513,7 @@ export function generateProcessedDomains(
 
       // we get some data needed to be rendered in the table
       const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
-      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => getCleanMoleculeName(mol));
+      const moleculeNames = macromolecules.filter((mol) => entityIds.includes(mol.entity_id)).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
@@ -570,7 +570,7 @@ export function generateProcessedDomains(
 
       // we get some data needed to be rendered in the table
       const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
-      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => getCleanMoleculeName(mol));
+      const moleculeNames = macromolecules.filter((mol) => entityIds.includes(mol.entity_id)).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
@@ -695,8 +695,8 @@ export function processDomainsWithMacromolecules(macromoleculesData: ProcessedMa
 
     for (const domainOfMacromolecule of domainsOfMacromolecule) {
       const currentDomainNames = nestedMap.get(entityId)!.domains.map((eachDomain) => eachDomain.domain);
-      const domainNotInMap = currentDomainNames.indexOf(domainOfMacromolecule.domain) === -1;
-      if (domainNotInMap) nestedMap.get(entityId)!.domains.push(domainOfMacromolecule);
+      const domainInMap = currentDomainNames.includes(domainOfMacromolecule.domain);
+      if (!domainInMap) nestedMap.get(entityId)!.domains.push(domainOfMacromolecule);
     }
   }
   return Array.from(nestedMap.values());

@@ -109,14 +109,15 @@ export class MbMacromoleculeComponent implements OnInit {
   public uniprotsAllowedObs$ = toObservable(this.uniprotsAllowed);
 
   public bestResidues = computed(() => {
-    const isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
-    const filteredIsoformsMapping: any[] = [];
+    const isoformsMapping = this.isoformsMapping();
+    if (!isoformsMapping) return [];
 
-    isoformsMappingKeys.forEach((uniprot: string) => {
-      if (uniprot.indexOf('-') !== -1) {
-        filteredIsoformsMapping.push({ ...this.isoformsMapping()?.[uniprot], uniprot });
+    const filteredIsoformsMapping = [];
+    for (const uniprot in isoformsMapping) {
+      if (uniprot.includes('-')) {
+        filteredIsoformsMapping.push({ ...isoformsMapping[uniprot], uniprot });
       }
-    });
+    }
 
     return filteredIsoformsMapping;
   });
