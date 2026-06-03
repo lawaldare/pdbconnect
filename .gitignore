@@ -50,3 +50,11 @@ app.config.json
 .netlify
 
 .early.coverage
+
+.claude/worktrees
+.claude/settings.local.json
+.agents/
+.cursor/
+.github/
+
+AGENTS.md

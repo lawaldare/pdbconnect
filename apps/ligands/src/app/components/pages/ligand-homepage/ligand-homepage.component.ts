@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, PLATFORM_ID, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
 import { faqs, headerLogoMenuConfig, homePageUrls, ligandHomePageSeaderSearchConfig, quickLinks, slides } from '../../../ligand.constant';
@@ -20,8 +20,11 @@ export class LigandHomepageComponent implements AfterViewInit {
   public readonly links = signal<{ label: string; url: string }[]>(quickLinks);
   public readonly slides = signal<Slide[]>(slides);
   public readonly faqs = signal<{ title: string; content: string }[]>(faqs);
-
+  private readonly platformId = inject(PLATFORM_ID);
   ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     document.addEventListener('DOMContentLoaded', function () {
       const splide = new Splide('#key-features-slider', {
         perPage: 3,
@@ -42,6 +45,9 @@ export class LigandHomepageComponent implements AfterViewInit {
   }
 
   public openQuickLink(link: { label: string; url: string }): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     window.open(link.url, '_blank');
   }
 }

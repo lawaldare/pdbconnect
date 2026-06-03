@@ -1,15 +1,14 @@
 import { APP_INITIALIZER, ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { appRoutes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore } from '@ngrx/store';
 import { LigandEffects } from './store/ligand.effects';
 import { ligandReducer } from './store/ligand.reducer';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { LigandsBaseHrefService } from './services/ligands-base-href.service';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export function initializeApp(baseHrefService: LigandsBaseHrefService) {
   return () => baseHrefService.setBaseHref();
@@ -17,12 +16,10 @@ export function initializeApp(baseHrefService: LigandsBaseHrefService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
-    provideHttpClient(),
-    provideAnimations(),
-    provideAnimationsAsync(),
+    provideHttpClient(withFetch()),
     provideEffects([LigandEffects]),
     provideStore({ ligands: ligandReducer }),
     provideStoreDevtools({
@@ -31,5 +28,6 @@ export const appConfig: ApplicationConfig = {
     }),
     { provide: APP_INITIALIZER, useFactory: initializeApp, deps: [LigandsBaseHrefService], multi: true },
     LigandsBaseHrefService,
+    provideClientHydration(withEventReplay()),
   ],
 };
