@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -73,7 +73,7 @@ import { INTX_NAME_STANDARDIZER, standardizeInteractionType } from './interactio
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',
 })
-export class LigandsTabComponent implements AfterViewInit {
+export class LigandsTabComponent {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly scriptLoader = inject(ScriptLoaderService);
@@ -111,8 +111,6 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
 
-  public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
-
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
   public readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
@@ -146,7 +144,14 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public readonly ligandTableRows = computed(() => this.processedLigands() ?? []);
 
-  public currentLigandDatum = signal<ProcessedLigandOrMod | undefined>(undefined);
+  /** Index of the currently selected ligand row in the left panel */
+  private readonly selectedLigandIdx = toSignal<number | undefined>(this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+
+  public readonly currentLigandDatum = computed<ProcessedLigandOrMod | undefined>(() => {
+    const idx = this.selectedLigandIdx();
+    if (idx === undefined) return undefined;
+    return this.ligandTableRows()[idx];
+  });
 
   private readonly ligandEnvContainer = signal<ElementRef | undefined>(undefined);
   @ViewChild('ligandEnvContainer') set _ligandEnvContainer(ref: ElementRef | undefined) {
@@ -347,6 +352,15 @@ export class LigandsTabComponent implements AfterViewInit {
       }
     });
 
+    // Reset annotation filter for the table when ligand/chainId/residueId/instanceId changes
+    effect(async () => {
+      this.currentLigandDatum();
+      this.dropdown.selectedOption();
+      this.symmetryDropdown.selectedOption();
+
+      this.searchTermForm.setValue('');
+    });
+
     // Refresh data to ligand env viewer when ligand/chainId/residueId/instanceId changes
     effect(async () => {
       const ligEnvContainer = this.ligandEnvContainer();
@@ -382,29 +396,16 @@ export class LigandsTabComponent implements AfterViewInit {
     return rows.length > 0;
   });
 
-  ngAfterViewInit(): void {
-    this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
-      if (idx === undefined || idx === null) return;
-      const datum = this.ligandTableRows()[idx];
-      if (datum) {
-        this.currentLigandDatum.set(datum);
-        this.searchTermForm.setValue('');
-      }
-    });
-  }
-
   public toggleColorList(): void {
     this.legendExpanded.update((prev) => !prev);
   }
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-    this.searchTermForm.setValue('');
   }
 
   public async onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdown.select(event);
-    this.searchTermForm.setValue('');
   }
 
   private async initOrRefreshLigandEnvViewer(

@@ -17,6 +17,7 @@ import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
+import { ProcessedAssembly } from '../../store/data-processing/assembly-processing';
 import { EntryStoreState } from '../../store/entry-store.model';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
@@ -86,36 +87,19 @@ export class AssembliesTabComponent {
   public readonly isSidebarDisplayed = signal<boolean>(true);
   public readonly tabDataLoaded = computed(() => this.processedAssemblies() !== undefined);
 
-  public readonly selectedAssemblyIdx = toSignal(this.compCommunication.assemblySelection$);
-
-  public readonly assemblyTableRows = computed(() => {
-    const rows = this.processedAssemblies();
-    if (!rows) return [];
-    return rows;
-  });
-
   private readonly procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
   private readonly procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
   private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
 
-  private previousAssemblyDatumIdx?: number;
-  public currentAssemblyDatum = computed(() => {
-    const selectedIdx = this.selectedAssemblyIdx() ?? 0;
-    const rows = this.processedAssemblies();
-    if (!rows) return;
-    const datum = rows[selectedIdx];
-    if (!datum) return;
+  public readonly selectedAssemblyIdx = toSignal(this.compCommunication.assemblySelection$);
 
-    if (selectedIdx === this.previousAssemblyDatumIdx) return datum;
-    this.previousAssemblyDatumIdx = selectedIdx;
+  /** Index of the currently selected assembly row in the left panel */
+  public readonly assemblyTableRows = computed(() => this.processedAssemblies() ?? []);
 
-    // // could be an effect also
-    // if (datum) {
-    //   this.triggerMolstarSideEffect();
-    // }
-    return datum;
+  public currentAssemblyDatum = computed<ProcessedAssembly | undefined>(() => {
+    const idx = this.selectedAssemblyIdx() ?? 0;
+    return this.assemblyTableRows()[idx];
   });
-  private currentAssemblyDatum$ = toObservable(this.currentAssemblyDatum);
 
   public selectionStats = computed(() => {
     const assemblySummaryDict = this.assemblySummaryDict();

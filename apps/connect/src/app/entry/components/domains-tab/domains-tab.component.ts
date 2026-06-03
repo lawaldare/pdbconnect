@@ -4,7 +4,7 @@
 
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, effect, ElementRef, inject, signal, untracked, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, PopupWindowService, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
@@ -13,7 +13,7 @@ import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { combineLatest, debounceTime, distinctUntilChanged, filter } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Molecule } from '../../data-models/molecule.model';
 import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, entryDomainsTooltips, resourceUrls, symmOperatorTooltip } from '../../entry-constant';
 import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
@@ -328,15 +328,16 @@ export class DomainsTabComponent {
   public readonly entryDomainsTooltips = entryDomainsTooltips;
   public readonly symmOperatorTooltip = symmOperatorTooltip;
 
-  public readonly selectedDomainIdx = toSignal(this.compCommunication.domainSelection$);
+  public readonly domainTableRows = computed(() => this.processedDomains() ?? []);
 
-  public readonly domainTableRows = computed(() => {
-    const rows = this.processedDomains();
-    if (rows === undefined) return [];
-    return rows;
+  /** Index of the currently selected domain row in the left panel */
+  private readonly selectedDomainIdx = toSignal<number | undefined>(this.compCommunication.domainSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+
+  public readonly currentDomainsDatum = computed<ProcessedDomain | undefined>(() => {
+    const idx = this.selectedDomainIdx();
+    if (idx === undefined) return undefined;
+    return this.domainTableRows()[idx];
   });
-
-  public currentDomainsDatum = signal<ProcessedDomain | undefined>(undefined);
 
   /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
   public readonly altSequences = computed<AlternativeNumbering[] | undefined>(() => {
@@ -354,18 +355,6 @@ export class DomainsTabComponent {
   });
 
   constructor() {
-    combineLatest([this.compCommunication.domainSelection$.pipe(debounceTime(50), distinctUntilChanged()), toObservable(this.domainTableRows)])
-      .pipe(
-        // Wait until table rows are non-empty and index is valid
-        filter(([idx, rows]) => idx !== undefined && idx !== null && rows.length > 0)
-      )
-      .subscribe(([idx, rows]) => {
-        const datum = rows[idx!];
-        if (datum) {
-          this.currentDomainsDatum.set(datum);
-        }
-      });
-
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);

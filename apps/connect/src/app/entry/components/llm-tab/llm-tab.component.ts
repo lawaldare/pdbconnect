@@ -3,8 +3,8 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, effect, HostListener, inject, signal, ViewChild } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -14,11 +14,12 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { LLMAnnotation } from '../../data-models/llm-model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
 import { Dropdown, groupBy, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import {
@@ -48,7 +49,6 @@ import { EntryDropdownComponent } from '../entry-page-header/sub-components/entr
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { UnpMappingListComponent } from '../shared/unp-mapping-list/unp-mapping-list.component';
 import { colDefs, gridOptions } from './ag-grid';
-import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 
 @Component({
   selector: 'pdbc-llm-tab',
@@ -69,7 +69,7 @@ import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-track
   templateUrl: './llm-tab.component.html',
   styleUrl: './llm-tab.component.scss',
 })
-export class LLMTabComponent implements OnInit {
+export class LLMTabComponent {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   private readonly dialog = inject(MatDialog);
@@ -116,6 +116,18 @@ export class LLMTabComponent implements OnInit {
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
+  public readonly tabDataLoaded = computed(() => this.processedMacromoleculesForLLM() !== undefined);
+  public readonly macromoleculeTableRows = computed(() => this.processedMacromoleculesForLLM() ?? []);
+
+  /** Index of the currently selected macromolecule row in the left panel */
+  private readonly selectedMacromoleculeIdx = toSignal<number | undefined>(this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+
+  public readonly currentMacromoleculeDatum = computed<ProcessedMacromolecule | undefined>(() => {
+    const idx = this.selectedMacromoleculeIdx();
+    if (idx === undefined) return undefined;
+    return this.macromoleculeTableRows()[idx];
+  });
+
   public uniprotMappedData = computed(() => {
     const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
     const uniprotMappings = this.uniprotMappings();
@@ -156,8 +168,6 @@ export class LLMTabComponent implements OnInit {
 
   public readonly primaryPublication = toSignal(this.globalStore.select(EntrySelectors.primaryPublication));
 
-  private readonly destroyRef = inject(DestroyRef);
-
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
@@ -191,11 +201,6 @@ export class LLMTabComponent implements OnInit {
       return removeDuplicatesByKey(filtered, 'sentence');
     }
   });
-
-  public readonly tabDataLoaded = computed(() => this.processedMacromoleculesForLLM() !== undefined);
-  public readonly macromoleculeTableRows = computed(() => this.processedMacromoleculesForLLM() ?? []);
-
-  public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
 
   public uniqueOrganismsWithStrains = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
@@ -406,16 +411,6 @@ export class LLMTabComponent implements OnInit {
     effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
     effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
     effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
-  }
-
-  ngOnInit(): void {
-    this.compCommunication.llmSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
-      if (idx === undefined || idx === null) return;
-      const datum = this.macromoleculeTableRows()[idx];
-      if (datum) {
-        this.currentMacromoleculeDatum.set(datum);
-      }
-    });
   }
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);

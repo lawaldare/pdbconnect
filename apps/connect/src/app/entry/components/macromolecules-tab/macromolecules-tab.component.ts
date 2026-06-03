@@ -3,7 +3,7 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, OnInit, signal, untracked, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, OnInit, signal, untracked, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -71,7 +71,7 @@ declare let PdbRnaViewerPlugin: any;
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
+export class MacromoleculesTabComponent implements OnInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -452,15 +452,16 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public selectionTypeText?: string;
 
-  public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+  public readonly macromoleculeTableRows = computed(() => this.processedMacromolecules() ?? []);
 
-  public readonly macromoleculeTableRows = computed(() => {
-    const rows = this.processedMacromolecules();
-    if (rows === undefined) return [];
-    return rows;
+  /** Index of the currently selected macromolecule row in the left panel */
+  private readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+
+  public readonly currentMacromoleculeDatum = computed<ProcessedMacromolecule | undefined>(() => {
+    const idx = this.selectedMacromoleculeIdx();
+    if (idx === undefined) return undefined;
+    return this.macromoleculeTableRows()[idx];
   });
-
-  public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
 
   public collapsedChains = true;
 
@@ -592,16 +593,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
     effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
     effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
-  }
-
-  ngAfterViewInit(): void {
-    this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
-      if (idx === undefined || idx === null) return;
-      const datum = this.macromoleculeTableRows()[idx];
-      if (datum) {
-        this.currentMacromoleculeDatum.set(datum);
-      }
-    });
   }
 
   ngOnInit() {
