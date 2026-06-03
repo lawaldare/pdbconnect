@@ -103,7 +103,6 @@ export class LLMTabComponent {
   public readonly proteinsStats = toSignal(this.globalStore.select(EntrySelectors.proteinPagesSummaryByUniProtIds));
   public readonly isoformsMapping = toSignal(this.globalStore.select(EntrySelectors.isoformsMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
-  public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
   private readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
   public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
@@ -306,21 +305,19 @@ export class LLMTabComponent {
     );
   });
 
-  /** Number of unique annotated residues (residues with the same number in different chains count as only one residue if they belong to the same entity) */
-  public numberOfAnnotatedResids = computed(() => {
-    const primaryAnnotations = this.primaryAnnotations();
-    const macromolecules = this.processedMacromoleculesForLLM();
-    if (!primaryAnnotations || !macromolecules) return undefined;
+  /** Number of unique annotated residues for the currently selected macromolecule (residues with the same number in different chains count as only one residue) */
+  public nAnnotatedResiduesForCurrentMacromolecule = computed(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
 
-    const labelAsymIdToEntityId: { [labelAsymId: string]: number } = {};
-    for (const macro of macromolecules) {
-      for (const labelAsymId of macro.additionalData.molecule.in_struct_asyms) {
-        labelAsymIdToEntityId[labelAsymId] = macro.additionalData.molecule.entity_id;
+    const annotatedResiduesSet = new Set<number>();
+    const annotations = this.primaryAnnotationsByChain();
+    for (const labelAsymId of macromolecule.additionalData.molecule.in_struct_asyms) {
+      for (const annot of annotations[labelAsymId] ?? []) {
+        annotatedResiduesSet.add(annot.pdbResidue);
       }
     }
-
-    const uniqueAnnotResidues = new Set(primaryAnnotations.map((a) => `${labelAsymIdToEntityId[a.pdbChain]}/${a.pdbResidue}`));
-    return uniqueAnnotResidues.size;
+    return annotatedResiduesSet.size;
   });
 
   private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
