@@ -168,7 +168,7 @@ export class LLMTabComponent implements OnInit {
   /**  List of annotations from primary citation (for all chains and all entities) */
   private readonly primaryAnnotations = computed<LLMAnnotation[] | undefined>(() => this.allAnnotations()?.filter((a) => a.primaryCitation === 'Y'));
 
-  /** Annotations from primary citation, grouped by chain */
+  /** Annotations from primary citation, grouped by chain (label_asym_id!) */
   private readonly primaryAnnotationsByChain = computed<{ [labelAsymId: string]: LLMAnnotation[] }>(() => {
     return groupBy(this.primaryAnnotations() ?? [], (annot) => annot.pdbChain);
   });
@@ -269,7 +269,7 @@ export class LLMTabComponent implements OnInit {
     return convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
   });
 
-  public llmAnnotationForSeq = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public readonly llmAnnotationForSeq = computed<SmartSequenceAnnotation>(() => getCircleAnnotationsForSeqViewer(this.primaryAnnotationsInCurrentChain()));
 
   /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
   public readonly altSequences = computed<AlternativeNumbering[] | undefined>(() => {
@@ -386,11 +386,21 @@ export class LLMTabComponent implements OnInit {
       initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
     });
 
-    // Update visualizations (sequence viewer, table) when entity changes
+    // Reset annotation filter for the table when entity/chain/symmetry operator changes
     effect(async () => {
-      const macromolecule = this.currentMacromoleculeDatum();
-      if (!macromolecule) return;
-      await this.triggerMacromoleculeUpdateSideEffects(macromolecule);
+      this.currentMacromoleculeDatum();
+      this.dropdown.selectedOption();
+      this.symmetryDropdown.selectedOption();
+
+      this.resetAnnotationFilter();
+    });
+
+    // Get author numbering when chain changes
+    effect(() => {
+      const chainId = this.currentSelectionChainId();
+      if (chainId !== undefined) {
+        this.getAuthorNumberingForChain(chainId);
+      }
     });
 
     effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
@@ -405,11 +415,6 @@ export class LLMTabComponent implements OnInit {
       if (datum) {
         this.currentMacromoleculeDatum.set(datum);
       }
-    });
-
-    // every time NMR model Id updates, data for smart seq viewer is refreshed
-    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      await this.updateBackgroundAnnotation();
     });
   }
 
@@ -433,29 +438,8 @@ export class LLMTabComponent implements OnInit {
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
-  async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
-    this.resetAnnotationFilter();
-
-    await this.updateBackgroundAnnotation();
-  }
-
-  private async updateBackgroundAnnotation() {
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return;
-    const sequence = macromolecule.additionalData.molecule.sequence;
-    if (!sequence) return;
-
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
-    if (chainId === undefined) return;
-
-    const groupedLLMAnnotations: LLMAnnotation[] = this.primaryAnnotationsByChain()[chainId];
-    this.llmAnnotationForSeq.set(getCircleAnnotationsForSeqViewer(groupedLLMAnnotations));
-
-    this.globalStore.dispatch(
-      EntryActions.getResidueListing({
-        chainId: chainId,
-      })
-    );
+  private getAuthorNumberingForChain(chainId: string) {
+    this.globalStore.dispatch(EntryActions.getResidueListing({ chainId: chainId }));
   }
 
   public generateOrganismSearchUrl(term: string): string {
@@ -464,18 +448,10 @@ export class LLMTabComponent implements OnInit {
 
   public async onDropdownSelect(event: string) {
     this.dropdown.select(event);
-    this.resetAnnotationFilter();
-
-    // all possible rendering functions are called for a dashboard
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return;
-
-    await this.updateBackgroundAnnotation();
   }
 
   public async onSymmetryDropdownSelect(event: string) {
     this.symmetryDropdown.select(event);
-    this.resetAnnotationFilter();
   }
 
   public toggleSidebar() {
