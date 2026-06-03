@@ -1356,12 +1356,6 @@ export class EntryEffects {
 
         const filteredMacromolecules = filterMacromoleculesForLLM(macromolecules, llmAnnotations, preferredAssembly, uniprotMappings, polymerCoverage);
         const processedMacromoleculesForLLM = generateProcessedMacromolecules(filteredMacromolecules, preferredAssembly, carbohydrates);
-        // console.log('getProcessedMacromolsForLLM$', macromolecules, llmAnnotations)
-        // for (const a of sortBy(llmAnnotations.slice(), a => a.pdbChain)) {
-        //   console.log('   ', a.pdbChain, a.pdbResidue, a.uniprotAccession, a.uniprotResidue)
-        // }
-        // console.log('filteredMacromolecules:', filteredMacromolecules)
-        // console.log('processedMacromoleculesForLLM:', processedMacromoleculesForLLM)
         return EntryActions.getProcessedMacromolsForLLMSuccess({ processedMacromoleculesForLLM });
       }),
       catchError(() => of(EntryActions.getProcessedMacromolsForLLMFailure()))

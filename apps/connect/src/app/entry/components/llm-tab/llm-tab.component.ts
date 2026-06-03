@@ -84,7 +84,22 @@ export class LLMTabComponent {
     autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
   });
 
-  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+  public currentSelectionEntityId = computed<string | undefined>(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    return String(macromolecule.additionalData.molecule.entity_id);
+  });
+
+  private readonly selectedChainAuthAsymId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
+
+  public readonly selectedChainLabelAsymId = computed<string | undefined>(() => {
+    const authAsymId = this.selectedChainAuthAsymId();
+    if (authAsymId === undefined) return undefined;
+    const macromolecule = this.currentMacromoleculeDatum();
+    return macromolecule?.additionalData.molecule.auth_asym_id_to_label_asym_id?.[authAsymId];
+  });
+
+  private readonly selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
 
   public inPrefAssembly = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
@@ -148,20 +163,15 @@ export class LLMTabComponent {
     const uniprotsAllowed = this.uniprotsAllowed();
     if (!uniprotsAllowed) return [];
 
-    let isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
-    isoformsMappingKeys = isoformsMappingKeys.filter((isoform) => {
-      const hasAllowed = uniprotsAllowed.some((uniprot) => isoform.includes(uniprot));
-      return hasAllowed;
-    });
-
-    const filteredIsoformsMapping: any[] = [];
-
-    isoformsMappingKeys.forEach((uniprot: string) => {
-      if (uniprot.indexOf('-') !== -1) {
-        filteredIsoformsMapping.push({ ...this.isoformsMapping()?.[uniprot], uniprot });
+    const isoformsMapping = this.isoformsMapping();
+    if (!isoformsMapping) return [];
+    const isoformsMappingKeys = Object.keys(isoformsMapping).filter((isoform) => uniprotsAllowed.some((uniprot) => isoform.includes(uniprot)));
+    const filteredIsoformsMapping = [];
+    for (const uniprot of isoformsMappingKeys) {
+      if (uniprot.includes('-')) {
+        filteredIsoformsMapping.push({ ...isoformsMapping[uniprot], uniprot });
       }
-    });
-
+    }
     return filteredIsoformsMapping;
   });
 
@@ -177,16 +187,16 @@ export class LLMTabComponent {
   /**  List of annotations from primary citation (for all chains and all entities) */
   private readonly primaryAnnotations = computed<LLMAnnotation[] | undefined>(() => this.allAnnotations()?.filter((a) => a.primaryCitation === 'Y'));
 
-  /** Annotations from primary citation, grouped by chain (label_asym_id!) */
-  private readonly primaryAnnotationsByChain = computed<{ [labelAsymId: string]: LLMAnnotation[] }>(() => {
+  /** Annotations from primary citation, grouped by chain (label_asym_id) */
+  private readonly primaryAnnotationsByLabelAsymId = computed<{ [labelAsymId: string]: LLMAnnotation[] }>(() => {
     return groupBy(this.primaryAnnotations() ?? [], (annot) => annot.pdbChain);
   });
 
   /** Annotations from primary citation in the current selected chain */
   private readonly primaryAnnotationsInCurrentChain = computed<LLMAnnotation[]>(() => {
-    const chainId = this.dropdown.selectedOption()?.data.authAsymId;
-    if (chainId === undefined) return [];
-    return this.primaryAnnotationsByChain()[chainId] ?? []; // TODO: this must be indexed by labelAsymId !!!
+    const labelAsymId = this.selectedChainLabelAsymId();
+    if (labelAsymId === undefined) return [];
+    return this.primaryAnnotationsByLabelAsymId()[labelAsymId] ?? [];
   });
 
   /** Annotations from primary citation in the current selected chain, filtered by the currently selected residue (if any) */
@@ -223,14 +233,14 @@ export class LLMTabComponent {
   public isUniprotMappingsClosed = true;
   public isUniprotMappingsBig = computed(() => {
     const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
-    const currentChain = this.currentSelectionChainId();
+    const currentChain = this.selectedChainAuthAsymId();
     const mappedUnps = this.uniprotMappedData();
 
     if (!currentMacromoleculeDatum) return false;
     if (!mappedUnps) return false;
     if (!currentChain) return false;
 
-    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.includes(currentChain));
 
     if (mappingsForChains.length > 1 || mappingsForChains[0].uniprotSegments.length > 2) {
       return true;
@@ -240,7 +250,7 @@ export class LLMTabComponent {
 
   public uniprotProcessedMappings = computed(() => {
     const currentMacromoleculeDatum = this.currentMacromoleculeDatum();
-    const currentChain = this.currentSelectionChainId();
+    const currentChain = this.selectedChainAuthAsymId();
     const mappedUnps = this.uniprotMappedData();
 
     if (!currentMacromoleculeDatum) return undefined;
@@ -248,7 +258,7 @@ export class LLMTabComponent {
     if (!currentChain) return undefined;
 
     const mappingsForChains = mappedUnps.labelUniProtMappings;
-    return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+    return mappingsForChains.filter((mapped) => mapped.chainIds.includes(currentChain));
   });
 
   public macromoleculeSequence = computed(() => {
@@ -267,7 +277,7 @@ export class LLMTabComponent {
 
     const outliers = this.residueWiseOutliers();
     const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.currentSelectionChainId();
+    const chainId = this.selectedChainAuthAsymId();
     if (chainId === undefined) return undefined;
     const modelId = this.currentModelId() ?? '1';
     return convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
@@ -278,7 +288,7 @@ export class LLMTabComponent {
   /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
   public readonly altSequences = computed<AlternativeNumbering[] | undefined>(() => {
     const residueListing = this.residueListing();
-    if (!residueListing || residueListing.chain_id !== this.currentSelectionChainId()) return undefined;
+    if (!residueListing || residueListing.chain_id !== this.selectedChainAuthAsymId()) return undefined;
     if (residueListing.residues.length === 0) return [];
     const authNumbering = createAuthAlternateNumbering(residueListing.residues);
     return [authNumbering];
@@ -286,7 +296,7 @@ export class LLMTabComponent {
 
   public readonly nonObserved = computed<number[] | undefined>(() => {
     const residueListing = this.residueListing();
-    if (!residueListing || residueListing.chain_id !== this.currentSelectionChainId()) return undefined;
+    if (!residueListing || residueListing.chain_id !== this.selectedChainAuthAsymId()) return undefined;
     return getNonObserved(residueListing.residues);
   });
 
@@ -299,7 +309,7 @@ export class LLMTabComponent {
     const hasBgAnnotations = this.backgroundAnnotation() !== undefined;
     const hasLlmAnnotationForSeq = this.llmAnnotationForSeq() !== undefined;
     const hasCurrentSelectionEntityId = this.currentSelectionEntityId() !== undefined;
-    const hasCurrentSelectionChainId = this.currentSelectionChainId() !== undefined;
+    const hasCurrentSelectionChainId = this.selectedChainAuthAsymId() !== undefined;
     return (
       hasSequence && hasAltSequences && hasNonObserved && hasBgAnnotations && hasLlmAnnotationForSeq && hasCurrentSelectionEntityId && hasCurrentSelectionChainId
     );
@@ -311,7 +321,7 @@ export class LLMTabComponent {
     if (!macromolecule) return undefined;
 
     const annotatedResiduesSet = new Set<number>();
-    const annotations = this.primaryAnnotationsByChain();
+    const annotations = this.primaryAnnotationsByLabelAsymId();
     for (const labelAsymId of macromolecule.additionalData.molecule.in_struct_asyms) {
       for (const annot of annotations[labelAsymId] ?? []) {
         annotatedResiduesSet.add(annot.pdbResidue);
@@ -399,25 +409,18 @@ export class LLMTabComponent {
 
     // Get author numbering when chain changes
     effect(() => {
-      const chainId = this.currentSelectionChainId();
+      const chainId = this.selectedChainAuthAsymId();
       if (chainId !== undefined) {
-        this.getAuthorNumberingForChain(chainId);
+        this.fetchAuthorNumberingForChain(chainId);
       }
     });
 
     effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
-    effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
+    effect(() => this.visInteractivity.currentSelectionChainId.set(this.selectedChainAuthAsymId()));
     effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
   }
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
-
-  public currentSelectionChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
-  public currentSelectionEntityId = computed<string | undefined>(() => {
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return undefined;
-    return String(macromolecule.additionalData.molecule.entity_id);
-  });
 
   public sequenceDetails = computed(() => {
     const macromolecule = this.currentMacromoleculeDatum();
@@ -430,7 +433,7 @@ export class LLMTabComponent {
   public selectionIdentifier = 'None';
   public selectionTypeText?: string;
 
-  private getAuthorNumberingForChain(chainId: string) {
+  private fetchAuthorNumberingForChain(chainId: string) {
     this.globalStore.dispatch(EntryActions.getResidueListing({ chainId: chainId }));
   }
 
@@ -461,20 +464,11 @@ export class LLMTabComponent {
     if (!entryId) return undefined;
 
     const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return undefined;
-
     const llmAnnotations = this.primaryAnnotationsInCurrentChain();
     const assemblyId = this.displayedAssemblyId();
+    const labelAsymId = this.selectedChainLabelAsymId();
+    if (labelAsymId === undefined) return undefined;
     const instanceId = this.selectedInstanceId();
-
-    const dropdownSelected = this.dropdown.selectedOption();
-    if (!dropdownSelected) return undefined;
-    const { molstarSelection } = dropdownSelected.data;
-    const labelAsymId = molstarSelection[0].auth_asym_id; //  TODO: USE LABEL_ASYM_ID!!! here, fix chain ID handling in annotation processing, see 6qb3 chain B[auth X], 7p19
-    if (!labelAsymId) return undefined;
-
-    // TODO: Decide coloring -> Chain colored by validation (or gray), non-selected chains white with lower opacity?
-    // TODO: Store PDBe design colors as constants https://www.figma.com/design/oT5W7Ff1I2kj6tbsgs3iS6/PDBe-Design-System---Component-library?node-id=1-234&p=f&t=1yRGegyEwICmLdo5-0
 
     return {
       name: 'Text annotations',
@@ -484,7 +478,7 @@ export class LLMTabComponent {
         assemblyId: assemblyId,
         labelAsymId: labelAsymId,
         annotations: llmAnnotations ?? [],
-        chainColor: macromolecule.molstarColorHex,
+        chainColor: macromolecule?.molstarColorHex,
         annotationMarkerColor: TEXT_ANNOTATION_HIGHLIGHT_COLOR,
         instanceId: instanceId,
         focus: true,
@@ -495,7 +489,6 @@ export class LLMTabComponent {
   private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   public openDialog(type: string) {
-    const macromolecule = this.currentMacromoleculeDatum() as ProcessedMacromolecule;
     const component: ComponentType<UnpMappingListComponent> = UnpMappingListComponent;
     const dialogData = this.uniprotMappedData();
     this.dialog.open(component, {
@@ -505,11 +498,3 @@ export class LLMTabComponent {
     });
   }
 }
-
-// TODO: fix label-auth-asym-id mess
-// 7p19:
-// - Entity 1: A [auth A], C [auth B]
-// - Entity 2: B [auth E], D [auth C]
-// 6qb:
-// - Entity 1: A [auth A], C [auth B]
-// - Entity 2: B [auth X]

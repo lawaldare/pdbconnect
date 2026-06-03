@@ -373,7 +373,7 @@ export class DomainsTabComponent {
     effect(() => {
       const chainId = this.currentSelectionChainId();
       if (chainId !== undefined) {
-        this.getAuthorNumberingForChain(chainId);
+        this.fetchAuthorNumberingForChain(chainId);
       }
     });
 
@@ -402,7 +402,7 @@ export class DomainsTabComponent {
     }
   }
 
-  private getAuthorNumberingForChain(chainId: string) {
+  private fetchAuthorNumberingForChain(chainId: string) {
     this.globalStore.dispatch(EntryActions.getResidueListing({ chainId: chainId }));
   }
 
