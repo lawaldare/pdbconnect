@@ -57,6 +57,16 @@ app.use('/**', (req, res, next) => {
   if (req.path.includes('.')) {
     return next();
   }
+
+  // 🧠 FIX: If Nginx stripped the prefix, patch the base href path back onto the request context
+  // so the Angular App Engine knows exactly what route component to render!
+  const baseHref = '/pdbe-srv/pdbechem/chemicalCompound';
+  if (!req.url.startsWith(baseHref)) {
+    // Reconstruct the exact URL format Angular is expecting internally
+    req.url = `${baseHref}${req.url.startsWith('/') ? '' : '/'}${req.url}`;
+    req.originalUrl = req.url; // Ensure originalUrl matches for strict tracking parameters
+  }
+
   angularApp
     .handle(req)
     .then((response) => {
