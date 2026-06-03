@@ -3,6 +3,7 @@ import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../d
 import { Molecule } from '../../data-models/molecule.model';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
+import { unique } from '../../helpers/misc';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
 import { generateSymmetryOperatorsForChain } from './macromolecule-processing';
@@ -258,7 +259,7 @@ export function generateDomainsCards(
     // domain names in CATH are unique 'domain' fields inside mappings
     const accessionName = data.homology;
 
-    const domainIds = data.mappings.map((mapping) => mapping.domain!).filter((domainId, idx, ids) => ids.indexOf(domainId) === idx);
+    const domainIds = unique(data.mappings.map((mapping) => mapping.domain!));
 
     // for each unique cath domain ...
     for (const domainId of domainIds) {
@@ -297,7 +298,7 @@ export function generateDomainsCards(
   for (const [scopAccession, data] of Object.entries(scopMappings)) {
     // domain names in SCOP 1.75 are unique 'scop_id' fields inside mappings
     const accessionName = data.description;
-    const domainIds = data.mappings.map((mapping) => mapping.scop_id!).filter((domainId, idx, ids) => ids.indexOf(domainId) === idx);
+    const domainIds = unique(data.mappings.map((mapping) => mapping.scop_id!));
 
     // for each unique SCOP 1.75 domain ...
     for (const domainId of domainIds) {
@@ -504,7 +505,7 @@ export function generateProcessedDomains(
   for (const [resourceAcc, data] of Object.entries(cathMappings)) {
     // domain names in CATH are unique 'domain' fields inside mappings
     const domainDesc = data.homology;
-    const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+    const domainNames = unique(data.mappings.map((mapping) => mapping.domain!));
 
     // for each unique cath domain ...
     for (const domainName of domainNames) {
@@ -512,7 +513,7 @@ export function generateProcessedDomains(
       const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
 
       // we get some data needed to be rendered in the table
-      const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
+      const entityIds = unique(mappings.map((mapping) => mapping.entity_id));
       const moleculeNames = macromolecules.filter((mol) => entityIds.includes(mol.entity_id)).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
@@ -561,7 +562,7 @@ export function generateProcessedDomains(
   for (const [resourceAcc, data] of Object.entries(scopMappings)) {
     // domain names in SCOP 1.75 are unique 'scop_id' fields inside mappings
     const domainDesc = data.description;
-    const domainNames = data.mappings.map((mapping) => mapping.scop_id!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+    const domainNames = unique(data.mappings.map((mapping) => mapping.scop_id!));
 
     // for each unique SCOP 1.75 domain ...
     for (const domainName of domainNames) {
@@ -569,7 +570,7 @@ export function generateProcessedDomains(
       const mappings = data.mappings.filter((mapping) => mapping.scop_id! === domainName);
 
       // we get some data needed to be rendered in the table
-      const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
+      const entityIds = unique(mappings.map((mapping) => mapping.entity_id));
       const moleculeNames = macromolecules.filter((mol) => entityIds.includes(mol.entity_id)).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:

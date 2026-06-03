@@ -5,7 +5,7 @@ import { LigandMonomer } from '../../data-models/ligand-monomers.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
-import { getSymmetryInstancesFromRenamedChains } from '../../helpers/misc';
+import { getSymmetryInstancesFromRenamedChains, unique } from '../../helpers/misc';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
 import { sortByBooleanFlag } from './domain-processing';
@@ -288,11 +288,12 @@ export function generateLigandsCards(
 
     const inPrefAssembly = ligandMonomersForThisLigand.every((ligandMonomer) => ligandMonomer.in_pref_assembly === true);
 
-    const annotationTypes = ligandMonomersForThisLigand
-      .map((ligandMonomer) => ligandMonomer.annotations)
-      .flat()
-      .map((annotation) => annotation.type)
-      .filter((v, i, arr) => arr.indexOf(v) === i);
+    const annotationTypes = unique(
+      ligandMonomersForThisLigand
+        .map((ligandMonomer) => ligandMonomer.annotations)
+        .flat()
+        .map((annotation) => annotation.type)
+    );
 
     if (entryInstancesCount > 0) {
       ligandOrModCards.push({
@@ -309,7 +310,7 @@ export function generateLigandsCards(
     }
   }
 
-  const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+  const modificationIds = unique(modifications.map((mod) => mod.chem_comp_id));
   for (let modIdx = 0; modIdx < modificationIds.length; modIdx++) {
     const chemCompId = modificationIds[modIdx];
     const modificationsOfId = modifications.filter((mod) => mod.chem_comp_id === chemCompId);
@@ -360,7 +361,7 @@ export function generateLigandsAndModsTableFilters(ligands: Molecule[], ligandMo
     });
   }
 
-  const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+  const modificationIds = unique(modifications.map((mod) => mod.chem_comp_id));
 
   if (modificationIds.length > 0) {
     const word = modificationIds.length > 1 ? 'residues' : 'residue';
@@ -448,12 +449,9 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
     const molstarSelectionsInPrefAssembly = ligandMonomersForThisLigand.map((ligandMonomer) => ligandMonomer.in_pref_assembly || false);
     const allInstancesInPrefAssembly = molstarSelectionsInPrefAssembly.every((inPrefAssembly) => inPrefAssembly === true);
 
-    const uniqueLigandAnnotationTypes = ligandMonomersForThisLigand
-      .map((ligandMonomer) => {
-        return ligandMonomer.annotations.map((annotation) => annotation.type);
-      })
-      .flat()
-      .filter((v, i, arr) => arr.indexOf(v) === i);
+    const uniqueLigandAnnotationTypes = unique(
+      ligandMonomersForThisLigand.map((ligandMonomer) => ligandMonomer.annotations.map((annotation) => annotation.type)).flat()
+    );
     const annotationsOfLigand = uniqueLigandAnnotationTypes.length > 0 ? uniqueLigandAnnotationTypes : [];
 
     const unsortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(ligand.entity_id, ligandMonomersForThisLigand, preferredAssembly);
@@ -543,7 +541,7 @@ export function generateSymmetryOperatorsListForModification(modifications: Modi
 export function generateProcessedModifications(modifications: ModifiedResidue[], preferredAssembly: AssemblyData) {
   if ((<any>modifications).empty === true) modifications = [];
   const processedModifications: ProcessedLigandOrMod[] = [];
-  const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+  const modificationIds = unique(modifications.map((mod) => mod.chem_comp_id));
   for (let modIdx = 0; modIdx < modificationIds.length; modIdx++) {
     const modId = modificationIds[modIdx];
     const modificationsOfId = modifications.filter((mod) => mod.chem_comp_id === modId);

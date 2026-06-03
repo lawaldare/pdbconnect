@@ -2,10 +2,8 @@ import { assertInInjectionContext, computed, effect, signal, Signal } from '@ang
 import { toObservable } from '@angular/core/rxjs-interop';
 import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { BehaviorSubject, filter, Observable, take } from 'rxjs';
-import { AssemblyData } from '../data-models/assembly.model';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
-import { max, unique } from './mvs-views/helpers';
 
 export function makeEntityColors(macromolecules: ProcessedMacromolecule[] | undefined, ligands: ProcessedLigandOrMod[] | undefined) {
   const DEFAULT_ENTITY_COLOR = 'gray';
@@ -35,6 +33,40 @@ export function toBehaviorSubject<T>(signal: Signal<T>): BehaviorSubject<T | und
   const subject = new BehaviorSubject<T | undefined>(undefined);
   effect(() => subject.next(signal()));
   return subject;
+}
+
+/** Return list of unique/distinct values from `values` in the order of their first occurrence.
+ * If `key` is provided, use it to judge equality. */
+export function unique<T>(values: T[]): T[];
+export function unique<T, K>(values: T[], key: (v: T) => K): T[];
+export function unique<T, K>(values: T[], key: (v: T) => K = ((x: T) => x) as any) {
+  const out: T[] = [];
+  const seen = new Set<K>();
+  for (const value of values) {
+    const k = key(value);
+    if (!seen.has(k)) {
+      seen.add(k);
+      out.push(value);
+    }
+  }
+  return out;
+}
+
+/** Return maximum of `array`.
+ * If `key` is provided, return the element which gives the greatest `key(element)`. */
+export function max<T>(array: T[]): T;
+export function max<T, V>(array: T[], key: (elem: T) => V): T;
+export function max<T, V>(array: T[], key: (elem: T) => V = ((x: T) => x) as any): T {
+  let argMax = array[0];
+  let max = key(argMax);
+  for (const elem of array) {
+    const value = key(elem);
+    if (value > max) {
+      argMax = elem;
+      max = value;
+    }
+  }
+  return argMax;
 }
 
 /** Divide items into groups defined by result of `key` function on each item.

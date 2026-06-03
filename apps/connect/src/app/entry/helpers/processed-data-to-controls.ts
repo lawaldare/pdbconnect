@@ -5,7 +5,7 @@ import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR } from '../entry-constant';
 import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { SequenceDetail } from '../store/data-processing/models/other-models';
 import { ProcessedDomain, ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
-import { DropdownOptionWithData, sortSymmetryInstanceIds } from './misc';
+import { DropdownOptionWithData, sortSymmetryInstanceIds, unique } from './misc';
 import { QueryParamForHelpers } from './molstar-helpers';
 
 /** Option data for the primary dropdown on most Entry Page tabs ("Chain X", "HEM 500 in chain X"...) */
@@ -51,7 +51,7 @@ function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?: boole
         ? `Chain ${segment.auth_asym_id!}`
         : `Chain ${segment.auth_asym_id!} <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px;" />`;
       const allChainsInObj = Object.keys(dropdownOptionsToMolstar);
-      if (allChainsInObj.indexOf(selectionKey) > -1) {
+      if (allChainsInObj.includes(selectionKey)) {
         dropdownOptionsToMolstar[selectionKey].push({ ...segment });
       } else {
         dropdownOptionsToMolstar[selectionKey] = [{ ...segment }];
@@ -257,12 +257,13 @@ export function makeLigandsDropdownOptions(ligand: ProcessedLigandOrMod | undefi
 }
 
 export function getDomainChainsAsString(datum: ProcessedDomain) {
-  let uniqueChains: string[] = [];
+  const foundChains: string[] = [];
   for (const selection of datum.additionalData.selections) {
-    const uniqueChainsInSelection = selection.map((sel) => sel.auth_asym_id!).filter((ch, idx, chains) => chains.indexOf(ch) === idx);
-    uniqueChains.push(...uniqueChainsInSelection);
+    for (const sel of selection) {
+      foundChains.push(sel.auth_asym_id!);
+    }
   }
-  uniqueChains = uniqueChains.filter((e, i, self) => i === self.indexOf(e));
+  const uniqueChains = unique(foundChains);
 
   const hasPlural = uniqueChains.length > 1 ? 's' : '';
   return `Chain${hasPlural} ${uniqueChains.join(', ')}`;

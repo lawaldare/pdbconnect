@@ -2,7 +2,7 @@ import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { MVSNodeParams } from 'molstar/lib/extensions/mvs/tree/mvs/mvs-tree';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
-import { groupBy } from '../misc';
+import { groupBy, max } from '../misc';
 import {
   applyElementColors,
   applyEntityColors,
@@ -11,7 +11,6 @@ import {
   assemblyText,
   atomicRepresentations,
   customTooltipText,
-  max,
   wholeResidues,
 } from './helpers';
 import type { SnapshotSpec, SnapshotSpecParams } from './mvs-snapshot-types';
