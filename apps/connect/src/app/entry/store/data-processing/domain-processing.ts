@@ -683,22 +683,15 @@ export function generateProcessedDomains(
 export type DomainsWithMacromolecules = { macromolecule: ProcessedMacromolecule; domains: ProcessedDomain[] }[];
 
 export function processDomainsWithMacromolecules(macromoleculesData: ProcessedMacromolecule[], domainsData: ProcessedDomain[]): DomainsWithMacromolecules {
-  const nestedMap = new Map<number, { macromolecule: ProcessedMacromolecule; domains: ProcessedDomain[] }>();
-
-  for (const macromolecule of macromoleculesData) {
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-
-    const domainsOfMacromolecule = domainsData.filter((eachDomain) => eachDomain.moleculeNames[0] === macromolecule.name.molecule);
-
-    if (!nestedMap.has(entityId)) {
-      nestedMap.set(entityId, { macromolecule, domains: [] });
-    }
-
-    for (const domainOfMacromolecule of domainsOfMacromolecule) {
-      const currentDomainNames = nestedMap.get(entityId)!.domains.map((eachDomain) => eachDomain.domain);
-      const domainInMap = currentDomainNames.includes(domainOfMacromolecule.domain);
-      if (!domainInMap) nestedMap.get(entityId)!.domains.push(domainOfMacromolecule);
+  const domainsByEntity: { [entityId: number]: ProcessedDomain[] } = {};
+  for (const domain of domainsData) {
+    const entitiesForDomain = new Set(domain.additionalData.boundaries.map((b) => b.entity)); // Each domain should only belong to one entity but just to be sure
+    for (const entityId of entitiesForDomain) {
+      (domainsByEntity[entityId] ??= []).push(domain);
     }
   }
-  return Array.from(nestedMap.values());
+  return macromoleculesData.map((macromolecule) => ({
+    macromolecule,
+    domains: domainsByEntity[macromolecule.additionalData.molecule.entity_id] ?? [],
+  }));
 }

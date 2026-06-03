@@ -688,7 +688,6 @@ export class Summary3DSectionComponent {
             volumeStreaming: true,
           },
         } satisfies SnapshotSpec;
-        // TODO: fix every domain appearing twice in the list (entry 1bvy)
       }
       case 'Modifications': {
         const allModres = this.processedModifications();
