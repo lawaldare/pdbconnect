@@ -34,14 +34,15 @@ app.use((req, res, next) => {
   const baseHref = '/pdbe-srv/pdbechem/chemicalCompound';
 
   if (!req.url.startsWith(baseHref)) {
-    // 1. Reconstruct the full URL string (preserves query params if any)
+    // 1. Reconstruct the clean, absolute path string structure
     const normalizedUrl = `${baseHref}${req.url.startsWith('/') ? '' : '/'}${req.url}`;
 
+    // 2. Assign standard mutable properties. Express native getters will automatically
+    // update req.path perfectly without any internal runtime type mutation crashes!
     req.url = normalizedUrl;
-    // @ts-ignore - Override the path read by Angular's engine manifest
-    req.path = `${baseHref}${req.path.startsWith('/') ? '' : '/'}${req.path}`;
+    req.originalUrl = normalizedUrl;
 
-    console.log(`🔧 Path Normalized inside Node: ${req.url}`);
+    console.log(`🔧 Path cleanly translated inside Node: ${req.url}`);
   }
   next();
 });
