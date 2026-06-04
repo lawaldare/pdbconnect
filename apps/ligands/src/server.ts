@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-empty-function */
 // 🧠 GLOBAL SSR SHIELD: Polyfill browser APIs at the absolute entry point
 import './polyfills.server'; // 🧠 THE SHIELD: Loads all environment overrides instantly!
 
@@ -38,23 +35,26 @@ const angularApp = new AngularNodeAppEngine({
 // 🧠 GLOBAL PREFIX INJECTOR: Run this BEFORE static files or SSR blocks
 app.use((req, res, next) => {
   const baseHref = '/pdbe-srv/pdbechem/chemicalCompound';
-
-  // 🧠 Always lock the baseUrl namespace for the Angular Manifest engine
   req.baseUrl = baseHref;
 
   if (!req.url.startsWith(baseHref)) {
-    // 1. Reconstruct the clean, absolute path string structure
     const normalizedUrl = `${baseHref}${req.url.startsWith('/') ? '' : '/'}${req.url}`;
-
-    // 2. Assign standard mutable properties. Express native getters will automatically
-    // update req.path perfectly without any internal runtime type mutation crashes!
     req.url = normalizedUrl;
     req.originalUrl = normalizedUrl;
-
     console.log(`🔧 Path cleanly translated inside Node: ${req.url}`);
   }
   next();
 });
+
+// 🧠 THE SOLVER: Map the baseHref path directly to the static asset folder
+app.use(
+  '/pdbe-srv/pdbechem/chemicalCompound',
+  express.static(browserDistFolder, {
+    maxAge: '1y',
+    redirect: false,
+    fallthrough: true,
+  })
+);
 
 app.use(
   express.static(browserDistFolder, {
@@ -66,7 +66,7 @@ app.use(
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.get('*', (req, res, next) => {
+app.get('/**', (req, res, next) => {
   // Absolute safety net: Skip the SSR engine entirely if the request is trying to load a file
   if (req.path.includes('.')) {
     return next();
@@ -83,32 +83,7 @@ app.get('*', (req, res, next) => {
     })
     .catch((err) => {
       console.error('SSR error:', err);
-      // res.status(500).send('Internal server error');
-
-      try {
-        // 🧠 FILE CRACKER: Read the actual compiled minified chunk from the server disk!
-        const fs = require('node:fs');
-        const path = require('node:path');
-        const chunkPath = path.join(serverDistFolder, 'chunk-NNK3CIPN.mjs');
-
-        if (fs.existsSync(chunkPath)) {
-          const fileContent = fs.readFileSync(chunkPath, 'utf8');
-          // Grab a snippet around the character position from the stack trace
-          const contextSnippet = fileContent.substring(3000, 4500);
-
-          res
-            .status(500)
-            .contentType('text/plain')
-            .send(`SSR Crash Stack:\n${err?.stack || err}\n\n🔍 CODE SNIPPET FROM CRASHING CHUNK:\n${contextSnippet}`);
-          return;
-        }
-      } catch (fileErr) {
-        // Fallback if fs read fails
-      }
-      res
-        .status(500)
-        .contentType('text/plain')
-        .send(`SSR Crash Stack:\n${err?.stack || err}`);
+      res.status(500).send('Internal server error');
     });
 });
 
