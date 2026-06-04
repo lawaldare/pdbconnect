@@ -33,6 +33,9 @@ const angularApp = new AngularNodeAppEngine({
 app.use((req, res, next) => {
   const baseHref = '/pdbe-srv/pdbechem/chemicalCompound';
 
+  // 🧠 Always lock the baseUrl namespace for the Angular Manifest engine
+  req.baseUrl = baseHref;
+
   if (!req.url.startsWith(baseHref)) {
     // 1. Reconstruct the clean, absolute path string structure
     const normalizedUrl = `${baseHref}${req.url.startsWith('/') ? '' : '/'}${req.url}`;
