@@ -31,6 +31,7 @@ if (typeof global !== 'undefined') {
     });
 
     (global as any).document = {
+      documentElement: createDummyElement(),
       querySelector: () => createDummyElement(),
       querySelectorAll: () => [],
       getElementById: () => createDummyElement(),
