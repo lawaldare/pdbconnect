@@ -434,6 +434,7 @@ export const DEFAULT_DOMAIN_HIGHLIGHT_COLOR = '#B5CB93'; // Higher-contrast vers
 
 /** Color for marking annotations on Text Annotations tab */
 export const TEXT_ANNOTATION_HIGHLIGHT_COLOR = '#4F81C3';
+export const TEXT_ANNOTATION_HIGHLIGHT_COLOR_3D = '#147AFF'; // Higher-contrast version of TEXT_ANNOTATION_HIGHLIGHT_COLOR for use in 3D
 
 export const labelGroups = {
   Popular: ['mmCIF file (Updated)', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)', 'Validation data (mmCIF)'],

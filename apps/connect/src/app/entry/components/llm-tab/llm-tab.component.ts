@@ -16,7 +16,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { LLMAnnotation } from '../../data-models/llm-model';
-import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR } from '../../entry-constant';
+import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip, TEXT_ANNOTATION_HIGHLIGHT_COLOR_3D } from '../../entry-constant';
 import { Dropdown, groupBy, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
@@ -479,7 +479,7 @@ export class LLMTabComponent {
         labelAsymId: labelAsymId,
         annotations: llmAnnotations ?? [],
         chainColor: macromolecule?.molstarColorHex,
-        annotationMarkerColor: TEXT_ANNOTATION_HIGHLIGHT_COLOR,
+        annotationMarkerColor: TEXT_ANNOTATION_HIGHLIGHT_COLOR_3D,
         instanceId: instanceId,
         focus: true,
         volumeStreaming: true,

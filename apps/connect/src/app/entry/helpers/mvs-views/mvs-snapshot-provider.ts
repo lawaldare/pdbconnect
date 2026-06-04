@@ -26,6 +26,9 @@ const FOCUS_PARAMS = {
   },
 } as const satisfies Record<string, MVSNodeParams<'focus'>>;
 
+/** Opacity for the rest of the structure when only one chain is displayed with full opacity. */
+const BACKGROUND_OPACITY = 1;
+
 /** Tube radius for atom interactions */
 const INTERACTION_TUBE_RADIUS = 0.075;
 /** Tube dash length for atom interactions */
@@ -108,7 +111,7 @@ export class MVSSnapshotProvider {
   }
 
   /** Create base for all PDBconnect views */
-  private _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined; modelIndex?: number; volumeStreaming: boolean }) {
+  private _loadPdbconnectBase(params: { entry: string; assemblyId: string | undefined; modelIndex?: number; volumeStreaming: boolean; opacity?: number }) {
     const ctx = this._loadModel(params);
 
     const structureCustomProps: Record<string, any> = {};
@@ -127,7 +130,7 @@ export class MVSSnapshotProvider {
         ? ctx.model.assemblyStructure({ assembly_id: params.assemblyId, model_index: params.modelIndex, custom: structureCustomProps })
         : ctx.model.modelStructure({ model_index: params.modelIndex, custom: structureCustomProps });
     const components = applyStandardComponents(structure);
-    const representations = applyStandardRepresentations(components, { opacityFactor: 1 });
+    const representations = applyStandardRepresentations(components, { opacityFactor: params.opacity ?? 1 });
 
     return { ...ctx, structure, components, representations };
   }
@@ -140,8 +143,8 @@ export class MVSSnapshotProvider {
     if (params.entityColors) {
       for (const repr of Object.values(ctx.representations)) {
         applyEntityColors(repr, params.entityColors as Record<string, ColorT>, DEFAULT_ENTITY_COLOR);
-        ctx.representations.waterSticks?.color({ color: WATER_COLOR });
       }
+      ctx.representations.waterSticks?.color({ color: WATER_COLOR });
     }
     // Apply element colors to atomic representations
     for (const repr of atomicRepresentations(ctx.representations)) {
@@ -281,8 +284,8 @@ export class MVSSnapshotProvider {
       if (params.entityColors) {
         for (const repr of Object.values(ctx.representations)) {
           applyEntityColors(repr, params.entityColors as Record<string, ColorT>, DEFAULT_ENTITY_COLOR);
-          ctx.representations.waterSticks?.color({ color: WATER_COLOR });
         }
+        ctx.representations.waterSticks?.color({ color: WATER_COLOR });
       }
       // Apply colors to modified residues
       for (const mod of params.modifications) {
@@ -446,7 +449,12 @@ export class MVSSnapshotProvider {
 
   /** Create MVS view for PDBconnect Text Annotations tab (residue selected) */
   private loadPdbconnectTextAnnotation(params: SnapshotSpecParams['pdbconnect_text_annotation']) {
-    const ctx = this._loadPdbconnectBase({ entry: params.entry, assemblyId: params.assemblyId, volumeStreaming: params.volumeStreaming });
+    const ctx = this._loadPdbconnectBase({
+      entry: params.entry,
+      assemblyId: params.assemblyId,
+      volumeStreaming: params.volumeStreaming,
+      opacity: BACKGROUND_OPACITY,
+    });
 
     const annotsInChain = params.annotations.filter((a) => a.pdbChain === params.labelAsymId);
     const annotsByLabelSeqId = groupBy(annotsInChain, (a) => a.pdbResidue);
@@ -456,6 +464,16 @@ export class MVSSnapshotProvider {
     if (params.chainColor) {
       ctx.representations.polymerCartoon?.color({ selector: chainSelector, color: params.chainColor as ColorT });
       ctx.representations.nonstandardSticks?.color({ selector: chainSelector, color: params.chainColor as ColorT });
+    }
+    if (BACKGROUND_OPACITY < 1) {
+      // Show selected chain with full opacity
+      const chainComponent = ctx.structure.component({ selector: chainSelector });
+      const chainRepresentations = applyStandardRepresentations({ polymer: chainComponent }, {});
+      if (params.chainColor) {
+        for (const repr of Object.values(chainRepresentations)) {
+          repr.color({ color: params.chainColor as ColorT });
+        }
+      }
     }
 
     // Add annotation markers (balls)
@@ -467,7 +485,7 @@ export class MVSSnapshotProvider {
       }));
       ctx.structure
         .component({ selector: annotMarkerAtomsSelector })
-        .representation({ type: 'spacefill', size_factor: 0.6 })
+        .representation({ type: 'spacefill', size_factor: 0.75 })
         .opacity({ opacity: 0.8 })
         .color({ color: params.annotationMarkerColor as ColorT });
     }
@@ -487,7 +505,7 @@ export class MVSSnapshotProvider {
 
     // Focus selected chain
     if (params.focus) {
-      ctx.structure.component({ selector: chainSelector }).focus(FOCUS_PARAMS.RESIDUE);
+      ctx.structure.component({ selector: chainSelector }).focus(FOCUS_PARAMS.POLYMER);
     }
 
     const description: string[] = [
