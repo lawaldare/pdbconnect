@@ -31,6 +31,22 @@ const angularApp = new AngularNodeAppEngine({
   trustProxyHeaders: true,
 } as any);
 
+// 🧠 GLOBAL PREFIX INJECTOR: Run this BEFORE static files or SSR blocks
+app.use((req, res, next) => {
+  const baseHref = '/pdbe/pdbe-kb/complexes';
+  req.baseUrl = baseHref;
+
+  if (!req.url.startsWith(baseHref)) {
+    const normalizedUrl = `${baseHref}${req.url.startsWith('/') ? '' : '/'}${req.url}`;
+    req.url = normalizedUrl;
+    req.originalUrl = normalizedUrl;
+    console.log(`🔧 Path cleanly translated inside Node: ${req.url}`);
+  } else {
+    req.originalUrl = req.url;
+  }
+  next();
+});
+
 // Handles requests if Nginx leaves the full subpath intact
 app.use(
   '/pdbe/pdbe-kb/complexes',
@@ -44,7 +60,6 @@ app.use(
 
 // Handles requests if Nginx strips the subpath and asks for '/chunk-XXX.js' directly
 app.use(
-  '/',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
