@@ -106,7 +106,11 @@ app.get('*', (req, res, next) => {
     })
     .catch((err) => {
       console.error('SSR error:', err);
-      res.status(500).send('Internal server error');
+      // res.status(500).send('Internal server error');
+      res
+        .status(500)
+        .contentType('text/plain')
+        .send(`SSR Crash Stack:\n${err?.stack || err}`);
     });
 });
 
