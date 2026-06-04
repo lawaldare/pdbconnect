@@ -47,30 +47,37 @@ app.use((req, res, next) => {
   next();
 });
 
-// Handles requests if Nginx leaves the full subpath intact
 app.use(
-  '/pdbe-srv/pdbechem/chemicalCompound',
   express.static(browserDistFolder, {
     maxAge: '1y',
-    index: false,
     redirect: false,
   })
 );
 
-// Handles requests if Nginx strips the subpath and asks for '/chunk-XXX.js' directly
-app.use(
-  '/',
-  express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: false,
-    redirect: false,
-  })
-);
+// // Handles requests if Nginx leaves the full subpath intact
+// app.use(
+//   '/pdbe-srv/pdbechem/chemicalCompound',
+//   express.static(browserDistFolder, {
+//     maxAge: '1y',
+//     index: false,
+//     redirect: false,
+//   })
+// );
+
+// // Handles requests if Nginx strips the subpath and asks for '/chunk-XXX.js' directly
+// app.use(
+//   '/',
+//   express.static(browserDistFolder, {
+//     maxAge: '1y',
+//     index: false,
+//     redirect: false,
+//   })
+// );
 
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.get(['/pdbe-srv/pdbechem/chemicalCompound/show/:ligandId', '*'], (req, res, next) => {
+app.get('*', (req, res, next) => {
   // Absolute safety net: Skip the SSR engine entirely if the request is trying to load a file
   if (req.path.includes('.')) {
     return next();
