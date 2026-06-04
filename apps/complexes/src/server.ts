@@ -26,7 +26,7 @@ const app = express();
 const angularApp = new AngularNodeAppEngine({
   allowedHosts: allowedHosts,
   trustProxyHeaders: true,
-});
+} as any);
 
 // Handles requests if Nginx leaves the full subpath intact
 app.use(
