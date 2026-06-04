@@ -1,4 +1,33 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-empty-function */
+// 🧠 GLOBAL SSR SHIELD: Polyfill browser APIs at the absolute entry point
+if (typeof global !== 'undefined') {
+  // 1. Fix for chart/visualization libraries that expect ResizeObserver on the server
+  if (!global.ResizeObserver) {
+    global.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
+
+  // 2. Fix for components/dependencies leaking 'document' or 'window' on the server
+  if (!global.document) {
+    (global as any).document = {
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      createElement: () => ({ style: {}, appendChild: () => {} }),
+      location: { hostname: 'localhost', pathname: '/' },
+      body: { appendChild: () => {} },
+    };
+  }
+
+  if (!global.window) {
+    (global as any).window = global;
+  }
+}
+
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
 import express from 'express';
 import { dirname, join } from 'node:path';

@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     }),
     {
       provide: APP_BASE_HREF,
-      useValue: '/pdbe-srv/pdbechem/chemicalCompound/',
+      useValue: isDevMode() ? '/' : '/pdbe-srv/pdbechem/chemicalCompound/',
     },
     provideClientHydration(withEventReplay()),
   ],
