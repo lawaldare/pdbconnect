@@ -7,12 +7,8 @@ import { provideStore } from '@ngrx/store';
 import { LigandEffects } from './store/ligand.effects';
 import { ligandReducer } from './store/ligand.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { LigandsBaseHrefService } from './services/ligands-base-href.service';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-
-export function initializeApp(baseHrefService: LigandsBaseHrefService) {
-  return () => baseHrefService.setBaseHref();
-}
+import { APP_BASE_HREF } from '@angular/common';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,8 +22,10 @@ export const appConfig: ApplicationConfig = {
       maxAge: 25, // Retains last 25 states
       logOnly: !isDevMode(), // Restrict extension to log-only mode
     }),
-    { provide: APP_INITIALIZER, useFactory: initializeApp, deps: [LigandsBaseHrefService], multi: true },
-    LigandsBaseHrefService,
+    {
+      provide: APP_BASE_HREF,
+      useValue: '/pdbe-srv/pdbechem/chemicalCompound/',
+    },
     provideClientHydration(withEventReplay()),
   ],
 };
