@@ -2,64 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-empty-function */
 // 🧠 GLOBAL SSR SHIELD: Polyfill browser APIs at the absolute entry point
-if (typeof global !== 'undefined') {
-  // 1. Fix for chart/visualization libraries that expect ResizeObserver on the server
-  if (!global.ResizeObserver) {
-    global.ResizeObserver = class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    };
-  }
-
-  // 2. Comprehensive DOM mock to safeguard style, classList, and attribute leaks
-  if (!global.document) {
-    const createDummyElement = () => ({
-      style: {},
-      classList: {
-        add: () => {},
-        remove: () => {},
-        contains: () => false,
-        toggle: () => {},
-      },
-      setAttribute: () => {},
-      getAttribute: () => null,
-      appendChild: () => {},
-      removeChild: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    });
-
-    (global as any).document = {
-      documentElement: createDummyElement(),
-      querySelector: () => createDummyElement(),
-      querySelectorAll: () => [],
-      getElementById: () => createDummyElement(),
-      getElementsByClassName: () => [],
-      getElementsByTagName: () => [],
-      createElement: () => createDummyElement(),
-      location: { hostname: 'localhost', pathname: '/' },
-      body: { appendChild: () => {} },
-    };
-  }
-
-  // 3. Fix for libraries calling window.addEventListener during evaluation
-  if (!(global as any).window) {
-    const windowMock = {
-      ...global,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      dispatchEvent: () => true,
-    };
-    // Bind them bidirectionally so both window and global are perfectly safe
-    (global as any).window = windowMock;
-    (windowMock as any).global = windowMock;
-  } else if (!(global as any).window.addEventListener) {
-    // If window already exists but doesn't have listeners, patch them directly
-    (global as any).window.addEventListener = () => {};
-    (global as any).window.removeEventListener = () => {};
-  }
-}
+import './polyfills.server'; // 🧠 THE SHIELD: Loads all environment overrides instantly!
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';

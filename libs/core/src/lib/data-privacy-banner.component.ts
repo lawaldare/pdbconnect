@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, input, OnInit, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, inject, input, PLATFORM_ID, OnInit, signal } from '@angular/core';
 
 type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEntryPages' | 'dataProtectionAgreedForLigandPages';
 @Component({
@@ -68,6 +68,7 @@ type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEn
 export class DataPrivacyBannerComponent implements OnInit {
   public pageId = input.required<PageID>();
   public privacyNoticeUrl = input.required<string>();
+  private readonly platformId = inject(PLATFORM_ID);
 
   public showBanner = signal<boolean>(false);
 
@@ -82,6 +83,9 @@ export class DataPrivacyBannerComponent implements OnInit {
   }
 
   private getCookie(name: string): string | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
