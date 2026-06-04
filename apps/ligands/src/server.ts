@@ -22,8 +22,21 @@ if (typeof global !== 'undefined') {
     };
   }
 
-  if (!global.window) {
-    (global as any).window = global;
+  // 3. Fix for libraries calling window.addEventListener during evaluation
+  if (!(global as any).window) {
+    const windowMock = {
+      ...global,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => true,
+    };
+    // Bind them bidirectionally so both window and global are perfectly safe
+    (global as any).window = windowMock;
+    (windowMock as any).global = windowMock;
+  } else if (!(global as any).window.addEventListener) {
+    // If window already exists but doesn't have listeners, patch them directly
+    (global as any).window.addEventListener = () => {};
+    (global as any).window.removeEventListener = () => {};
   }
 }
 
