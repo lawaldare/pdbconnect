@@ -57,26 +57,6 @@ app.use(
   })
 );
 
-// // Handles requests if Nginx leaves the full subpath intact
-// app.use(
-//   '/pdbe-srv/pdbechem/chemicalCompound',
-//   express.static(browserDistFolder, {
-//     maxAge: '1y',
-//     index: false,
-//     redirect: false,
-//   })
-// );
-
-// // Handles requests if Nginx strips the subpath and asks for '/chunk-XXX.js' directly
-// app.use(
-//   '/',
-//   express.static(browserDistFolder, {
-//     maxAge: '1y',
-//     index: false,
-//     redirect: false,
-//   })
-// );
-
 /**
  * Handle all other requests by rendering the Angular application.
  */
@@ -105,12 +85,12 @@ app.get('*', (req, res, next) => {
  * Start the server if this module is the main entry point.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
-// if (isMainModule(import.meta.url)) {
-const port = Number(process.env['PORT']) || 4000;
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Node Express server listening on http://localhost:${port}`);
-});
-// }
+if (isMainModule(import.meta.url)) {
+  const port = Number(process.env['PORT']) || 4000;
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Node Express server listening on http://localhost:${port}`);
+  });
+}
 
 /**
  * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
