@@ -11,12 +11,31 @@ if (typeof global !== 'undefined') {
     };
   }
 
-  // 2. Fix for components/dependencies leaking 'document' or 'window' on the server
+  // 2. Comprehensive DOM mock to safeguard style, classList, and attribute leaks
   if (!global.document) {
+    const createDummyElement = () => ({
+      style: {},
+      classList: {
+        add: () => {},
+        remove: () => {},
+        contains: () => false,
+        toggle: () => {},
+      },
+      setAttribute: () => {},
+      getAttribute: () => null,
+      appendChild: () => {},
+      removeChild: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    });
+
     (global as any).document = {
-      querySelector: () => null,
+      querySelector: () => createDummyElement(),
       querySelectorAll: () => [],
-      createElement: () => ({ style: {}, appendChild: () => {} }),
+      getElementById: () => createDummyElement(),
+      getElementsByClassName: () => [],
+      getElementsByTagName: () => [],
+      createElement: () => createDummyElement(),
       location: { hostname: 'localhost', pathname: '/' },
       body: { appendChild: () => {} },
     };
