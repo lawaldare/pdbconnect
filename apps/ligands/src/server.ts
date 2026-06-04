@@ -70,7 +70,7 @@ app.use(
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.get('*', (req, res, next) => {
+app.get(['/pdbe-srv/pdbechem/chemicalCompound/show/:ligandId', '*'], (req, res, next) => {
   // Absolute safety net: Skip the SSR engine entirely if the request is trying to load a file
   if (req.path.includes('.')) {
     return next();
