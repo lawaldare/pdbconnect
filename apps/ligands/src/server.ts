@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-empty-function */
 // 🧠 GLOBAL SSR SHIELD: Polyfill browser APIs at the absolute entry point
@@ -139,6 +140,27 @@ app.get('*', (req, res, next) => {
     .catch((err) => {
       console.error('SSR error:', err);
       // res.status(500).send('Internal server error');
+
+      try {
+        // 🧠 FILE CRACKER: Read the actual compiled minified chunk from the server disk!
+        const fs = require('node:fs');
+        const path = require('node:path');
+        const chunkPath = path.join(serverDistFolder, 'chunk-NNK3CIPN.mjs');
+
+        if (fs.existsSync(chunkPath)) {
+          const fileContent = fs.readFileSync(chunkPath, 'utf8');
+          // Grab a snippet around the character position from the stack trace
+          const contextSnippet = fileContent.substring(3000, 4500);
+
+          res
+            .status(500)
+            .contentType('text/plain')
+            .send(`SSR Crash Stack:\n${err?.stack || err}\n\n🔍 CODE SNIPPET FROM CRASHING CHUNK:\n${contextSnippet}`);
+          return;
+        }
+      } catch (fileErr) {
+        // Fallback if fs read fails
+      }
       res
         .status(500)
         .contentType('text/plain')
