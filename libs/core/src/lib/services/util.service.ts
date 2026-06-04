@@ -164,6 +164,23 @@ export class UtilService {
     window.open(href, target);
   }
 
+  public getRedirectUrlForExamples(id: string, projectId?: string): string {
+    const hostname = document.location.hostname;
+    const pathname = document.location.pathname;
+    const trimmedValue = id.trim();
+    const hrefArray = window.location.href.split('/');
+    hrefArray.pop();
+
+    if (projectId && hostname === 'localhost' && pathname.includes('error')) {
+      hrefArray.push(`${trimmedValue}`);
+      return hrefArray.join('/');
+    }
+
+    hrefArray.push(trimmedValue);
+    const href = hrefArray.join('/');
+    return href;
+  }
+
   //TODO: Update this method for redirection from latest release page
   public redirectToHomepageSearchTerm(value: string): void {
     const trimmedValue = value.trim();
