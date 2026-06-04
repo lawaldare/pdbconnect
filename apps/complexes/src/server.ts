@@ -1,3 +1,6 @@
+// 🧠 GLOBAL SSR SHIELD: Polyfill browser APIs at the absolute entry point
+import './polyfills.server'; // 🧠 THE SHIELD: Loads all environment overrides instantly!
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ɵsetAngularAppEngineManifest } from '@angular/ssr';
 import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
@@ -35,6 +38,7 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
+    fallthrough: true,
   })
 );
 
