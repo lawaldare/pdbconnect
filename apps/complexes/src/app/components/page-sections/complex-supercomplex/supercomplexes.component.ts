@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { AfterViewInit, Component, computed, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, computed, ElementRef, inject, linkedSignal, OnInit, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
@@ -27,13 +27,13 @@ import { ComplexPageTutorialTourService } from '../../../services/complex-page-t
   templateUrl: './supercomplexes.component.html',
   styleUrl: '../sub-and-super-complex.scss',
 })
-export class SuperComplexesComponent implements AfterViewInit {
+export class SuperComplexesComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   private utilService = inject(ComplexUtilService);
   private readonly superpositionService = inject(SuperpositionService);
   private readonly util = inject(UtilService);
   private readonly gAS = inject(GoogleAnalyticsService);
-  public iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
+  public iconPath = '';
 
   public initialized = false;
 
@@ -88,6 +88,14 @@ export class SuperComplexesComponent implements AfterViewInit {
   public structuresLength = computed(() => (this.rowData() ?? []).length);
   public structuresPageSize = signal<number>(5);
   public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
+
+  private readonly platformId = inject(PLATFORM_ID);
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
+    }
+  }
 
   public handlePageEvent(event: PageEvent) {
     const startIndex = event.pageIndex * event.pageSize;
