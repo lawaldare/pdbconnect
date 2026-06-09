@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, OnInit, Output, PLATFORM_ID, signal } from '@angular/core';
+import { Component, inject, Input, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 import { AssetPipe, HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
