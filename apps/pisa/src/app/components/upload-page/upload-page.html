@@ -1,5 +1,5 @@
-<h1 [ngStyle]="{'margin-bottom': modelSym() ? '0' : '26px'}">{{label()}}</h1>
-@if(modelSym() && uploadFile()){
+<h1 [ngStyle]="{'margin-bottom': modelSym() ? allChainsIdValid() ? '0' : '26px' : '26px'}">{{allChainsIdValid() ? label() : errorHeaderText}}</h1>
+@if(modelSym() && uploadFile() && allChainsIdValid()){
 <span class="your-file">Your file</span>
 }
 <main>
@@ -11,6 +11,8 @@
     <!-- There is ModelSym() -->
 
     @if(modelSym()){
+    <!-- All Chain Ids are valid -->
+    @if(allChainsIdValid()){
     <div class="row">
       <p class="row-header">Available components</p>
       <p class="row-data">{{analysis()}}</p>
@@ -104,6 +106,12 @@
     </div>
     <button class="vf-button vf-button--primary" (click)="analyse()">Analyse</button>
     }
+    <!-- Some Chain Ids are not valid -->
+    @else {
+    <p class="analysing-text error-message">
+      File contains unassigned chain IDs. Please make sure all polymer and ligand entities in the file have assigned alphanumeric chain IDs.
+    </p>
+    } }
     <!-- No ModelSym() -->
     @else {
     <div class="upload-section-drag-drop" #dropArea (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">

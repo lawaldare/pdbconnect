@@ -1,7 +1,7 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, inject, input, OnInit, PLATFORM_ID, signal } from '@angular/core';
 
-type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEntryPages' | 'dataProtectionAgreedForLigandPages';
+type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEntryPages' | 'dataProtectionAgreedForLigandPages' | 'dataProtectionAgreedForPISAPages';
 @Component({
   selector: 'lib-data-privacy-banner',
   standalone: true,
@@ -58,8 +58,8 @@ type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEn
           border-bottom-width: 1px;
           border-bottom-style: dotted;
           border-bottom-color: inherit;
-          cursor: pointer;
           color: #ffffff;
+          cursor: pointer;
         }
       }
     `,
