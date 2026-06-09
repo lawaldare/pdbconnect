@@ -1,5 +1,6 @@
 import { ThemeType } from '@pdbc/core';
 import * as d3 from 'd3';
+import { environment } from '../environments/environment';
 
 export const headerSearchComplexConfig = {
   examples: [
@@ -103,6 +104,8 @@ export const fmt2 = d3.format('.2f');
 /* NEW – first letter only, used for slider labels */
 export const ucfirst = (str: string) => str[0].toUpperCase() + str.slice(1);
 
+export const baseUrl = `${environment.baseUrl}pdbe/`;
+
 export const formatLabel = (str: string) =>
   str
     .split('_')
@@ -123,9 +126,7 @@ export const pisaTableTooltip = {
 };
 
 export const superpositionTooltip =
-  'Complexes are aligned based on the largest common component (measured the by number of residues) with a UniProt mapping. In case there are no common components with Uniprot mapping, the largest common component with an Rfam mapping is used. Residue-residue correspondence is determined by UniProt residue numbers (for UniProt mappings) or by sequence alignment (for Rfam mappings).';
+  'Complexes are aligned based on the largest common component (measured the by number of residues) with a UniProt mapping. In case there are no common components with Uniprot mapping, the largest common component with an Rfam mapping is used Residue-residue correspondence is determined by UniProt residue numbers (for UniProt mappings) or by sequence alignment (for Rfam mappings)';
 
 export const idWarningTooltip =
   'The identifier shown on this page is currently part of the beta release. These identifiers are subject to change during the beta phase. Final, stable IDs will be assigned and maintained once the resource enters full production.';
-
-export const baseUrl = window.location.hostname === 'www.ebi.ac.uk' ? 'https://www.ebi.ac.uk/pdbe/' : 'https://wwwdev.ebi.ac.uk/pdbe/';

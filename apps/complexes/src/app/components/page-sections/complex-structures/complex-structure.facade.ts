@@ -1,7 +1,8 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { DownloadFileTypeService, DownloadService, GoogleAnalyticsService } from '@pdbc/core';
 import { GridApi } from 'ag-grid-community';
 import { environment } from '../../../../environments/environment';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -9,8 +10,10 @@ import { environment } from '../../../../environments/environment';
 export class ComplexStructureFacade {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   private readonly downloadService = inject(DownloadService);
-  private readonly fileDownloadUrl = `${environment.baseUrl}pdbe/download/api/pdb/`;
   private readonly gAS = inject(GoogleAnalyticsService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  private readonly fileDownloadUrl = `${environment.baseUrl}pdbe/download/api/pdb/`;
 
   public filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
     return items.filter((item) => {
@@ -40,6 +43,10 @@ export class ComplexStructureFacade {
   }
 
   public downloadMMCIF(gridApi: GridApi): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     let pdbIds = '';
     gridApi?.forEachNodeAfterFilter((node: any) => {
       pdbIds += node.data.pdb_id + ',';
