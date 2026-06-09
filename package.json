@@ -6,7 +6,8 @@
     "source-map-explorer": "source-map-explorer dist/apps/connect/**/*.js",
     "prepare": "husky install",
     "serve:ssr:kb-corporate-page": "node dist/apps/kb-corporate-page/server/server.mjs",
-    "serve:ssr:ligands": "node dist/apps/ligands/server/server.mjs"
+    "serve:ssr:ligands": "node dist/apps/ligands/server/server.mjs",
+    "serve:ssr:complexes": "node dist/apps/complexes/server/server.mjs"
   },
   "private": true,
   "dependencies": {

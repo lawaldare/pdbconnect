@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { AfterViewInit, Component, computed, ElementRef, inject, linkedSignal, signal, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, computed, ElementRef, inject, linkedSignal, OnInit, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ComplexStoreState } from '../../../store/complex-store.model';
 import { ComplexSelectors } from '../../../store/complex.selectors';
@@ -27,12 +27,14 @@ import { ComplexPageTutorialTourService } from '../../../services/complex-page-t
   templateUrl: './subcomplexes.component.html',
   styleUrl: '../sub-and-super-complex.scss',
 })
-export class SubComplexesComponent implements AfterViewInit {
+export class SubComplexesComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   private utilService = inject(ComplexUtilService);
   private readonly util = inject(UtilService);
   private readonly gAS = inject(GoogleAnalyticsService);
-  public iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
+  public iconPath = '';
+
+  private readonly platformId = inject(PLATFORM_ID);
 
   private readonly superpositionService = inject(SuperpositionService);
   public initialized = false;
@@ -88,6 +90,12 @@ export class SubComplexesComponent implements AfterViewInit {
   public structuresLength = computed(() => (this.rowData() ?? []).length);
   public structuresPageSize = signal<number>(5);
   public structuresPageSizeOptions = computed(() => [5, 10, 20, 50, 100]);
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
+    }
+  }
 
   public openComplexPage(complexId: string): void {
     this.util.redirectToSearchTerm(complexId, '_blank');

@@ -43,6 +43,9 @@ export class SurveyService {
   }
 
   private watchForBannerClick(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const listener = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target?.id === 'data-protection-agree') {
