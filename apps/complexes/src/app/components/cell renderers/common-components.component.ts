@@ -1,7 +1,7 @@
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
-import { Component, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MaterialModule } from '@pdbc/core';
 import { ComplexInteraction } from '../../models/complex-structure.model';
 
@@ -50,7 +50,17 @@ export class CommonComponentsRendererComponent implements ICellRendererAngularCo
   // Init Cell Value
   public data!: ComplexInteraction;
 
-  public isDev = window.location.href.includes('dev') || window.location.href.includes('localhost');
+  private isBrowser: boolean;
+
+  public isDev = false;
+
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+
+    if (this.isBrowser) {
+      this.isDev = window.location.href.includes('dev') || window.location.href.includes('localhost');
+    }
+  }
 
   public participants = computed(() => {
     return this.data.relationship_type === 'sub-complex' ? this.data.common_participants : this.data.additional_participants;
