@@ -95,7 +95,12 @@ export class PivotResultCardComponent implements OnInit, OnChanges {
     const resultData = changes['resultData']?.currentValue;
 
     //format organism Scientific Name
-    this.orgSciName = this.getOrganismScientificName(resultData?.doclist?.docs?.[0].entry_organism_scientific_name);
+    this.orgSciName = this.getOrganismScientificName(resultData?.entry_organism_scientific_name);
+
+    //format assembly composition
+    if (resultData.assembly_composition && resultData.assembly_composition.length > 0) {
+      this.assemblyComposition = this.getAssemblyComposition(resultData.assembly_composition);
+    }
 
     //combined uniprot accessions
     if (this.resultData.uniprot_accession_best) this.uniprotAccessions = this.resultData.uniprot_accession_best;
@@ -127,9 +132,9 @@ export class PivotResultCardComponent implements OnInit, OnChanges {
     this.validationSliderData = this.formatValidationResponse(this.resultData);
 
     //format assembly data
-    if (this.resultData.assembly_composition && this.resultData.assembly_composition.length > 0) {
-      this.assemblyComposition = this.getAssemblyComposition(this.resultData.assembly_composition);
-    }
+    // if (this.resultData.assembly_composition && this.resultData.assembly_composition.length > 0) {
+    //   this.assemblyComposition = this.getAssemblyComposition(this.resultData.assembly_composition);
+    // }
 
     //Format interaction comps
     if (this.resultData.interacting_ligands && this.resultData.interacting_ligands.length > 0) {
