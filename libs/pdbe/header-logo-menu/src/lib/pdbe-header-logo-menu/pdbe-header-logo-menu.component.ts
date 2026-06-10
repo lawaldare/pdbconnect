@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, Input, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 import { AssetPipe, HeaderLogoMenuConfig, PDBE_HEADER_LOGO_SRC, PDBE_KB_HEADER_LOGO_SRC } from '@pdbc/core';
 
@@ -18,6 +18,7 @@ export interface Link {
 })
 export class PdbeHeaderLogoMenuComponent implements OnInit {
   @Input() headerConfig!: HeaderLogoMenuConfig;
+  private platformId = inject(PLATFORM_ID);
 
   public headerLogoSrc = '';
   public pisaLogoSrc = '';
@@ -36,7 +37,10 @@ export class PdbeHeaderLogoMenuComponent implements OnInit {
     this.pisaLogoSrc = this.assetUrl(PDBE_HEADER_LOGO_SRC);
   }
 
-  private assetUrl(path: string): string {
+  private assetUrl(path: string): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const raw = (path ?? '').trim();
     if (!raw) return raw;
 

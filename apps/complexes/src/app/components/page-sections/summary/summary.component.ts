@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, computed, inject, linkedSignal, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ParticipantDirective } from '../../../directives/participants.directive';
 import { ComplexSymmetryPipe } from '../../../pipes/symmetry.pipe';
 import { Assembly, ComplexData, Participant } from '../../../models/complex-structure.model';
@@ -37,7 +37,7 @@ export class SummaryComponent implements OnInit, AfterViewInit {
   private readonly utilService = inject(ComplexUtilService);
   private readonly dialog = inject(MatDialog);
 
-  public iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
+  public iconPath = '';
 
   public config!: { moleculeId: string; bgColor: { r: number; g: number; b: number }; assemblyId: number; hideControls: boolean };
 
@@ -75,7 +75,12 @@ export class SummaryComponent implements OnInit, AfterViewInit {
   public textIcon = signal<string>('more');
   public baseUrl = 'https://www.ebi.ac.uk/';
 
+  private readonly platformId = inject(PLATFORM_ID);
+
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.iconPath = document.location.hostname === 'localhost' ? '' : 'complexes/assets/images/help_outline_24px.svg';
+    }
     this.config = {
       moleculeId: this.respresentStructure()?.pdb_id ?? '',
       bgColor: { r: 255, g: 255, b: 255 },

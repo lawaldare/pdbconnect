@@ -1,8 +1,9 @@
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { GoogleAnalyticsService } from '@pdbc/core';
 import { environment } from '../../environments/environment';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -19,6 +20,7 @@ import { environment } from '../../environments/environment';
 })
 export class ComplexPageExternalLinkRendererComponent implements ICellRendererAngularComp {
   private readonly gAS = inject(GoogleAnalyticsService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public environment = environment;
 
@@ -39,6 +41,9 @@ export class ComplexPageExternalLinkRendererComponent implements ICellRendererAn
   }
 
   setRedirect() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     localStorage.setItem('assemblyId', String(this.assemblyId));
     this.gAS.logPageEvents('cp_go_to_ep', {
       tab: this.tab,

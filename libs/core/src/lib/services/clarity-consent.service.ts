@@ -1,10 +1,12 @@
-import { Injectable, signal } from '@angular/core';
-import Clarity from '@microsoft/clarity';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import * as Clarity from '@microsoft/clarity';
 
 @Injectable({ providedIn: 'root' })
 export class ClarityConsentService {
   private readonly cookieKey = this.getCookieKey;
   private clarityProjectId = signal('');
+  private readonly platformId = inject(PLATFORM_ID);
 
   public init(clarityProjectId: string): void {
     this.clarityProjectId.set(clarityProjectId);
@@ -22,15 +24,15 @@ export class ClarityConsentService {
     this.sendClarityConsentSignal(true);
     this.initializeClarity();
     try {
-      Clarity.event('clarity-consent-accepted');
+      Clarity.default.event('clarity-consent-accepted');
       // eslint-disable-next-line no-empty
     } catch {}
   }
 
   private initializeClarity(): void {
-    if (typeof Clarity.init === 'function' && !(window as any).clarityInitialized) {
+    if (typeof Clarity.default.init === 'function' && !(window as any).clarityInitialized) {
       (window as any).clarityInitialized = true;
-      Clarity.init(this.clarityProjectId());
+      Clarity.default.init(this.clarityProjectId());
     }
   }
 
@@ -60,15 +62,22 @@ export class ClarityConsentService {
     window.addEventListener('click', listener);
   }
 
-  private getCookie(name: string): string | null {
+  private getCookie(name: string): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
-  private get getCookieKey(): string {
+  private get getCookieKey(): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const pathname = window.location.pathname;
     if (pathname.includes('complexes')) return 'dataProtectionAgreedForComplexPages';
     if (pathname.includes('chemicalCompound/show')) return 'dataProtectionAgreedForLigandPages';
+    if (pathname.includes('pisa')) return 'dataProtectionAgreedForPISAPages';
     return 'dataProtectionAgreedForEntryPages';
   }
 }
