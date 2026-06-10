@@ -16,6 +16,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
   ScrollPositionService,
+  SeoService,
   SurveyConfig,
   SurveyPopupComponent,
   SurveyService,
@@ -72,6 +73,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly bioschemasService = inject(LigandsBioschemasService);
   public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
   public readonly tutorialTourService = inject(LigandPageTutorialTourService);
+  private readonly seoService = inject(SeoService);
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -150,6 +152,11 @@ export class LigandsMainPageComponent implements OnInit {
       )
       .subscribe(() => {
         this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop());
+        this.seoService.update({
+          title: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+          description: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+          url: `${environment.baseUrl}pdbe-srv/pdbechem/chemicalCompound/show/${this.ligandId()}`,
+        });
         this.generateSchemaData();
       });
   }
