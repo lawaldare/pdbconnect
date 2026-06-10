@@ -214,6 +214,14 @@ main {
       font-weight: 400;
       line-height: 26.6px;
       margin: 16px 0 32px !important;
+
+      &.error-message {
+        background: #fce8e6;
+        color: #b3261e;
+        border: 1px solid #f5c2c7;
+        padding: 10px;
+        margin: 0 !important;
+      }
     }
 
     .analysing-footer {
