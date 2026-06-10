@@ -2,4 +2,3 @@
 User-agent: *
 Allow: /pdbe-srv/pdbechem/chemicalCompound/
 Allow: /pdbe-srv/pdbechem/chemicalCompound/*
-\ No newline at end of file
