@@ -69,12 +69,6 @@
           "deployUrl": "/pdbe-srv/pdbechem/chemicalCompound/"
         },
         "development": {
-          "fileReplacements": [
-            {
-              "replace": "apps/ligands/src/environments/environment.ts",
-              "with": "apps/ligands/src/environments/environment.dev.ts"
-            }
-          ],
           "aot": true,
           "extractLicenses": true,
           "namedChunks": false,
