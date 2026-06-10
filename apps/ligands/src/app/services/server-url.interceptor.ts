@@ -5,20 +5,27 @@ export const serverUrlInterceptor: HttpInterceptorFn = (req, next) => {
   const publicProdUrl = 'https://www.ebi.ac.uk';
   const internalClusterUrl = 'http://pdbe-aggregated-api-nginx';
 
-  // If the server pass is trying to hit the public domains, rewrite it to the internal service mesh
+  // 1. Handle absolute public dev domain matches
   if (req.url.startsWith(publicDevUrl)) {
-    const apiRequest = req.clone({
-      url: req.url.replace(publicDevUrl, internalClusterUrl),
-    });
-    return next(apiRequest);
+    const newUrl = req.url.replace(publicDevUrl, internalClusterUrl);
+    console.log(`[SSR INTERCEPTOR] Dev Swap: ${req.url} ===> ${newUrl}`);
+    return next(req.clone({ url: newUrl }));
   }
 
+  // 2. Handle absolute public production domain matches
   if (req.url.startsWith(publicProdUrl)) {
-    const apiRequest = req.clone({
-      url: req.url.replace(publicProdUrl, internalClusterUrl),
-    });
-    return next(apiRequest);
+    const newUrl = req.url.replace(publicProdUrl, internalClusterUrl);
+    console.log(`[SSR INTERCEPTOR] Prod Swap: ${req.url} ===> ${newUrl}`);
+    return next(req.clone({ url: newUrl }));
   }
 
+  // 3. Handle relative endpoint requests (/pdbe/api/...)
+  if (req.url.startsWith('/')) {
+    const newUrl = `${internalClusterUrl}${req.url}`;
+    console.log(`[SSR INTERCEPTOR] Relative Swap: ${req.url} ===> ${newUrl}`);
+    return next(req.clone({ url: newUrl }));
+  }
+
+  // If it doesn't match anything, pass the original request straight through
   return next(req);
 };
