@@ -120,10 +120,10 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
     //format validation slider data
     this.validationSliderData = this.formatValidationResponse(this.resultData.doclist.docs[0]);
 
-    //format assembly data
-    if (this.resultData.doclist.docs[0].assembly_composition && this.resultData.doclist.docs[0].assembly_composition.length > 0) {
-      this.assemblyComposition = this.getAssemblyComposition(this.resultData.doclist.docs[0].assembly_composition);
-    }
+    // //format assembly data
+    // if (this.resultData.doclist.docs[0].assembly_composition && this.resultData.doclist.docs[0].assembly_composition.length > 0) {
+    //   this.assemblyComposition = this.getAssemblyComposition(this.resultData.doclist.docs[0].assembly_composition);
+    // }
 
     // //format organism Scientific Name
     // this.orgSciName = this.getOrganismScientificName(this.resultData.doclist.docs[0].entry_organism_scientific_name);
@@ -162,6 +162,11 @@ export class ResultCardComponent implements OnInit, OnChanges, OnDestroy {
 
     //format organism Scientific Name
     this.orgSciName = this.getOrganismScientificName(resultData?.doclist?.docs?.[0].entry_organism_scientific_name);
+
+    //format assembly data
+    if (this.resultData.doclist.docs[0].assembly_composition && this.resultData.doclist.docs[0].assembly_composition.length > 0) {
+      this.assemblyComposition = this.getAssemblyComposition(this.resultData.doclist.docs[0].assembly_composition);
+    }
 
     //combined uniprot accessions
     if (this.resultData.doclist.docs[0].uniprot_accession_best) {
