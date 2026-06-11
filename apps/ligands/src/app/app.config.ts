@@ -17,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(
+      withFetch(),
       withInterceptors([
         (req, next) => {
           const platformId = inject(PLATFORM_ID);
