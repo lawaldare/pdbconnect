@@ -1,4 +1,5 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { catchError, throwError, timeout } from 'rxjs';
 
 export const serverUrlInterceptor: HttpInterceptorFn = (req, next) => {
   const publicDevUrl = 'https://wwwdev.ebi.ac.uk';
@@ -9,7 +10,19 @@ export const serverUrlInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.url.startsWith(publicDevUrl)) {
     const newUrl = req.url.replace(publicDevUrl, internalClusterUrl);
     console.log(`[SSR INTERCEPTOR] Dev Swap: ${req.url} ===> ${newUrl}`);
-    return next(req.clone({ url: newUrl }));
+    return next(req.clone({ url: newUrl })).pipe(
+      timeout(2000),
+      catchError((error) => {
+        if (error.name === 'TimeoutError') {
+          console.error(`[SSR ERROR] The request to ${newUrl} TIMED OUT after 2000ms! Connection is hanging.`);
+        } else if (error instanceof HttpErrorResponse) {
+          console.error(`[SSR ERROR] Failed with Status ${error.status}: ${error.message}`);
+        } else {
+          console.error('[SSR ERROR] Unknown network exception:', error);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
   // 2. Handle absolute public production domain matches
