@@ -65,6 +65,10 @@ export class SurveyService {
   }
 
   init(config: SurveyConfig) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     this.config.set(config);
 
     if (!this.consentGranted) {
