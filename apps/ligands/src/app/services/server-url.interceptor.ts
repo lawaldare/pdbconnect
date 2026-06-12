@@ -17,6 +17,7 @@ export const serverUrlInterceptor: HttpInterceptorFn = (req, next) => {
           console.error(`[SSR ERROR] The request to ${newUrl} TIMED OUT after 2000ms! Connection is hanging.`);
         } else if (error instanceof HttpErrorResponse) {
           console.error(`[SSR ERROR] Failed with Status ${error.status}: ${error.message}`);
+          console.error(`[Error]`, error);
         } else {
           console.error('[SSR ERROR] Unknown network exception:', error);
         }
