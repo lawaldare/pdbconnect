@@ -1,11 +1,13 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { SurveyConfig } from '../models/survey-config';
 import { firstValueFrom } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class SurveyService {
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public showSurvey = signal(false);
   public config = signal<SurveyConfig | null>(null);
@@ -22,7 +24,10 @@ export class SurveyService {
     this.watchForBannerClick();
   }
 
-  private getConsentCookieKey(): string {
+  private getConsentCookieKey(): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const path = window.location.pathname;
 
     if (path.includes('complexes')) return 'dataProtectionAgreedForComplexPages';
@@ -38,6 +43,9 @@ export class SurveyService {
   }
 
   private watchForBannerClick(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const listener = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target?.id === 'data-protection-agree') {
@@ -173,12 +181,18 @@ export class SurveyService {
     this.showSurvey.set(false);
   }
 
-  private getCookie(name: string): string | null {
+  private getCookie(name: string): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
   private setCookie(name: string, value: string, days: number) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const expiry = new Date(Date.now() + days * 86400000).toUTCString();
     document.cookie = `${name}=${value}; expires=${expiry}; path=/`;
   }

@@ -12,6 +12,7 @@ import { PisaFileStoreService } from '../../services/pisa-file-store.service';
 import { Router } from '@angular/router';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { pisaUploadpageTooltips } from '../../pisa-app-constant';
+import type { Model } from 'molstar/lib/mol-model/structure';
 
 const FILE_KEY = 'pisa-upload-file';
 @Component({
@@ -45,6 +46,8 @@ export class UploadPageComponent implements AfterViewInit {
   public allOnes = this.facade.allOnes;
   public processLigands = this.facade.processLigands;
   public readonly pisaUploadpageTooltips = pisaUploadpageTooltips;
+  public allChainsIdValid = signal(true);
+  public readonly errorHeaderText = 'Error: Unassigned chain IDs';
 
   private selectedLigands = signal<string[]>([]);
 
@@ -252,9 +255,10 @@ export class UploadPageComponent implements AfterViewInit {
       const data = this.molstarViewer.plugin.managers.structure.hierarchy.current.structures[0];
       if (!data) return;
 
-      const model = data.cell?.obj?.data.models?.[0] || data.cell?.obj?.data;
+      const model: Model = data.cell?.obj?.data.models?.[0] || data.cell?.obj?.data;
+      const chainIssues = Array.from(model.atomicHierarchy.chains.auth_asym_id.toArray()).some((chainId) => !chainId || chainId.trim() === '');
+      this.allChainsIdValid.set(!chainIssues);
       this.facade.model.set(model);
-
       const detailForAssemblyTabs = {
         label: this.label(),
         spacegroup: this.simplifiedSpacegroup(),
