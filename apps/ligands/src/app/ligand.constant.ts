@@ -32,17 +32,18 @@ export const ligandHomePageSeaderSearchConfig = {
   placeholderText: 'View PDBe-KB ligand by PDB ligand ID (CCD/PRD/CLC)',
 };
 
-export const headerLogoMenuConfig = {
+export const ligandsHeaderLogoMenuConfig = {
   backgroundColor: '#085F5C',
   logoType: 'PDBe-KB',
-  headerTitle: 'Ligands',
   urls: [
     { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe-srv/pdbechem/', openInNewTab: true },
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
     { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
     { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
   ],
-  logoPath: 'images/PDBE-KB_logo_2019_white_text.png',
+  newHeaderLogo: true,
+  logoPath: 'images/logo.png',
+  logoWidth: '370px',
 };
 
 export const homePageUrls = [

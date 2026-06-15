@@ -8,7 +8,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { mergeMap, switchMap } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, reactantTooltip } from '../../../ligand.constant';
+import { cofactorTooltip, drugTooltip, headerSearchConfig, ligandRouteTabs, ligandsHeaderLogoMenuConfig, reactantTooltip } from '../../../ligand.constant';
 import {
   ClarityConsentService,
   DataLayerService,
@@ -98,7 +98,7 @@ export class LigandsMainPageComponent implements OnInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
-  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, isLigandPage: true };
+  public readonly ligandsHeaderLogoMenuConfig = ligandsHeaderLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
 
   public ligandId = signal<string>('');

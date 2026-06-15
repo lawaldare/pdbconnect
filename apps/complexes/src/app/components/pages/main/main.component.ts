@@ -19,7 +19,7 @@ import {
   SurveyService,
   TruncateTextDirective,
 } from '@pdbc/core';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
+import { complexesHeaderLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -87,7 +87,7 @@ export class MainComponent implements OnInit {
   private readonly complexUtilService = inject(ComplexUtilService);
   private readonly renderer = inject(Renderer2);
 
-  public readonly headerLogoMenuConfig = { ...headerComplexLogoMenuConfig, isComplexPage: true };
+  public readonly complexesHeaderLogoMenuConfig = complexesHeaderLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchComplexConfig;
 
   public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
