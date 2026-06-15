@@ -152,14 +152,14 @@ export class LigandsMainPageComponent implements OnInit {
       )
       .subscribe(() => {
         this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop());
-        // this.seoService.update(
-        //   {
-        //     title: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
-        //     description: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
-        //     url: `${environment.baseUrl}pdbe-srv/pdbechem/chemicalCompound/show/${this.ligandId()}`,
-        //   },
-        //   this.renderer
-        // );
+        this.seoService.update(
+          {
+            title: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            description: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            url: `${environment.baseUrl}pdbe-srv/pdbechem/chemicalCompound/show/${this.ligandId()}`,
+          },
+          this.renderer
+        );
         this.generateSchemaData();
       });
   }
