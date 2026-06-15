@@ -1,0 +1,4 @@
+# Allow all search engine bots to index our structural metadata
+User-agent: *
+Allow: /pdbe-srv/pdbechem/chemicalCompound/
+Allow: /pdbe-srv/pdbechem/chemicalCompound/*

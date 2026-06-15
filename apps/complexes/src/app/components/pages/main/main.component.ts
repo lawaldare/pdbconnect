@@ -175,11 +175,14 @@ export class MainComponent implements OnInit {
         this.bioschemasService.buildBioschemasJSON(this.renderer);
         this.complexMetaTagService.buildMetaTags();
         if (this.summaryData()) {
-          this.seoService.update({
-            title: `PDB ${this.complexId()}: ${this.summaryData()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
-            description: `PDB ${this.complexId()}: ${this.summaryData()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
-            url: `${environment.baseUrl}pdbe/pdbe-kb/complexes/${this.complexId()}`,
-          });
+          this.seoService.update(
+            {
+              title: `PDB ${this.complexId()}: ${this.summaryData()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+              description: `PDB ${this.complexId()}: ${this.summaryData()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+              url: `${environment.baseUrl}pdbe/pdbe-kb/complexes/${this.complexId()}`,
+            },
+            this.renderer
+          );
         }
         this.launchSurveyForComplexesPage(this.complexId() ?? '', this.isDesktop());
       });

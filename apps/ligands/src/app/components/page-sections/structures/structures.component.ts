@@ -1,5 +1,5 @@
-import { Component, inject, DestroyRef, signal, ViewChild, computed, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, DestroyRef, signal, ViewChild, computed, AfterViewInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Chain, LigandStructure, Polymer } from '../../../data-models/structure.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -37,6 +37,7 @@ export class StructuresComponent implements AfterViewInit {
   private readonly downloadService = inject(DownloadService);
   private readonly agGridService = inject(AgGridStructureService);
   private readonly utilService = inject(UtilService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private readonly fileDownloadUrl = `${environment.baseUrl}pdbe/download/api/pdb/`;
 
@@ -147,6 +148,10 @@ export class StructuresComponent implements AfterViewInit {
         this.structuresPage = this.structureRowData().slice(0, this.structuresPageSize());
       });
 
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     const proteinOverviewHeader = document.querySelector('.protein-overview-header') as HTMLElement;
     if (proteinOverviewHeader) {
       proteinOverviewHeader.id = 'protein-overview-tour';
@@ -193,6 +198,9 @@ export class StructuresComponent implements AfterViewInit {
   }
 
   public downloadMMCIF() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const mappedData = this.structureRowData().reduce((acc: string[], structure) => {
       acc = [...acc, ...structure.interacting_chains.map((c) => c.pdb_id)];
       return acc;
