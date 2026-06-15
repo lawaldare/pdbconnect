@@ -1,7 +1,8 @@
 /* eslint-disable no-useless-escape */
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,7 @@ export class UtilService {
 
   private _snackBar = inject(MatSnackBar);
   private clipboard = inject(Clipboard);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public generateQueryURL(arr: string[] | string, queryTerm: string): string {
     const isArray = Array.isArray(arr);
@@ -146,6 +148,9 @@ export class UtilService {
   }
 
   public redirectToSearchTerm(value: string, projectId?: string, target = '_self'): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const hostname = document.location.hostname;
     const pathname = document.location.pathname;
 
@@ -164,7 +169,10 @@ export class UtilService {
     window.open(href, target);
   }
 
-  public getRedirectUrlForExamples(id: string, projectId?: string): string {
+  public getRedirectUrlForExamples(id: string, projectId?: string): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const hostname = document.location.hostname;
     const pathname = document.location.pathname;
     const trimmedValue = id.trim();
@@ -183,6 +191,9 @@ export class UtilService {
 
   //TODO: Update this method for redirection from latest release page
   public redirectToHomepageSearchTerm(value: string): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const trimmedValue = value.trim();
     const hrefLink = window.location.href;
     const href = hrefLink + 'chemicalCompound/show/' + trimmedValue;

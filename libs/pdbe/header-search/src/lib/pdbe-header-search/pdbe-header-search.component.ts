@@ -36,7 +36,6 @@ export class PdbeHeaderSearchComponent implements OnInit {
     this.buttonTheme = this.headerSearchConfig.type === ThemeType.PDBE ? 'pdbe' : 'pdbe-kb';
     this.chipBg = this.headerSearchConfig.type === ThemeType.PDBE ? 'pdbe-chip-bg' : 'pdbe-kb-chip-bg';
 
-    console.log(this.headerSearchConfig.examples);
     const updatedExamples = (this.headerSearchConfig.examples ?? []).map((example) => {
       return {
         label: this.getExampleLabel(example),
