@@ -1,6 +1,6 @@
 /* eslint-disable @angular-eslint/prefer-inject */
 import { DOCUMENT } from '@angular/common';
-import { inject, Inject, Injectable } from '@angular/core';
+import { inject, Inject, Injectable, Renderer2 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 
 @Injectable({ providedIn: 'root' })
@@ -9,7 +9,7 @@ export class SeoService {
   private metaService = inject(Meta);
   constructor(@Inject(DOCUMENT) private document: Document) {}
 
-  public update(config: { title: string; description: string; url: string }) {
+  public update(config: { title: string; description: string; url: string }, renderer: Renderer2) {
     this.titleService.setTitle(config.title);
 
     // Set the window / crawler title
@@ -26,12 +26,13 @@ export class SeoService {
     this.metaService.updateTag({ property: 'og:type', content: 'website' });
 
     let link: HTMLLinkElement | null = this.document.querySelector("link[rel='canonical']");
+
     if (!link) {
-      link = this.document.createElement('link');
-      link.setAttribute('rel', 'canonical');
-      this.document.head.appendChild(link);
+      link = renderer.createElement('link');
+      renderer.setAttribute(link, 'rel', 'canonical');
+      renderer.appendChild(this.document.head, link);
     }
 
-    link.setAttribute('href', config.url);
+    renderer.setAttribute(link, 'href', config.url);
   }
 }

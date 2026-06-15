@@ -20,12 +20,23 @@
             "glob": "**/*",
             "input": "apps/ligands/src/assets",
             "output": "assets"
+          },
+          {
+            "glob": "robots.txt",
+            "input": "apps/ligands/src",
+            "output": "/"
           }
         ],
         "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/ligands/src/styles.scss"],
         "scripts": [],
         "stylePreprocessorOptions": {
           "includePaths": ["libs/core/src/lib/styles"]
+        },
+        "server": "apps/ligands/src/main.server.ts",
+        "prerender": false,
+        "externalDependencies": ["xhr2"],
+        "ssr": {
+          "entry": "apps/ligands/src/server.ts"
         }
       },
       "configurations": {
@@ -54,7 +65,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe-srv/pdbechem/chemicalCompound/",
+          "deployUrl": "/pdbe-srv/pdbechem/chemicalCompound/"
         },
         "development": {
           "aot": true,
@@ -63,7 +75,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe-srv/pdbechem/chemicalCompound/",
+          "deployUrl": "/pdbe-srv/pdbechem/chemicalCompound/"
         },
         "local": {
           "optimization": false,
@@ -87,9 +100,12 @@
         },
         "development": {
           "buildTarget": "ligands:build:development"
+        },
+        "local": {
+          "buildTarget": "ligands:build:local"
         }
       },
-      "defaultConfiguration": ""
+      "defaultConfiguration": "local"
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",

@@ -1,7 +1,8 @@
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { GoogleAnalyticsService } from '@pdbc/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -18,6 +19,7 @@ import { GoogleAnalyticsService } from '@pdbc/core';
 })
 export class UniProtAccessionRendererComponent implements ICellRendererAngularComp {
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   // Init Cell Value
   public value!: any;
@@ -42,6 +44,9 @@ export class UniProtAccessionRendererComponent implements ICellRendererAngularCo
   }
 
   public openLigandPage(ligandId: string): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const hostname = window.location.hostname;
     if (hostname === 'localhost') {
       const href = `http://localhost:4200/chemicalCompound/show/${ligandId}`;

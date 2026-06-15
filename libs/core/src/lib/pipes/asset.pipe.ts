@@ -6,7 +6,7 @@ import { inject, Pipe, PipeTransform, PLATFORM_ID } from '@angular/core';
   standalone: true, // optional if you’re using standalone components
 })
 export class AssetPipe implements PipeTransform {
-  private platformId = inject(PLATFORM_ID);
+  private readonly platformId = inject(PLATFORM_ID);
 
   transform(file: string): any {
     if (!isPlatformBrowser(this.platformId)) {
