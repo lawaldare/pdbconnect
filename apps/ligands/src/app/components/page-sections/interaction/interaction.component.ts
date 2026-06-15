@@ -1,5 +1,5 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit, DestroyRef, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild, Renderer2, ElementRef, AfterViewInit, DestroyRef, inject, signal, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { Depiction, LigandStructure } from '../../../data-models/structure.model';
 import { PDBIntxData } from '../../../data-models/interaction.model';
@@ -43,6 +43,8 @@ export class InteractionComponent implements AfterViewInit {
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
   public readonly tutorialTourService = inject(LigandPageTutorialTourService);
+  private readonly platformId = inject(PLATFORM_ID);
+  public readonly isBrowser = signal(isPlatformBrowser(this.platformId));
 
   public interaction!: PDBIntxData; // eslint-disable-line @typescript-eslint/no-explicit-any
   public atomNumber!: number;
@@ -55,6 +57,9 @@ export class InteractionComponent implements AfterViewInit {
   public navItems = signal<NavSection[]>([]);
 
   ngAfterViewInit() {
+    if (!this.isBrowser()) {
+      return;
+    }
     this.globalStore
       .select(LigandSelectors.ligandId)
       .pipe(

@@ -1,13 +1,15 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { driver } from 'driver.js';
 import { LigandUtilService } from '../ligand-util.service';
 import { tourIds } from '../ligand.constant';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LigandPageTutorialTourService {
   public readonly ligandUtilService = inject(LigandUtilService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public showDescriptionTourBanner = signal(true);
   public showPropertiesTourBanner = signal(true);
@@ -353,11 +355,17 @@ export class LigandPageTutorialTourService {
   }
 
   public getCookie(name: string): string | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
   public setCookie(name: string, value: string, days: number): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const expires = new Date();
     expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
     document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;

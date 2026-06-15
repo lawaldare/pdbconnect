@@ -24,9 +24,9 @@ export class SurveyService {
     this.watchForBannerClick();
   }
 
-  private getConsentCookieKey(): any {
+  private getConsentCookieKey(): string {
     if (!isPlatformBrowser(this.platformId)) {
-      return;
+      return 'dataProtectionAgreedForLigandPages';
     }
     const path = window.location.pathname;
 
@@ -65,6 +65,10 @@ export class SurveyService {
   }
 
   init(config: SurveyConfig) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     this.config.set(config);
 
     if (!this.consentGranted) {
@@ -181,9 +185,9 @@ export class SurveyService {
     this.showSurvey.set(false);
   }
 
-  private getCookie(name: string): any {
+  private getCookie(name: string): string | null {
     if (!isPlatformBrowser(this.platformId)) {
-      return;
+      return null;
     }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
