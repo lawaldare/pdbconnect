@@ -42,7 +42,7 @@ export const ligandsHeaderLogoMenuConfig = {
     { name: 'Training', path: 'https://github.com/PDBeurope/pdbe-notebooks/tree/main/pdbe_ligands_tutorials', openInNewTab: true },
   ],
   newHeaderLogo: true,
-  logoPath: 'images/ligands-logo.png',
+  logoPath: 'images/ligands_logo.png',
   logoWidth: '370px',
 };
 
