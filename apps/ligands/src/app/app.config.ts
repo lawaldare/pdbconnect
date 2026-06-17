@@ -17,18 +17,18 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(
-      withFetch(),
-      withInterceptors([
-        (req, next) => {
-          const platformId = inject(PLATFORM_ID);
+      withFetch()
+      // withInterceptors([
+      //   (req, next) => {
+      //     const platformId = inject(PLATFORM_ID);
 
-          if (isPlatformServer(platformId)) {
-            return serverUrlInterceptor(req, next);
-          }
+      //     if (isPlatformServer(platformId)) {
+      //       return serverUrlInterceptor(req, next);
+      //     }
 
-          return next(req);
-        },
-      ])
+      //     return next(req);
+      //   },
+      // ])
     ),
     provideEffects([LigandEffects]),
     provideStore({ ligands: ligandReducer }),
