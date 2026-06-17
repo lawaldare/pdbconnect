@@ -160,7 +160,7 @@ export class MainComponent implements OnInit {
           this.history.set(history);
           if (history.status === this.complexIdHistoryStatus.Superseded) {
             this.historyMessage.set(`${history.query_id} has been superseded since ${history.canonical.effective_date} by ${history.canonical.id}`);
-            this.router.navigate(['/complexes', history.canonical.id]);
+            this.router.navigate(['/', history.canonical.id]);
             this.globalStore.dispatch(ComplexActions.setCurrentComplexId({ complexId: history.canonical.id }));
             this.dispatchCoreActions();
           } else if (history.canonical.status === this.complexIdHistoryStatus.Active) {

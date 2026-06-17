@@ -31,7 +31,7 @@ export class AssetPipe implements PipeTransform {
 
     // Ligand Pages (pdbechem)
     if (pathname.includes('/pdbe-srv/pdbechem/')) {
-      return `/pdbe/connect/assets/${file}`;
+      return `/pdbe-srv/pdbechem/chemicalCompound/${file}`;
     }
 
     // Default fallback
