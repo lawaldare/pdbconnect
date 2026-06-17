@@ -10,6 +10,7 @@ import { CorporatePagesBioschemasService } from '../services/corporate-pages.bio
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
 import { SeoService } from '../services/seo.service';
 import { SEO_CONFIG } from '../corporate-page.constant';
+import { RouterModule } from '@angular/router';
 
 declare const $: any;
 
@@ -17,7 +18,7 @@ declare const $: any;
   selector: 'pdbc-app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss'],
-  imports: [CommonModule, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent],
+  imports: [CommonModule, HeaderJumbotronComponent, NavTabsComponent, HomeBookmarksComponent, KeyFeaturesListComponent, FaqsListComponent, RouterModule],
 })
 export class HomePageComponent implements OnInit, AfterViewInit {
   private readonly bioschemasService = inject(CorporatePagesBioschemasService);
