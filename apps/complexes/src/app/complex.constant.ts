@@ -42,7 +42,7 @@ export const complexesHeaderLogoMenuConfig = {
   ],
   newHeaderLogo: true,
   logoPath: 'images/logo.png',
-  logoWidth: '450px',
+  logoWidth: '400px',
 };
 
 export const complexRouteTabs = [
