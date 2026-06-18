@@ -1,12 +1,12 @@
 import { isPlatformBrowser } from '@angular/common';
-import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { inject, PLATFORM_ID, Injectable, signal } from '@angular/core';
 import * as Clarity from '@microsoft/clarity';
 
 @Injectable({ providedIn: 'root' })
 export class ClarityConsentService {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly cookieKey = this.getCookieKey;
   private clarityProjectId = signal('');
-  private readonly platformId = inject(PLATFORM_ID);
 
   public init(clarityProjectId: string): void {
     this.clarityProjectId.set(clarityProjectId);
@@ -52,6 +52,9 @@ export class ClarityConsentService {
   }
 
   private watchForBannerClick(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const listener = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target?.id === 'data-protection-agree') {
@@ -62,17 +65,17 @@ export class ClarityConsentService {
     window.addEventListener('click', listener);
   }
 
-  private getCookie(name: string): any {
+  private getCookie(name: string): string | null {
     if (!isPlatformBrowser(this.platformId)) {
-      return;
+      return null;
     }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
-  private get getCookieKey(): any {
+  private get getCookieKey(): string {
     if (!isPlatformBrowser(this.platformId)) {
-      return;
+      return 'dataProtectionAgreedForLigandPages';
     }
     const pathname = window.location.pathname;
     if (pathname.includes('complexes')) return 'dataProtectionAgreedForComplexPages';

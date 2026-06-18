@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig } from '../../complex.constant';
+import { complexesHeaderLogoMenuConfig, headerSearchComplexConfig } from '../../complex.constant';
 
 @Component({
   selector: 'pdbc-error-page',
   standalone: true,
   imports: [CommonModule, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent],
-  template: ` <pdbc-pdbe-header-logo-menu [headerConfig]="headerSearchLogoMenuConfig" />
+  template: ` <pdbc-pdbe-header-logo-menu [headerConfig]="complexesHeaderLogoMenuConfig" />
     <pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
     <div class="container">
       <h3>No results</h3>
@@ -53,6 +53,6 @@ import { headerComplexLogoMenuConfig, headerSearchComplexConfig } from '../../co
   ],
 })
 export class ErrorPageComponent {
-  public readonly headerSearchLogoMenuConfig = { ...headerComplexLogoMenuConfig, isComplexPage: true };
+  public readonly complexesHeaderLogoMenuConfig = complexesHeaderLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchComplexConfig;
 }

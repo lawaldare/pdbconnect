@@ -87,9 +87,20 @@ export class SearchAppComponent implements OnInit {
     'Status',
   ];
 
+  public examples = signal<{ label: string; url: string }[]>([]);
+
   ngOnInit() {
     this.buttonTheme = this.uiSearchConfig.type === ThemeType.PDBE ? 'pdbe' : 'pdbe-kb';
     this.chipBg = this.uiSearchConfig.type === ThemeType.PDBE ? 'pdbe-chip-bg' : 'pdbe-kb-chip-bg';
+
+    const updatedExamples = (this.uiSearchConfig.examples ?? []).map((example) => {
+      return {
+        label: example,
+        url: this.utilService.getRedirectUrlForExamples(example),
+      };
+    });
+
+    this.examples.set(updatedExamples);
 
     this.form.controls.searchTerm.valueChanges
       .pipe(

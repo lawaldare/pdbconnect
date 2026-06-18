@@ -1,4 +1,4 @@
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 
@@ -18,4 +18,4 @@ EXPOSE 80
 
 
 # Run the Express SSR server directly
-CMD ["node", "--use-env-proxy", "/app/server/server.mjs"]
+CMD ["node", "--max-old-space-size=256", "/app/server/server.mjs"]

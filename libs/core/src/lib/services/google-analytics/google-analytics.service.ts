@@ -10,6 +10,9 @@ export class GoogleAnalyticsService {
   private readonly platformId = inject(PLATFORM_ID);
 
   public logClickEvents(event: string, category: string, action: string, label: string, value = ''): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     gtag('event', event, {
       event_category: category,
       event_action: action,

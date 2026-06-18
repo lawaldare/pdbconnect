@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, DestroyRef, signal, Renderer2, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, DestroyRef, signal, Renderer2, ViewChild, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PropertiesComponent } from '../../page-sections/properties/properties.component';
 import { StructuresComponent } from '../../page-sections/structures/structures.component';
 import { InteractionComponent } from '../../page-sections/interaction/interaction.component';
@@ -8,7 +8,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { mergeMap, switchMap } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, reactantTooltip } from '../../../ligand.constant';
+import { cofactorTooltip, drugTooltip, headerSearchConfig, ligandRouteTabs, ligandsHeaderLogoMenuConfig, reactantTooltip } from '../../../ligand.constant';
 import {
   ClarityConsentService,
   DataLayerService,
@@ -16,6 +16,7 @@ import {
   GoogleAnalyticsService,
   MaterialModule,
   ScrollPositionService,
+  SeoService,
   SurveyConfig,
   SurveyPopupComponent,
   SurveyService,
@@ -25,8 +26,7 @@ import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { combineLatest, EMPTY, of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { combineLatest, of } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
 import { LigandStructure } from '../../../data-models/structure.model';
@@ -72,6 +72,7 @@ export class LigandsMainPageComponent implements OnInit {
   private readonly bioschemasService = inject(LigandsBioschemasService);
   public readonly helpIconForMolstarService = inject(HelpIconForMolstarService);
   public readonly tutorialTourService = inject(LigandPageTutorialTourService);
+  private readonly seoService = inject(SeoService);
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -96,7 +97,7 @@ export class LigandsMainPageComponent implements OnInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
-  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, isLigandPage: true };
+  public readonly ligandsHeaderLogoMenuConfig = ligandsHeaderLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
 
   public ligandId = signal<string>('');
@@ -107,9 +108,10 @@ export class LigandsMainPageComponent implements OnInit {
   public showNotificationBanner = signal<boolean>(false);
 
   @ViewChild('tabs') tabGroup!: MatTabGroup;
+  private readonly platformId = inject(PLATFORM_ID);
+  private isDesktop = signal(false);
 
   public surveyService = inject(SurveyService);
-  private isDesktop = signal(window.innerWidth > 768);
 
   constructor() {
     this.showNotification();
@@ -125,8 +127,12 @@ export class LigandsMainPageComponent implements OnInit {
     });
   }
   ngOnInit(): void {
-    Clarity.init(environment.clarityProjectIdForLigandPages);
-    this.clarityConsentService.init(environment.clarityProjectIdForLigandPages);
+    if (isPlatformBrowser(this.platformId)) {
+      this.isDesktop.set(window.innerWidth > 768);
+      Clarity.init(environment.clarityProjectIdForLigandPages);
+      this.clarityConsentService.init(environment.clarityProjectIdForLigandPages);
+    }
+
     this.route.params
       .pipe(
         switchMap((params: { [x: string]: string }) => {
@@ -145,6 +151,14 @@ export class LigandsMainPageComponent implements OnInit {
       )
       .subscribe(() => {
         this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop());
+        this.seoService.update(
+          {
+            title: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            description: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            url: `${environment.baseUrl}pdbe-srv/pdbechem/chemicalCompound/show/${this.ligandId()}`,
+          },
+          this.renderer
+        );
         this.generateSchemaData();
       });
   }
@@ -189,6 +203,9 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   private showNotification() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const href = document.location.href;
     if (href.includes('dev.') || href.includes('wwwdev.')) {
       this.showNotificationBanner.set(true);

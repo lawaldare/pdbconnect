@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { Fragment, LigandStructure } from './data-models/structure.model';
 import { MolstarDialogComponent } from '@pdbe-lib/molstar-for-apps';
 import { MatDialog } from '@angular/material/dialog';
@@ -10,6 +10,7 @@ import { Store } from '@ngrx/store';
 import { Router } from '@angular/router';
 import { UtilService } from '@pdbc/core';
 import { catchError, forkJoin, map, of } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface StructureFilter {
   cofactorLike: boolean;
@@ -28,6 +29,7 @@ export class LigandUtilService {
   private readonly utilService = inject(UtilService);
   private readonly aggregatedApiService = inject(AggregatedApiService);
   private readonly pdbIdsChunkSize = signal<number>(100);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public filterStructures(data: LigandStructure[], values: StructureFilter): LigandStructure[] {
     let cofactorLike: LigandStructure[] = [];
@@ -78,6 +80,9 @@ export class LigandUtilService {
   }
 
   public downloadJSON(data: any, name: string) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -88,6 +93,9 @@ export class LigandUtilService {
   }
 
   public downloadTxt(data: any, name: string) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const fileContent = data.join('\n');
     const blob = new Blob([fileContent], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
