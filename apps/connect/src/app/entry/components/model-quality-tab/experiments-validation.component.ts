@@ -19,13 +19,13 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Store } from '@ngrx/store';
-import { MaterialModule, UtilService } from '@pdbc/core';
+import { ContentNavigator, MaterialModule, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
-import { modelQualityTooltips, OUTLIER_TYPE_LABELS } from '../../entry-constant';
+import { modelQualityTooltips, MQTContentNavigationLinks, OUTLIER_TYPE_LABELS } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
@@ -81,6 +81,7 @@ import { ValidationTablesFacade } from './validation-tables.facade';
     StrucQualityGradientsComponent,
     NgxSkeletonLoaderModule,
     MolstarComponent,
+    ContentNavigator,
   ],
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
@@ -235,6 +236,8 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   public currentModelId$ = new BehaviorSubject<string>('1');
+
+  protected readonly contentNavigatorLinks = MQTContentNavigationLinks;
 
   constructor() {
     effect(() => {

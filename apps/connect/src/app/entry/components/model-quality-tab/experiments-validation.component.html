@@ -1,5 +1,8 @@
 <div class="experiments-validation">
   <section class="left-side">
+    <!-- content navigation start -->
+    <lib-content-navigator [navLinks]="contentNavigatorLinks" />
+    <!-- content naigation end -->
     @if (currentData() && processedData() && isHybrid()) {
     <div class="filter-btns-container">
       @for (expValdata of processedData(); track expValdata) {
@@ -103,7 +106,7 @@
       <!-- ------------------- -->
       <section class="validation-info">
         <div class="info-row-header">
-          <h5>Validation information</h5>
+          <h5 id="validation-information">Validation information</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.validationInfoTooltip" />
         </div>
         @if (noImg === false) {
@@ -125,7 +128,7 @@
       @if (pdbRedoData()) {
       <section class="pdb-redo-data">
         <div class="info-row-header">
-          <h5>PDB-REDO</h5>
+          <h5 id="pdb-redo">PDB-REDO</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.pdbRedoTooltip" />
         </div>
         <div class="info-row">
@@ -148,7 +151,7 @@
       <!-- ------------------- -->
       <section class="timeline-info">
         <div class="info-row-header">
-          <h5>Timeline</h5>
+          <h5 id="timeline">Timeline</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.timelineTooltip" />
         </div>
         <ag-grid-angular
@@ -167,7 +170,7 @@
       <!-- ------------------- -->
       <section class="model-quality-info">
         <div class="info-row-header">
-          <h5>Model quality</h5>
+          <h5 id="model-quality">Model quality</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.modelQualityTooltip" />
         </div>
         @if (currentData()?.validationInfo) {
@@ -244,7 +247,7 @@
       <!-- ------------------- -->
       <section class="experimental-info">
         <div class="info-row-header">
-          <h5>Experimental information</h5>
+          <h5 id="experimental-information">Experimental information</h5>
           <lib-help-icon-with-tooltip [tooltipText]="isXray() ? modelQualityTooltips.experimentalInfoTooltip : modelQualityTooltips.expInfoTooltip" />
         </div>
         @if(!this.isXray()){
@@ -356,7 +359,7 @@
       @if(isXray()){
       <section class="crystal-info">
         <div class="info-row-header">
-          <h5>Crystal Info</h5>
+          <h5 id="crystal-info">Crystal Info</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.crystalInfoTooltip" />
         </div>
         <ag-grid-angular
@@ -378,7 +381,7 @@
       @if(isXray()){
       <section class="software-info">
         <div class="info-row-header">
-          <h5>Software</h5>
+          <h5 id="software">Software</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.softwareTooltip" />
         </div>
         <ag-grid-angular
@@ -400,7 +403,7 @@
       @if(isXray()){
       <section class="data-quality-info">
         <div class="info-row-header">
-          <h5>Data quality</h5>
+          <h5 id="data-quality">Data quality</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.dataQualityTooltip" />
         </div>
         <ag-grid-angular
@@ -422,7 +425,7 @@
       @if(isXray()){
       <section class="crystal-info">
         <div class="info-row-header">
-          <h5>Refinement</h5>
+          <h5 id="refinement">Refinement</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.refinementTooltip" />
         </div>
         <ag-grid-angular
