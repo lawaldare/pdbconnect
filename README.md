@@ -2,29 +2,82 @@
 
 Monorepo for PDBe front-end applications and component library
 
+## Projects and deployments
+
+All applications are located under the `apps/` directory.
+
+A list of projects, their locations in this repository, and their production deployments is maintained here:
+
+[PDBConnect Deployments](https://embl.atlassian.net/wiki/spaces/PDBE/pages/354287669/PDBConnect+Deployments)
+
+And should be updated after every production deployment with the necessary information in the tables.
+
+Performance benchmarking should be done for page releases with major changes (before and after) in this page:
+
+[PDBConnect Benchmarks](https://embl.atlassian.net/wiki/spaces/PDBE/pages/119210018/PDBConnect+Performance+benchmarks)
+
+Some examples of application locations:
+
+| Project          | Location          |
+| ---------------- | ----------------- |
+| PDBe Entry Pages | `apps/connect`    |
+| Complexes        | `apps/complexes`  |
+| Download         | `apps/download`   |
+| Ligands          | `apps/ligands`    |
+| Proteins         | `apps/proteins`   |
+| PISA             | `apps/pisa`       |
+| Playground       | `apps/playground` |
+
+> Note: the Playground app currently exists in the repository but is not actively used.
+
+## Architecture Decision Records
+
+Architecture Decision Records are documented in Confluence:
+
+[Architecture Decision Records ADR](https://embl.atlassian.net/wiki/spaces/PDBE/pages/23949238/Architecture+Decision+Records+ADR)
+
+ADRs should be used to document significant architectural decisions, especially when a decision affects multiple applications, shared libraries, build/deployment behaviour, or long-term maintenance.
+
 ## Getting started
 
-#### Setting up the development environment
+### Setting up the development environment
 
-##### 1. Install the necessary softwares
+#### 1. Install the necessary softwares
 
 - Recommended Editor - VS Code (https://code.visualstudio.com/)
-- Node.js (^16.16.0) (https://nodejs.org/en)
+- Node.js: use the version defined in the `.nvmrc` file
 - Git (https://git-scm.com/)
 - Typescript (~4.7.2) [ `npm install -g typescript` ]
 - Angular CLI (^16.0.2) [ `npm install -g @angular/cli` ]
 - Nx [ `npm install -g nx@latest` ]
 - NRWL Schematic (8.12.11) [ `npm install -g @nrwl/schematics` ]
 
-##### 2. Clone Repository
+Use `nvm` to install and switch to the correct Node.js version:
 
-- `git clone`
+```bash
+nvm install
+nvm use
+```
 
-##### 3. Open the directory and install dependencies
+The required Node.js version is defined in:
 
-- `npm install`
+```bash
+.nvmrc
+```
 
-##### 4. Install recommended VS Code extensions
+#### 2. Clone Repository
+
+```bash
+git clone
+```
+
+#### 3. Open the directory and install dependencies
+
+```bash
+npm install
+```
+
+#### 4. Install recommended VS Code extensions
 
 - After opening the project in VS Code you will get a recommendation notification on the bottom right corner of the editor. On clicking `Install` all the recommended extensions will be install.
 
@@ -33,48 +86,105 @@ Monorepo for PDBe front-end applications and component library
   - Type Show Recommended Extensions
   - Install all the extensions from the search result list
 
-##### 5. Run Storybook to view the Component library with documentation
+## Quick commands
 
-- `npx nx storybook lib-docs`
+### Serve an application locally (All Apps are stored in the 'apps' folder)
 
-##### 6. Run App to view the pages. All the Apps are stored in the 'apps' folder
+```bash
+npx nx serve <APP-NAME>
+```
 
-- `npx nx serve <APP-NAME>` (Example: `npx nx serve connect`)
+Example: `npx nx serve connect`
 
-##### 7. Run Nx Graph to see a diagram of the dependencies of the projects
+### View a diagram of the projects dependencies
 
-- `npx nx graph`
+```bash
+npx nx graph
+```
 
-##### 8. For checking linter errors
+### Check lint errors
 
-- `npx nx affected -t lint --parallel=3`
+```bash
+npx nx affected -t lint --parallel=3
+```
 
-##### 9. For checking formatting errors
+### Automatically fix lint errors
 
-- `npx nx format:check`
+```bash
+npx nx affected -t lint -- --fix
+```
 
-##### 10. For automatic fix of linter errors
+### Check formatting
 
-- `npx nx affected -t lint -- --fix`
+```bash
+npx nx format:check
+```
 
-##### 10. For automatic fix of format errors
+### Automatically fix formatting
 
-- `npx nx format:write`
+```bash
+npx nx format:write
+```
 
-##### 11. For running unit tests for all components and apps
+### Run unit tests for all components and apps
 
-- `npx nx run-many --all --target=test`
+```bash
+npx nx run-many --all --target=test
+```
 
-##### 12. Build Storybook and host it local in case you find error on wwwint but not locally
+### Build an application
 
-- `npx nx storybook lib-docs:build-storybook`
-- `npx http-server dist/storybook/lib-docs/`
+```bash
+npx nx build <APP-NAME>
+```
 
-##### 13. For updating the angular version
+Example: `npx nx build ligands`
 
-- `npx nx migrate latest`
+### Update Angular / Nx dependencies
+
+```bash
+npx nx migrate latest
+```
+
+## Testing SSR pages locally
+
+Some applications use server-side rendering.
+
+Currently, SSR is used by:
+
+| Project   | Location                 |
+| --------- | ------------------------ |
+| Ligands   | `apps/ligands`           |
+| Complexes | `apps/complexes`         |
+| PDBe-KB   | `apps/kb-corporate-page` |
+
+### Example: testing Ligands SSR locally
+
+Build the application:
+
+```bash
+npx nx build ligands
+```
+
+Run the SSR server:
+
+```bash
+PORT=4000 NODE_ENV=production APP_BASE_HREF=/pdbe-srv/pdbechem/chemicalCompound/ node dist/apps/ligands/server/server.mjs
+```
+
+Then open an example URL in the browser:
+
+```bash
+http://localhost:4000/pdbe-srv/pdbechem/chemicalCompound/ATP
+```
+
+The important part is that the local URL must include the same base href passed through APP_BASE_HREF.
 
 ## Using the Playground App
+
+The Playground app currently exists in the repository but is not actively used.
+
+Historically, it was used to quickly showcase experimental components or pages.
 
 Simply create a page component in the `pages` folder to showcase whatever you want to do. Add its `route` in the `app.routes.ts`, then put its link the `app.component.html` file as sidebar menu.
 

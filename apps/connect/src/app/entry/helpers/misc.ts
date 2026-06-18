@@ -99,16 +99,95 @@ export interface DropdownOptionWithData<TCustomData> extends DownloadOption {
   data: TCustomData;
 }
 
+/**
+ * Small state container for dropdown options and the currently selected option.
+ *
+ * Example 1:
+ *
+ *   public dropdown = new Dropdown<CommonDropdownOptionData>({
+ *     autoOptions: () =>
+ *       makeMacromoleculeChainDropdownOptions(this.currentMacromoleculeDatum()),
+ *   });
+ *
+ *   public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+ *     autoOptions: () =>
+ *       makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+ *   });
+ *
+ * In the example above:
+ *
+ *   - the chain dropdown options are derived from the current macromolecule;
+ *   - the symmetry dropdown options are derived from the selected chain option;
+ *   - when the macromolecule changes, the chain dropdown is rebuilt;
+ *   - when the selected chain changes, the symmetry dropdown is rebuilt.
+ *
+ * Example 2:
+ *
+ *   public downloadDropdown = new Dropdown<DownloadData>();
+ *
+ *   async updateDownloadOptions(entry: Entry) {
+ *     const options = await makeDownloadOptions(entry);
+ *
+ *     this.downloadDropdown.updateOptions(options);
+ *   }
+ *
+ *   onDownloadSelect(optionName: string) {
+ *     this.downloadDropdown.select(optionName);
+ *
+ *     const selected = this.downloadDropdown.selectedOption();
+ *     const url = selected?.data.url;
+ *
+ *     if (url) {
+ *       this.downloadFile(url);
+ *     }
+ *   }
+ *
+ * Important side effect:
+ *
+ * Whenever the list of options is updated, the selected option is reset to the
+ * default option. If no custom `defaultOption` function is provided, the first
+ * option is selected. If the options array is empty, the selected option becomes
+ * `undefined`.
+ *
+ * This behavior is intentional because most dropdowns in the application should
+ * always point to a valid option after their source data changes.
+ *
+ * However, it also means that updating options can trigger downstream reactive
+ * updates. For example, if another dropdown uses this dropdown's selected option
+ * inside its own `autoOptions`, that dropdown may also update automatically.
+ */
 export class Dropdown<TData> {
   private _options: DropdownOptionWithData<TData>[] = [];
   private _optionMap: { [name: string]: DropdownOptionWithData<TData> } = {};
+
+  /**
+   * Internal writable signal containing the selected option.
+   *
+   * Consumers should not set this directly. Use `select()` instead so that option
+   * names are validated against the current option map.
+   */
   private _selectedOption = signal<DropdownOptionWithData<TData> | undefined>(undefined);
 
   constructor(
     private readonly settings?: {
-      /** Function which returns set of available options. If this function reads Angular signal, options will automatically update when signal value change. `autoOptions` can only be used within injection context. */
+      /**
+       * Function which returns set of available options.
+       * If this function reads Angular signal, the dropdown options will be recomputed automatically whenever those signals change.
+       * `autoOptions` can only be used within injection context because it is wrapped in an Angular `effect`
+       * Do not call `updateOptions()` manually when `autoOptions` is provided.
+       * The dropdown owns its updates through the effect.
+       */
       autoOptions?: () => DropdownOptionWithData<TData>[];
-      /** Function which returns default option given a set of available options (if not provided, default option is the first one) */
+
+      /**
+       * Chooses which option should be selected from a set of available options after the options list is changed.
+       *
+       * (if not provided, default option is the first one)
+       *
+       * This function is called every time options are updated, including every
+       * time `autoOptions` recomputes.
+       *
+       */
       defaultOption?: (options: DropdownOptionWithData<TData>[]) => DropdownOptionWithData<TData> | undefined;
     }
   ) {
@@ -118,6 +197,9 @@ export class Dropdown<TData> {
       } catch (e) {
         throw new Error(`new Dropdown with autoOptions can only be used within an injection context (${e})`);
       }
+      /**
+       * Keep set of options in sync with the reactive data used by `autoOptions` or by `_updateOptions` calls
+       */
       effect(() => {
         const newOptions = settings.autoOptions!();
         this._updateOptions(newOptions);
@@ -125,15 +207,37 @@ export class Dropdown<TData> {
     }
   }
 
+  /**
+   * Current list of available dropdown options.
+   *
+   * This is updated either manually through `updateOptions()` or automatically
+   * through `autoOptions`.
+   */
   public get options() {
     return this._options;
   }
 
-  /** Update options and reset `selected` to the first listed option (or to `undefined` if there are no options) */
+  /**
+   * Manually replace the dropdown options.
+   *
+   * This method also resets the selected option to the default option.
+   *
+   * Use this only for non-reactive dropdowns.
+   *
+   * If the dropdown was created with `autoOptions`, calling this method is invalid
+   * because the options are owned by the Angular effect created in the constructor.
+   */
   public updateOptions(options: DropdownOptionWithData<TData>[]) {
     if (this.settings?.autoOptions) throw new Error('Calling `updateOptions` is invalid if `autoOptions` is set');
     this._updateOptions(options);
   }
+
+  /**
+   * Internal option update implementation.
+   *
+   * Replaces the option list, rebuilds the lookup map, and resets the selected
+   * option to the default option.
+   */
   private _updateOptions(options: DropdownOptionWithData<TData>[]) {
     this._options = options;
     this._optionMap = Object.fromEntries(options.map((opt) => [opt.name, opt]));
@@ -141,7 +245,11 @@ export class Dropdown<TData> {
     this.select(defaultOption?.name);
   }
 
-  /** Set current selected value */
+  /**
+   * Selects an option by name.
+   *
+   * Passing `undefined` clears the selection.
+   */
   public select(optionName: string | undefined) {
     if (optionName !== undefined && !(optionName in this._optionMap))
       throw new Error(`Trying to select invalid option "${optionName}" (available options: ${this.options})`);
@@ -149,10 +257,20 @@ export class Dropdown<TData> {
     this._selectedOption.set(option);
   }
 
+  /**
+   * Currently selected dropdown option.
+   *
+   * This is a computed signal.
+   */
   public selectedOption = computed<DropdownOptionWithData<TData> | undefined>(() => {
     return this._selectedOption();
   });
 
+  /**
+   * Name of the currently selected option.
+   *
+   * This is a convenience computed signal.
+   */
   public selectedName = computed(() => this._selectedOption()?.name);
 }
 
