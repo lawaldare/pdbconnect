@@ -1,12 +1,12 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { headerLogoMenuConfig, homePageUrls, ligandHomePageSeaderSearchConfig } from '../../../ligand.constant';
+import { homePageUrls, ligandHomePageSeaderSearchConfig, ligandsHeaderLogoMenuConfig } from '../../../ligand.constant';
 import { AG_Grid_Theme_Class, agGridOptionsBase, HeaderLogoMenuConfig } from '@pdbc/core';
 import { AggregatedApiService } from '../../../services/aggregated-api.service';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { GridOptions, ColDef, GridReadyEvent } from 'ag-grid-community';
 import { UniProtAccessionRendererComponent } from '../../cell renderers/lr-uniprot-accession/lr-uniprot-accession.component';
 
 export interface LatestRelease {
@@ -24,7 +24,7 @@ export interface LatestRelease {
   styleUrl: './latest-releases.component.scss',
 })
 export class LatestReleasesComponent {
-  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, urls: homePageUrls } as HeaderLogoMenuConfig;
+  public readonly headerLogoMenuConfig = { ...ligandsHeaderLogoMenuConfig, urls: homePageUrls } as HeaderLogoMenuConfig;
   public readonly headerSearchConfig = { ...ligandHomePageSeaderSearchConfig, backgroundColor: 'rgba(8, 95, 92, 0.80)' };
   private readonly aggregatedApiService = inject(AggregatedApiService);
 

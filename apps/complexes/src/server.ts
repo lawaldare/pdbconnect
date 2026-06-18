@@ -31,6 +31,10 @@ const angularApp = new AngularNodeAppEngine({
   trustProxyHeaders: true,
 } as any);
 
+app.get('/health', (_req, res) => {
+  res.status(200).set('Cache-Control', 'no-store').json({ status: 'OK' });
+});
+
 // 🧠 GLOBAL PREFIX INJECTOR: Run this BEFORE static files or SSR blocks
 app.use((req, res, next) => {
   const baseHref = '/pdbe/pdbe-kb/complexes';

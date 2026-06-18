@@ -32,16 +32,17 @@ export const navComplexSections = [
   { sectionId: 'publications-section', sectionName: 'Publications', isSubSection: false },
 ];
 
-export const headerComplexLogoMenuConfig = {
+export const complexesHeaderLogoMenuConfig = {
   backgroundColor: '#085F5C',
   logoType: 'PDBe-KB',
-  headerTitle: 'Complex',
   urls: [
     { name: 'Home', path: 'https://www.ebi.ac.uk/pdbe/', openInNewTab: true },
     { name: 'Services', path: 'https://www.ebi.ac.uk/pdbe/pdbe-services', openInNewTab: true },
     { name: 'Documentation', path: 'https://github.com/PDBe-KB/pdbe-kb-manual/wiki', openInNewTab: true },
   ],
-  logoPath: 'images/PDBE-KB_logo_2019_white_text.png',
+  newHeaderLogo: true,
+  logoPath: 'images/logo.png',
+  logoWidth: '400px',
 };
 
 export const complexRouteTabs = [

@@ -19,7 +19,7 @@ import {
   SurveyService,
   TruncateTextDirective,
 } from '@pdbc/core';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
+import { complexesHeaderLogoMenuConfig, headerSearchComplexConfig, idWarningTooltip } from '../../../complex.constant';
 import { ComplexPublicationsComponent } from '../../page-sections/complex-publications/complex-publications.component';
 import { ComplexLigandsComponent } from '../../page-sections/complex-ligands/complex-ligands.component';
 import { ComplexStoreState } from '../../../store/complex-store.model';
@@ -87,7 +87,7 @@ export class MainComponent implements OnInit {
   private readonly complexUtilService = inject(ComplexUtilService);
   private readonly renderer = inject(Renderer2);
 
-  public readonly headerLogoMenuConfig = { ...headerComplexLogoMenuConfig, isComplexPage: true };
+  public readonly complexesHeaderLogoMenuConfig = complexesHeaderLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchComplexConfig;
 
   public readonly tutorialTourService = inject(ComplexPageTutorialTourService);
@@ -160,7 +160,7 @@ export class MainComponent implements OnInit {
           this.history.set(history);
           if (history.status === this.complexIdHistoryStatus.Superseded) {
             this.historyMessage.set(`${history.query_id} has been superseded since ${history.canonical.effective_date} by ${history.canonical.id}`);
-            this.router.navigate(['/complexes', history.canonical.id]);
+            this.router.navigate(['/', history.canonical.id]);
             this.globalStore.dispatch(ComplexActions.setCurrentComplexId({ complexId: history.canonical.id }));
             this.dispatchCoreActions();
           } else if (history.canonical.status === this.complexIdHistoryStatus.Active) {

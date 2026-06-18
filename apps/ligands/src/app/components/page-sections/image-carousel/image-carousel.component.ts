@@ -1,4 +1,4 @@
-import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed } from '@angular/core';
+import { Component, Renderer2, ElementRef, ViewChild, AfterViewInit, inject, DestroyRef, signal, computed, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
@@ -9,6 +9,7 @@ import { ImageCarouselComponentFacade } from './image-carousel.facade';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'pdbc-image-carousel',
@@ -27,6 +28,7 @@ export class ImageCarouselComponent implements AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly utilService = inject(UtilService);
   private readonly facade = inject(ImageCarouselComponentFacade);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly globalStore = inject(Store<LigandStoreState>);
@@ -38,16 +40,18 @@ export class ImageCarouselComponent implements AfterViewInit {
   public currentSlide = computed(() => this.facade.currentSlide() + 1);
 
   ngAfterViewInit() {
-    this.globalStore
-      .select(LigandSelectors.ligandId)
-      .pipe(
-        map((ligandId) => {
-          this.facade.resetRenderer(this.renderer, this.imageContainer);
-          this.facade.init(this.renderer, ligandId, this.imageContainer);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe();
+    if (isPlatformBrowser(this.platformId)) {
+      this.globalStore
+        .select(LigandSelectors.ligandId)
+        .pipe(
+          map((ligandId) => {
+            this.facade.resetRenderer(this.renderer, this.imageContainer);
+            this.facade.init(this.renderer, ligandId, this.imageContainer);
+          }),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe();
+    }
   }
 
   public onShowTooltips(): void {

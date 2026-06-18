@@ -1,4 +1,4 @@
-@import url('libs/core/src/lib/styles/pdb_connect.scss');
+@import 'libs/core/src/lib/styles/pdb_connect.scss';
 
 section {
   .container {
@@ -70,7 +70,7 @@ section.chips {
       display: none;
     }
 
-    span {
+    a {
       font-size: 16px;
       line-height: 28px;
       padding: 0 10px;

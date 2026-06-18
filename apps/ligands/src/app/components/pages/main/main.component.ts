@@ -8,7 +8,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { LigandSpecificDatabasesComponent } from '../../page-sections/ligand-specific-databases/ligand-specific-databases.component';
 import { DropdownMenuComponent } from '@pdbe-lib/dropdown-menu';
 import { mergeMap, switchMap } from 'rxjs/operators';
-import { cofactorTooltip, drugTooltip, headerLogoMenuConfig, headerSearchConfig, ligandRouteTabs, reactantTooltip } from '../../../ligand.constant';
+import { cofactorTooltip, drugTooltip, headerSearchConfig, ligandRouteTabs, ligandsHeaderLogoMenuConfig, reactantTooltip } from '../../../ligand.constant';
 import {
   ClarityConsentService,
   DataLayerService,
@@ -26,8 +26,7 @@ import { LigandUtilService } from '../../../ligand-util.service';
 import { LigandStoreState } from '../../../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
-import { combineLatest, EMPTY, of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { combineLatest, of } from 'rxjs';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { LoadingState } from '../../../enums/loading-state.enum';
 import { LigandStructure } from '../../../data-models/structure.model';
@@ -98,7 +97,7 @@ export class LigandsMainPageComponent implements OnInit {
   public drugTooltip = drugTooltip;
   public reactantTooltip = reactantTooltip;
 
-  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, isLigandPage: true };
+  public readonly ligandsHeaderLogoMenuConfig = ligandsHeaderLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchConfig;
 
   public ligandId = signal<string>('');
@@ -152,14 +151,14 @@ export class LigandsMainPageComponent implements OnInit {
       )
       .subscribe(() => {
         this.launchSurveyForLigandsPage(this.ligandId(), this.isDesktop());
-        // this.seoService.update(
-        //   {
-        //     title: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
-        //     description: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
-        //     url: `${environment.baseUrl}pdbe-srv/pdbechem/chemicalCompound/show/${this.ligandId()}`,
-        //   },
-        //   this.renderer
-        // );
+        this.seoService.update(
+          {
+            title: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            description: `PDB ${this.ligandId()}: ${this.description()?.name} | Protein Data Bank in Europe Knowledge Base - PDBe-KB`,
+            url: `${environment.baseUrl}pdbe-srv/pdbechem/chemicalCompound/show/${this.ligandId()}`,
+          },
+          this.renderer
+        );
         this.generateSchemaData();
       });
   }

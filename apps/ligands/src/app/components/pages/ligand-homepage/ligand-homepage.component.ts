@@ -2,7 +2,7 @@ import { AfterViewInit, Component, PLATFORM_ID, inject, signal } from '@angular/
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { faqs, headerLogoMenuConfig, homePageUrls, ligandHomePageSeaderSearchConfig, quickLinks, slides } from '../../../ligand.constant';
+import { faqs, ligandsHeaderLogoMenuConfig, homePageUrls, ligandHomePageSeaderSearchConfig, quickLinks, slides } from '../../../ligand.constant';
 import { HeaderLogoMenuConfig, MaterialModule } from '@pdbc/core';
 import Splide from '@splidejs/splide';
 import { Slide } from '../../../data-models/slide';
@@ -15,7 +15,7 @@ import { Slide } from '../../../data-models/slide';
   styleUrl: './ligand-homepage.component.scss',
 })
 export class LigandHomepageComponent implements AfterViewInit {
-  public readonly headerLogoMenuConfig = { ...headerLogoMenuConfig, urls: homePageUrls } as HeaderLogoMenuConfig;
+  public readonly headerLogoMenuConfig = { ...ligandsHeaderLogoMenuConfig, urls: homePageUrls } as HeaderLogoMenuConfig;
   public readonly headerSearchConfig = ligandHomePageSeaderSearchConfig;
   public readonly links = signal<{ label: string; url: string }[]>(quickLinks);
   public readonly slides = signal<Slide[]>(slides);

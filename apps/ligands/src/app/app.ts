@@ -40,13 +40,17 @@ export class App implements OnInit {
     if (this.isBrowser) {
       this.init();
 
+      const fullUrl = window.location.href;
       const pathName = window.location.pathname;
-      if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
+      if (fullUrl.includes('/localhost') || fullUrl.includes('127.0.0.1')) {
+        await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
+        return;
+      } else if (pathName.includes(`/pdbe-srv/pdbechem/`)) {
         this.runAbsolutePath(pathName);
         return;
+      } else {
+        console.warn('Unknown pathName, skipping script load:', pathName);
       }
-
-      await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
     }
   }
 
