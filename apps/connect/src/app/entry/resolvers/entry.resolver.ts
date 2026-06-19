@@ -13,6 +13,10 @@ export interface EntryPageResolvedData {
 }
 
 export const entryPageResolver: ResolveFn<EntryPageResolvedData> = (route: ActivatedRouteSnapshot) => {
+  console.log('RESOLVER HIT');
+  console.log(route.url);
+  console.log(route.paramMap.get('entryId'));
+
   const store = inject(Store);
 
   const entryId = route.paramMap.get('entryId')!.toLowerCase().replace('pdb_0000', '');
