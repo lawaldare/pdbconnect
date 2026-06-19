@@ -69,7 +69,7 @@
           "sourceMap": true,
           "vendorChunk": false,
           "outputHashing": "all",
-          "baseHref": "/"
+          "baseHref": "/pdbe/entry/"
         },
         "staging": {
           "fileReplacements": [
@@ -98,7 +98,7 @@
           "sourceMap": true,
           "vendorChunk": false,
           "outputHashing": "all",
-          "baseHref": "/"
+          "baseHref": "/pdbe/entry/"
         },
         "development": {
           "aot": true,
@@ -109,7 +109,7 @@
           "sourceMap": true,
           "vendorChunk": false,
           "outputHashing": "all",
-          "baseHref": "/"
+          "baseHref": "/pdbe/entry/"
         },
         "local": {
           "buildOptimizer": false,
