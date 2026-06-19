@@ -21,9 +21,9 @@ export class BaseHrefService {
     } else if (pathname.includes('complexes')) {
       baseHref = '/pdbe/pdbe-kb/';
     } else if (pathname.includes('entry')) {
-      baseHref = '/pdbe/entry/';
+      baseHref = '/';
     } else if (pathname.includes('search/index')) {
-      baseHref = '/pdbe/entry/';
+      baseHref = '/';
     } else {
       const pathnamesArray = pathname.split('/');
       const mappedHref = `/${pathnamesArray[1]}/${pathnamesArray[2]}/`;
