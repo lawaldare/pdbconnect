@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LigandSpecificDatabasesComponentFacade } from './ligand-specific-databases.facade';
 import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
@@ -34,6 +34,8 @@ export class LigandSpecificDatabasesComponent implements OnInit {
 
   @ViewChild('crosslink', { read: ElementRef }) crosslink!: ElementRef;
 
+  protected readonly inchikey = signal<string>('');
+
   onScroll(event: Event): void {
     const element = event.target as HTMLElement;
     if (element.scrollTop === 0) {
@@ -50,6 +52,7 @@ export class LigandSpecificDatabasesComponent implements OnInit {
       .select(LigandSelectors.description)
       .pipe(
         map((description) => {
+          this.inchikey.set(description.inchikey);
           this.facade.init(description.crossLinks ?? []);
         }),
         takeUntilDestroyed(this.destroyRef)

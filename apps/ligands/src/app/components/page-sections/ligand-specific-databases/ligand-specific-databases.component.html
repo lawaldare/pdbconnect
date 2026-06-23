@@ -16,12 +16,25 @@
     <div class="cross-link">
       <p matTooltipClass="complex-name-tooltip" [matTooltip]="crosslink.description" matTooltipPosition="above">{{ crosslink.resource }}</p>
       <div class="resource-ids" (scroll)="onScroll($event)">
-        @for(id of crosslink.resourceIds; track id){ @let url = crosslink.link + id; @let eventName = 'click_' + crosslink.resource + '_link';
+        @for(id of crosslink.resourceIds; track id){
+        <!-- looping -->
+        @let url = crosslink.link + id; @let eventName = 'click_' + crosslink.resource + '_link';
         <a [href]="url" target="_blank" (click)="googleAnalyticsService.logClickEvents(eventName, 'Ligand-specific databases', 'click_database_link', id)">
           {{ id }}
           <i class="icon icon-link icon-common"></i>
         </a>
         }
+      </div>
+    </div>
+    } @if(inchikey()){
+    <div class="cross-link">
+      <p matTooltipClass="complex-name-tooltip" [matTooltip]="" matTooltipPosition="above">MDposit</p>
+      <div class="resource-ids" (scroll)="onScroll($event)">
+        @let url = 'https://mdposit.mddbr.eu/#/pointer?ref=inchikeys&id=' + inchikey(); @let eventName = 'click_MDposit_link';
+        <a [href]="url" target="_blank" (click)="googleAnalyticsService.logClickEvents(eventName, 'Ligand-specific databases', 'click_database_link', inchikey())">
+          {{ inchikey() }}
+          <i class="icon icon-link icon-common"></i>
+        </a>
       </div>
     </div>
     }
