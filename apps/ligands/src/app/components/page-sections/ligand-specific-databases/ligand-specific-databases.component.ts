@@ -7,6 +7,7 @@ import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../../../store/ligand.selectors';
 import { map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MDpositTooltip } from '../../../ligand.constant';
 
 export interface MappedCrossLink {
   resource: string;
@@ -35,6 +36,7 @@ export class LigandSpecificDatabasesComponent implements OnInit {
   @ViewChild('crosslink', { read: ElementRef }) crosslink!: ElementRef;
 
   protected readonly inchikey = signal<string>('');
+  protected readonly MDpositTooltip = MDpositTooltip;
 
   onScroll(event: Event): void {
     const element = event.target as HTMLElement;

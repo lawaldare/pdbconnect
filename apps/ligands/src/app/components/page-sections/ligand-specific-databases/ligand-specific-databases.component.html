@@ -28,7 +28,7 @@
     </div>
     } @if(inchikey()){
     <div class="cross-link">
-      <p matTooltipClass="complex-name-tooltip" [matTooltip]="" matTooltipPosition="above">MDposit</p>
+      <p matTooltipClass="complex-name-tooltip" [matTooltip]="MDpositTooltip" matTooltipPosition="above">MDposit</p>
       <div class="resource-ids" (scroll)="onScroll($event)">
         @let url = 'https://mdposit.mddbr.eu/#/pointer?ref=inchikeys&id=' + inchikey(); @let eventName = 'click_MDposit_link';
         <a [href]="url" target="_blank" (click)="googleAnalyticsService.logClickEvents(eventName, 'Ligand-specific databases', 'click_database_link', inchikey())">
