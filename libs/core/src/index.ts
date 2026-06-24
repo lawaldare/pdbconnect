@@ -33,6 +33,7 @@ export * from './lib/services/survey.service';
 export * from './lib/services/util.service';
 export * from './lib/services/xml-image-renderer.service';
 export * from './lib/services/seo.service';
+export * from './lib/services/browser-log-interceptor';
 export * from './lib/survey.component';
 export * from './lib/utils/mutex';
 export * from './lib/utils/single-async-queue';

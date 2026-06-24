@@ -1,13 +1,13 @@
 import { APP_INITIALIZER, ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { appRoutes } from './app.routes';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore } from '@ngrx/store';
 import { ComplexEffects } from './store/complex.effects';
 import { complexReducer } from './store/complex.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { BaseHrefService } from '@pdbc/core';
+import { BaseHrefService, ssrBrowserLogInterceptor } from '@pdbc/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export function initializeApp(baseHrefService: BaseHrefService) {
@@ -19,7 +19,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([ssrBrowserLogInterceptor])),
     provideEffects([ComplexEffects]),
     provideStore({ complex: complexReducer }),
     provideStoreDevtools({
