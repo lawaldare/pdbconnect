@@ -855,7 +855,7 @@ export class EntryEffects {
       ofType(EntryActions.getProcAssembliesFilters),
       switchMap(() =>
         combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.assemblies)]).pipe(
-          filter(([summaryData, assemblies]) => summaryData !== undefined && assemblies !== undefined)
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -877,7 +877,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.complexDetails),
           this.store.select(EntrySelectors.assemblies),
         ]).pipe(
-          filter(([summaryData, complexDetails, assemblies]) => summaryData !== undefined && complexDetails !== undefined && assemblies !== undefined)
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -901,10 +901,7 @@ export class EntryEffects {
             this.store.select(EntrySelectors.summaryData),
             this.store.select(EntrySelectors.complexDetails),
           ]).pipe(
-            filter(
-              ([assemblies, pisaAssemblies, summaryData, complexDetails]) =>
-                assemblies !== undefined && pisaAssemblies !== undefined && summaryData !== undefined && complexDetails !== undefined
-            ),
+            filter((inputs) => inputs.every((input) => input !== undefined)),
             take(1)
           ) // take a snapshot
       ),
@@ -928,7 +925,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.macroMolecules),
           this.store.select(EntrySelectors.polymerCoverage),
         ]).pipe(
-          filter(([summaryData, assemblies]) => summaryData !== undefined && assemblies !== undefined)
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -1011,15 +1008,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
         ]).pipe(
-          filter(
-            ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              ligands !== undefined &&
-              boundMolecules !== undefined &&
-              ligandMonomers !== undefined &&
-              modifications !== undefined
-          )
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -1056,15 +1045,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
         ]).pipe(
-          filter(
-            ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              ligands !== undefined &&
-              boundMolecules !== undefined &&
-              ligandMonomers !== undefined &&
-              modifications !== undefined
-          )
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -1102,15 +1083,7 @@ export class EntryEffects {
             this.store.select(EntrySelectors.ligandMonomers),
             this.store.select(EntrySelectors.modifications),
           ]).pipe(
-            filter(
-              ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                ligands !== undefined &&
-                boundMolecules !== undefined &&
-                ligandMonomers !== undefined &&
-                modifications !== undefined
-            ),
+            filter((inputs) => inputs.every((input) => input !== undefined)),
             take(1)
           ) // take a snapshot
       ),
@@ -1149,15 +1122,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.scop175Mapping),
           this.store.select(EntrySelectors.pfamMapping),
         ]).pipe(
-          filter(
-            ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              polymerCoverage !== undefined &&
-              cathMappings !== undefined &&
-              scopMappings !== undefined &&
-              pfamMappings !== undefined
-          )
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -1192,15 +1157,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.scop175Mapping),
           this.store.select(EntrySelectors.pfamMapping),
         ]).pipe(
-          filter(
-            ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              polymerCoverage !== undefined &&
-              cathMappings !== undefined &&
-              scopMappings !== undefined &&
-              pfamMappings !== undefined
-          )
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -1281,15 +1238,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.llmAnnotations),
           this.store.select(EntrySelectors.polymerCoverage),
         ]).pipe(
-          filter(
-            ([summaryData, assemblyData, macromolecules, uniprotMappings, llmAnnotations, polymerCoverage]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              macromolecules !== undefined &&
-              uniprotMappings !== undefined &&
-              llmAnnotations !== undefined &&
-              polymerCoverage !== undefined
-          )
+          filter((inputs) => inputs.every((input) => input !== undefined))
           // take(1)
         )
       ),
@@ -1328,16 +1277,7 @@ export class EntryEffects {
             this.store.select(EntrySelectors.llmAnnotations),
             this.store.select(EntrySelectors.polymerCoverage),
           ]).pipe(
-            filter(
-              ([summaryData, assemblyData, macromolecules, carbohydrates, uniprotMappings, llmAnnotations, polymerCoverage]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                macromolecules !== undefined &&
-                carbohydrates !== undefined &&
-                uniprotMappings !== undefined &&
-                llmAnnotations !== undefined &&
-                polymerCoverage !== undefined
-            ),
+            filter((inputs) => inputs.every((input) => input !== undefined)),
             take(1)
           ) // take a snapshot
       ),
@@ -1419,7 +1359,7 @@ export class EntryEffects {
       switchMap(
         () =>
           combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.complexDetails)]).pipe(
-            filter(([summaryData, complexDetails]) => summaryData !== undefined && complexDetails !== undefined),
+            filter((inputs) => inputs.every((input) => input !== undefined)),
             take(1)
           ) // take a snapshot
       ),
