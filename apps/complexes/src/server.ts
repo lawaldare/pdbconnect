@@ -9,6 +9,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 // @ts-ignore Angular generates this manifest next to the built server bundle.
 import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
+import { ssrErrors } from '@pdbc/core';
 
 const allowedHosts = ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost', '127.0.0.1'];
 
@@ -75,18 +76,23 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.get('/**', (req, res, next) => {
-  // Absolute safety net: Skip the SSR engine entirely if the request is trying to load a file
   if (req.path.includes('.')) {
     return next();
   }
   angularApp
     .handle(req)
     .then((response) => {
-      if (response) {
-        writeResponseToNodeResponse(response, res);
-      } else {
-        next();
+      if (!response) {
+        return next();
       }
+
+      if (ssrErrors.length > 0) {
+        console.error('SSR failures found:', ssrErrors);
+        res.setHeader('X-SSR-API-ERRORS', JSON.stringify(ssrErrors));
+        ssrErrors.length = 0;
+      }
+
+      writeResponseToNodeResponse(response, res);
     })
     .catch((err) => {
       console.error('SSR error:', err);

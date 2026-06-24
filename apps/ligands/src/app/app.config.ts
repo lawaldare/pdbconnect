@@ -9,14 +9,14 @@ import { ligandReducer } from './store/ligand.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { APP_BASE_HREF } from '@angular/common';
-import { ssrBrowserLogInterceptor } from '@pdbc/core';
+import { apiErrorInterceptor } from '@pdbc/core';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideHttpClient(withFetch(), withInterceptors([ssrBrowserLogInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([apiErrorInterceptor])),
     provideEffects([LigandEffects]),
     provideStore({ ligands: ligandReducer }),
     provideStoreDevtools({
