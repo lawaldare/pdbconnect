@@ -42,7 +42,7 @@ export class ComplexAPIService {
   }
 
   public getComplexIdHistory(complexId: string): Observable<any> {
-    return this.http.get<any>(`${this.AggregatedApiUrl}complex/id_history/${complexId}`).pipe(
+    return this.http.get<any>(`${this.AggregatedApiUrl}omplex/id_history/${complexId}`).pipe(
       timeout(this.DEFAULT_TIMEOUT),
       map((response: any) => {
         return response[complexId];
