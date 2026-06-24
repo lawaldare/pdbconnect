@@ -855,12 +855,7 @@ export class EntryEffects {
   getProcAssembliesFilters$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getProcAssembliesFilters),
-      switchMap(() =>
-        combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.assemblies)]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
-      ),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.assemblies)]).pipe(filter(allDefined))),
       map(([summaryData, assemblies]) => {
         const procAssembliesFilters = generateAssembliesTableFilters(summaryData, assemblies);
         return EntryActions.getProcAssembliesFiltersSuccess({ procAssembliesFilters });
@@ -877,10 +872,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.complexDetails),
           this.store.select(EntrySelectors.assemblies),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, complexDetails, assemblies]) => {
         const procAssembliesCards = generateAssembliesCards(assemblies, complexDetails, summaryData);
@@ -919,10 +911,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.macroMolecules),
           this.store.select(EntrySelectors.polymerCoverage),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblies, macromolecules, polymerCoverage]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
@@ -944,10 +933,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.macroMolecules),
           this.store.select(EntrySelectors.carbohydrates),
           this.store.select(EntrySelectors.polymerCoverage),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblies, macromolecules, carbohydrates, polymerCoverage]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
@@ -990,15 +976,11 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.boundLigands),
-          this.store.select(EntrySelectors.boundMolecules),
           this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
-      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
+      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
         const ligandMonomersMapped = mapLigandMonomersForPrefAssembly(ligandMonomers, preferredAssembly);
@@ -1018,15 +1000,11 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.boundLigands),
-          this.store.select(EntrySelectors.boundMolecules),
           this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
-      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
+      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
         const ligandMonomersMapped = mapLigandMonomersForPrefAssembly(ligandMonomers, preferredAssembly);
@@ -1047,12 +1025,11 @@ export class EntryEffects {
             this.store.select(EntrySelectors.summaryData),
             this.store.select(EntrySelectors.assemblies),
             this.store.select(EntrySelectors.boundLigands),
-            this.store.select(EntrySelectors.boundMolecules),
             this.store.select(EntrySelectors.ligandMonomers),
             this.store.select(EntrySelectors.modifications),
           ]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
-      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
+      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
         const ligandMonomersMapped = mapLigandMonomersForPrefAssembly(ligandMonomers, preferredAssembly);
@@ -1077,10 +1054,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.cathMapping),
           this.store.select(EntrySelectors.scop175Mapping),
           this.store.select(EntrySelectors.pfamMapping),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
@@ -1103,10 +1077,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.cathMapping),
           this.store.select(EntrySelectors.scop175Mapping),
           this.store.select(EntrySelectors.pfamMapping),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
@@ -1162,10 +1133,7 @@ export class EntryEffects {
           this.store.select(EntrySelectors.uniprotMapping),
           this.store.select(EntrySelectors.llmAnnotations),
           this.store.select(EntrySelectors.polymerCoverage),
-        ]).pipe(
-          filter(allDefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblyData, macromolecules, uniprotMappings, llmAnnotations, polymerCoverage]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
