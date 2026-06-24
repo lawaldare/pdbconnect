@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path';
 import angularAppEngineManifest from './angular-app-engine-manifest.mjs';
 import { ɵsetAngularAppEngineManifest } from '@angular/ssr';
 import { fileURLToPath } from 'node:url';
+import { ssrErrors } from '@pdbc/core';
 
 const allowedHosts = ['wwwdev.ebi.ac.uk', 'www.ebi.ac.uk', 'localhost', '127.0.0.1'];
 
@@ -79,11 +80,17 @@ app.get('/**', (req, res, next) => {
   angularApp
     .handle(req)
     .then((response) => {
-      if (response) {
-        writeResponseToNodeResponse(response, res);
-      } else {
-        next();
+      if (!response) {
+        return next();
       }
+
+      if (ssrErrors.length > 0) {
+        console.error('SSR failures found:', ssrErrors);
+        res.setHeader('X-SSR-API-ERRORS', JSON.stringify(ssrErrors));
+        ssrErrors.length = 0;
+      }
+
+      writeResponseToNodeResponse(response, res);
     })
     .catch((err) => {
       console.error('SSR error:', err);
