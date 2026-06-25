@@ -17,6 +17,13 @@ export class SingleAsyncQueue {
     this.counter++;
     this.run(); // do not await
   }
+  /** This allows enqueuing multiple jobs within a short time (`throttleMs`) and only running the last job, `throttleMs` after the first job was enqueued.
+   * (Without throttling, the first and the last job would run).
+   * Usefull for events like user typing (not having to run a job after each keystroke). */
+  enqueueWithThrottle(throttleMs: number, job: () => any) {
+    this.enqueue(() => sleep(throttleMs));
+    this.enqueue(job);
+  }
   private async run() {
     if (this.isRunning) return;
     const job = this.queue.pop();
@@ -31,4 +38,8 @@ export class SingleAsyncQueue {
       this.run();
     }
   }
+}
+
+function sleep(timeMs: number) {
+  return new Promise((resolve) => setTimeout(resolve, timeMs));
 }

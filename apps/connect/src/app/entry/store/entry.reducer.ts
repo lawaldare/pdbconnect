@@ -1,19 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createReducer, on } from '@ngrx/store';
+import { IRRMCExperimentRawData, SBGRIDExperimentRawData } from '../data-models/experiment-raw-data.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
+import { CitationDetail } from '../data-models/publication.model';
+import { RelatedPublication } from '../data-models/related-publications.model';
+import { entryStatusDefault } from '../data-models/status.model';
+import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
+import { XRayRefine } from '../data-models/x-ray-refine.model';
 import { EntryStoreState } from './entry-store.model';
 import { EntryActions } from './entry.actions';
-// import { UniProtMapping } from '../data-models/uniprot-mapping.model';
-// import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
-import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
-import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
-import { XRayRefine } from '../data-models/x-ray-refine.model';
-import { CitationDetail } from '../data-models/publication.model';
-// import { CathMappings, InterProMappings, PfamMappings, ScopMappings } from '../data-models/domains.model';
-import { ProcessedSummary } from '../data-models/summary.model';
-import { RelatedPublication } from '../data-models/related-publications.model';
-import { IRRMCExperimentRawData, SBGRIDExperimentRawData } from '../data-models/experiment-raw-data.model';
-import { entryStatusDefault } from '../data-models/status.model';
-import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
 
 export const ENTRY_STORE_STATE_KEY = 'entry';
 
@@ -61,7 +56,7 @@ const initialState: EntryStoreState = {
   experimentRawDataPDB: [],
   entryStatus: { ...entryStatusDefault },
   interactions: {},
-  residueListing: [],
+  residueListing: undefined,
   symmetry: [],
   polymerCoverage: undefined,
   ligandMonomers: undefined,

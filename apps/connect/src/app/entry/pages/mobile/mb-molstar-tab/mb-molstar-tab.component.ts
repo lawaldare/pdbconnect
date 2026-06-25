@@ -1,18 +1,22 @@
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, NgZone, QueryList, signal, Type, ViewChild, ViewChildren, OnInit } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { EntryStoreState } from '../../../store/entry-store.model';
 import { Store } from '@ngrx/store';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { EntrySelectors } from '../../../store/entry.selectors';
-import { MobileFacade } from '../mobile.facade';
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { take } from 'rxjs';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { take } from 'rxjs';
+import { whenSignalFirstTrue } from '../../../helpers/misc';
+import { EntryPageTabsCommonMolstarParams } from '../../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../../helpers/molstar-nmr-model-tracking';
+import { MVSHandler } from '../../../helpers/mvs-handler';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
 import { MobileTabChips } from '../../../store/data-processing/models/other-models';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntryActions } from '../../../store/entry.actions';
+import { EntrySelectors } from '../../../store/entry.selectors';
 import { MbAssembliesComponent } from '../mb-assemblies/mb-assemblies.component';
 import { MbDomainsComponent } from '../mb-domains/mb-domains.component';
 import { MbLigandsComponent } from '../mb-ligands/mb-ligands.component';
@@ -20,7 +24,7 @@ import { MbMacromoleculeComponent } from '../mb-macromolecules/mb-macromolecule.
 import { MbModelQualityComponent } from '../mb-model-quality/mb-model-quality.component';
 import { MobileStateService } from '../mobile-state.service';
 import { MobileTabNames } from '../mobile-tab.model';
-import { Molstar370DefaultParams } from '../../../helpers/molstar-helpers';
+import { MobileFacade } from '../mobile.facade';
 
 const MOBILE_COMPONENT_MAP = {
   [MobileTabChips.MQuality]: MbModelQualityComponent,
@@ -36,7 +40,7 @@ const MOBILE_COMPONENT_MAP = {
   templateUrl: './mb-molstar-tab.component.html',
   styleUrl: './mb-molstar-tab.component.scss',
 })
-export class MbMolstarTabComponent implements AfterViewInit {
+export class MbMolstarTabComponent implements AfterViewInit, OnInit {
   private bottomSheet = inject(MatBottomSheet);
   private readonly globalStore = inject(Store<EntryStoreState>);
   private readonly state = inject(MobileStateService);
@@ -52,6 +56,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
   @ViewChildren('chipEl') chipElements!: QueryList<ElementRef<HTMLElement>>;
 
   public readonly compCommunication = inject(ComponentCommunicationService);
+  private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
   private readonly destroyRef = inject(DestroyRef);
 
   public readonly mobileTabChips = [
@@ -69,16 +74,10 @@ export class MbMolstarTabComponent implements AfterViewInit {
   @ViewChild('molstarComponent') set molstarComponent(ref: MolstarComponent | undefined) {
     if (ref) {
       this._molstarComponent = ref;
-      this.compCommunication.mobileMolstar = ref;
       this.molstarReady.set(true);
     }
   }
-
-  public molstarFirstRenderFinished = computed(() => {
-    if (!this.molstarReady()) return false;
-    return this._molstarComponent?.firstLoadFinished() || false;
-  });
-  private molstarFirstRenderFinished$ = toObservable(this.molstarFirstRenderFinished);
+  private molstarFirstRenderFinished = computed(() => this.molstarReady() && this._molstarComponent!.firstLoadFinished());
 
   public readonly slowNetwork = toSignal(
     this.compCommunication.slowNetwork$,
@@ -103,53 +102,31 @@ export class MbMolstarTabComponent implements AfterViewInit {
   public inPrefAssembly = this.compCommunication.mobileIsPrefAssembly;
   public hasClosedMessage = this.compCommunication.mobileHasClosedMessage;
 
-  public readonly configForMolstar = computed(() => {
-    const summary = this.summary();
-    const entryId = this.entryId();
-    const inPrefAssembly = this.inPrefAssembly();
+  public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
-    if (!summary || !entryId) return undefined;
-    const preferredAssembly = summary.assemblies.length > 0 ? summary.assemblies.filter((eachAssembly) => eachAssembly.preferred) : [];
-    const preferredAssemblyId = preferredAssembly.length > 0 ? preferredAssembly[0].assembly_id : '1';
-    const assemblyId = inPrefAssembly ? preferredAssemblyId : undefined;
-
-    const configForMolstar = {
-      ...Molstar370DefaultParams,
-      moleculeId: this.entryId(),
-      assemblyId,
-      landscape: false,
-      subscribeEvents: true,
-      granularity: 'residue',
-      hideControls: false,
-      visualStyle: {
-        polymer: {
-          type: 'cartoon',
-          color: 'entity-id',
-          // color: 'uniform',
-          // colorParams: { value: Color(0xd4d5d4) },
-        },
-      },
-      hideCanvasControls: ['controlToggle', 'controlInfo', 'selection', 'animation', 'trajectory'],
-      loadMaps: true,
-      mapSettings: { defaultView: 'selection-box' },
-      sequencePanel: true,
-    };
-    return configForMolstar;
-  });
-  public readonly configForMolstar$ = toObservable(this.configForMolstar);
-
-  private modelIdObserver?: MutationObserver;
   constructor() {
-    // once molstar has rendered, initializes mutation observer for NMR model Id
-    this.molstarFirstRenderFinished$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (finished) => {
-      if (finished) {
-        this.compCommunication.mobileMolstarLoaded$.next(true);
-        this.modelIdObserver = await initializeModelIdTracking(this.compCommunication.mobileModelIdx$, this._molstarComponent?.getContainer());
-      }
+    whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(async () => {
+      const mvsHandler = MVSHandler(this._molstarComponent);
+      this.compCommunication.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
+
+      // once molstar has rendered, initializes mutation observer for NMR model Id
+      initializeModelIdTracking(this.compCommunication.mobileModelIdx$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
     });
-    this.configForMolstar$.subscribe((cfg) => {
-      this.compCommunication.configForMobileMolstar.set(cfg);
-    });
+  }
+
+  ngOnInit() {
+    this.applicationApiDispatcher.dispatchForList([
+      // stuff for this.processedMacromolecules:
+      EntryActions.getAssemblies,
+      EntryActions.getEntryMolecules,
+      EntryActions.getCarbohydrates,
+      EntryActions.getProcessedMacromolecules,
+      // stuff for this.processedLigands:
+      EntryActions.getBoundMolecules,
+      EntryActions.getEntryLigandMonomers,
+      EntryActions.getModifications,
+      EntryActions.getProcessedLigands,
+    ]);
   }
 
   ngAfterViewInit(): void {
@@ -168,7 +145,7 @@ export class MbMolstarTabComponent implements AfterViewInit {
     // this.mbFacade.onTabClick(chip, this.chipElements);
 
     if (chip.id === this.selectedTabName()) {
-      this.state.updateSelectedTabName('');
+      // do nothing
     } else {
       this.state.updateSelectedTabName(chip.id);
       // scrolls into view horizontally on mobile without anti pattern

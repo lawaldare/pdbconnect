@@ -1,15 +1,11 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { ProcessedSummary } from '../data-models/summary.model';
-import { AssembliesData, DownloadOptionData, EntryMoleculesData, EntryResidueWiseData, ExperimentData } from './entry-store.model';
-import { CathMappings, InterProMappings, PfamMappings, RfamMappings, ScopMappings } from '../data-models/domains.model';
-import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
-import { ModifiedResidue } from '../data-models/modified-residues.model';
-import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
-import { XRayRefine } from '../data-models/x-ray-refine.model';
-import { CitationDetail } from '../data-models/publication.model';
-import { RelatedPublication } from '../data-models/related-publications.model';
-import { ComplexDetails } from '../data-models/complex-details.model';
+import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
+import { Symmetry } from '../data-models/assembly.model';
+import { BoundMolecule } from '../data-models/bound-molecule.model';
 import { CarbohydrateMolecule } from '../data-models/carbohydrate-polymer.model';
+import { ComplexDetails } from '../data-models/complex-details.model';
+import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
+import { CathMappings, InterProMappings, PfamMappings, RfamMappings, ScopMappings } from '../data-models/domains.model';
 import {
   BMRBExperimentRawData,
   EMPIARExperimentRawData,
@@ -17,26 +13,29 @@ import {
   PDBExperimentRawData,
   SBGRIDExperimentRawData,
 } from '../data-models/experiment-raw-data.model';
-import { EntryStatus } from '../data-models/status.model';
 import { InteractionFromAPI } from '../data-models/interaction.model';
-import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
-import { Symmetry } from '../data-models/assembly.model';
-import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { KeyValidationStats, ModelQualityXray } from '../data-models/key-validation-stats.model';
 import { LigandMonomer } from '../data-models/ligand-monomers.model';
-import { ResidueWiseOutliersMolecule } from '../data-models/residuewise-outliers.model';
-import { APIConservationData, APITrackData, APIVariationData } from '@pdbe-lib/pv-nightingale-components';
-import { LLMAnnotation } from '../data-models/llm-model';
-import { ResidueListed } from '../data-models/residue-listing.model';
-import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
-import { AssemblyUICard, ProcessedAssembly } from './data-processing/assembly-processing';
-import { Filter, PreferredAssemblyData } from './data-processing/models/other-models';
-import { MacromoleculeUICard } from './data-processing/macromolecule-processing';
-import { LigandOrModUICard, ProcessedLigandOrMod } from './data-processing/ligand-processing';
-import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domain-processing';
-import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
 import { LigandSummaryStats } from '../data-models/ligand-summary-stats.model';
-import { ComplexSummaryStats } from '../data-models/complex-summary-stats.model';
-import { BoundMolecule } from '../data-models/bound-molecule.model';
+import { LLMAnnotation } from '../data-models/llm-model';
+import { ModifiedResidue } from '../data-models/modified-residues.model';
+import { PolymerCoverageMolecule } from '../data-models/polymer-coverage.model';
+import { ProteinSummaryStats } from '../data-models/protein-summary-stats.model';
+import { CitationDetail } from '../data-models/publication.model';
+import { RelatedPublication } from '../data-models/related-publications.model';
+import { ResidueListingChain } from '../data-models/residue-listing.model';
+import { EntryStatus } from '../data-models/status.model';
+import { ProcessedQualityScores } from '../data-models/summary-quality-scores.model';
+import { ProcessedSummary } from '../data-models/summary.model';
+import { ECMapping, GOMapping, UniProtMapping } from '../data-models/uniprot-mapping.model';
+import { XRayRefine } from '../data-models/x-ray-refine.model';
+import { AssemblyUICard, ProcessedAssembly } from './data-processing/assembly-processing';
+import { DomainsWithMacromolecules, DomainUICard } from './data-processing/domain-processing';
+import { LigandOrModUICard, ProcessedLigandOrMod } from './data-processing/ligand-processing';
+import { MacromoleculeUICard } from './data-processing/macromolecule-processing';
+import { Filter, PreferredAssemblyData } from './data-processing/models/other-models';
+import { ProcessedDomain, ProcessedMacromolecule } from './data-processing/models/processed-entities.model';
+import { AssembliesData, DownloadOptionData, EntryMoleculesData, EntryResidueWiseData, ExperimentData } from './entry-store.model';
 
 export const EntryActions = createActionGroup({
   source: 'Ligands Page',
@@ -154,7 +153,7 @@ export const EntryActions = createActionGroup({
     'Get Interactions Success': props<{ chainId: string; residueId: string; interactions: InteractionFromAPI }>(),
     'Get Interactions Failure': emptyProps(),
     'Get Residue Listing': props<{ chainId: string }>(),
-    'Get Residue Listing Success': props<{ residueListing: ResidueListed[] }>(),
+    'Get Residue Listing Success': props<{ residueListing: ResidueListingChain }>(),
     'Get Residue Listing Failure': emptyProps(),
     'Get Entry Polymer Coverage': emptyProps(),
     'Get Entry Polymer Coverage Success': props<{ polymerCoverage: PolymerCoverageMolecule[] }>(),

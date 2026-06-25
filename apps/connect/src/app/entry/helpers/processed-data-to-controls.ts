@@ -1,10 +1,31 @@
+import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { ModifiedResidue } from '../data-models/modified-residues.model';
+import { Molecule } from '../data-models/molecule.model';
+import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR } from '../entry-constant';
+import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
 import { SequenceDetail } from '../store/data-processing/models/other-models';
 import { ProcessedDomain, ProcessedMacromolecule } from '../store/data-processing/models/processed-entities.model';
-import { Molecule } from '../data-models/molecule.model';
-import { ProcessedLigandOrMod } from '../store/data-processing/ligand-processing';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
+import { DropdownOptionWithData, sortSymmetryInstanceIds, unique } from './misc';
 import { QueryParamForHelpers } from './molstar-helpers';
-import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR } from '../entry-constant';
+
+/** Option data for the primary dropdown on most Entry Page tabs ("Chain X", "HEM 500 in chain X"...) */
+export interface CommonDropdownOptionData {
+  authAsymId: string;
+  molstarSelection: QueryParamForHelpers[];
+  inPrefAssembly: boolean;
+  symmOperators: string[];
+  detail:
+    | { kind: 'macromolecule'; item: undefined }
+    | { kind: 'ligand'; item: undefined }
+    | { kind: 'domain'; item: undefined }
+    | { kind: 'modification'; item: ModifiedResidue };
+}
+
+/** Option data for the secondary (symmetry) dropdown on most Entry Page tabs ("All", "ASM-1"...) */
+export interface SymmetryDropdownOptionData {
+  /** Symmetry instance ID, e.g. ASM-1, ASM-3, ASM-2-62 (or `undefined` for the special 'All' option) */
+  instanceId: string | undefined;
+}
 
 export function getCleanMoleculeName(molecule: Molecule) {
   if (molecule.molecule_name && molecule.molecule_name.length > 0) return molecule.molecule_name.join(', ');
@@ -16,7 +37,7 @@ export function getCleanSelectionName(options: DownloadOption[]) {
   return options[0].name.split('<img')[0];
 }
 
-export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?: boolean) {
+function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?: boolean) {
   const dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
   const selections = datum.additionalData.selections;
   const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
@@ -28,9 +49,9 @@ export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?
       if (allChains) dropdownOptionsToMolstar['All chains'].push({ ...segment });
       const selectionKey = inPrefAssembly
         ? `Chain ${segment.auth_asym_id!}`
-        : `Chain ${segment.auth_asym_id!} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+        : `Chain ${segment.auth_asym_id!} <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px;" />`;
       const allChainsInObj = Object.keys(dropdownOptionsToMolstar);
-      if (allChainsInObj.indexOf(selectionKey) > -1) {
+      if (allChainsInObj.includes(selectionKey)) {
         dropdownOptionsToMolstar[selectionKey].push({ ...segment });
       } else {
         dropdownOptionsToMolstar[selectionKey] = [{ ...segment }];
@@ -44,7 +65,28 @@ export function getDomainChainDropdownOptions(datum: ProcessedDomain, allChains?
   return dropdownOptionsToMolstar;
 }
 
-export function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecule) {
+export function makeDomainChainDropdownOptions(domain: ProcessedDomain | undefined, allChains?: boolean) {
+  if (!domain) return [];
+  const options = getDomainChainDropdownOptions(domain, allChains);
+  return Object.keys(options).map((name, idx): DropdownOptionWithData<CommonDropdownOptionData> => {
+    const authAsymId = domain.additionalData.selections[idx][0].auth_asym_id;
+    if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+    return {
+      name: name,
+      url: `domain-${idx + 1}`,
+      downloadable: false,
+      data: {
+        authAsymId,
+        molstarSelection: options[name],
+        inPrefAssembly: domain.additionalData.selectionsInPrefAssembly[idx],
+        symmOperators: domain.symmOpListForSegments[idx] ?? [],
+        detail: { kind: 'domain', item: undefined },
+      },
+    };
+  });
+}
+
+function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecule) {
   const dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
   const selections = datum.additionalData.selections;
   const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
@@ -53,10 +95,31 @@ export function getMacromoleculeChainDropdownOptions(datum: ProcessedMacromolecu
     const inPrefAssembly = selectionsInPrefAssembly[selectionIdx];
     const selectionKey = inPrefAssembly
       ? `Chain ${selection[0].auth_asym_id!}`
-      : `Chain ${selection[0].auth_asym_id!} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+      : `Chain ${selection[0].auth_asym_id!} <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px;" />`;
     dropdownOptionsToMolstar[selectionKey] = selection;
   }
   return dropdownOptionsToMolstar;
+}
+
+export function makeMacromoleculeChainDropdownOptions(macromolecule: ProcessedMacromolecule | undefined) {
+  if (!macromolecule) return [];
+  const options = getMacromoleculeChainDropdownOptions(macromolecule);
+  return Object.keys(options).map((name, idx): DropdownOptionWithData<CommonDropdownOptionData> => {
+    const authAsymId = macromolecule.additionalData.selections[idx][0].auth_asym_id;
+    if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+    return {
+      name: name,
+      url: `macro-${idx + 1}`,
+      downloadable: false,
+      data: {
+        authAsymId,
+        molstarSelection: options[name],
+        inPrefAssembly: macromolecule.additionalData.selectionsInPrefAssembly[idx],
+        symmOperators: macromolecule.chainSymmOperators[authAsymId] ?? [],
+        detail: { kind: 'macromolecule', item: undefined },
+      },
+    };
+  });
 }
 
 function getViewerSequenceForIndexWithMultipleResidues(
@@ -78,7 +141,7 @@ function getViewerSequenceForIndexWithMultipleResidues(
 
 export function getMacromoleculeSequenceDetails(entryId: string, datum: ProcessedMacromolecule, chainId: string) {
   const entity = datum.additionalData.molecule;
-  const seq = entity.sequence;
+  const seq = entity.sequence ?? '';
   let seqForViewer = entity.pdb_sequence;
   const index_with_multiple_residues = datum.additionalData.molecule.pdb_sequence_indices_with_multiple_residues;
   if (index_with_multiple_residues) {
@@ -92,29 +155,18 @@ export function getMacromoleculeSequenceDetails(entryId: string, datum: Processe
   };
 }
 
-export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain: Molecule[], datum: ProcessedDomain, chainId: string): SequenceDetail[] {
-  const sequenceDetails: SequenceDetail[] = [];
-
-  const macromoleculesOfDomainForChain = macromoleculesOfDomain.filter((mm) => mm.in_chains.indexOf(chainId) > -1);
-  if (macromoleculesOfDomainForChain.length > 1) {
-    const allEntityIds = macromoleculesOfDomainForChain.map((mm) => mm.entity_id).join("', '");
-    console.warn(`Multiple entity_id's (${allEntityIds}) mapped to this ${datum.domain}`);
-  }
-
-  const macromolecule = macromoleculesOfDomainForChain[0];
-  const moleculeName = getCleanMoleculeName(macromolecule);
-
-  const boundariesForDomain = datum.additionalData.boundaries;
+export function getDomainSequenceDetail(entryId: string, macromolecule: Molecule, domain: ProcessedDomain, chainId: string): SequenceDetail | undefined {
+  const boundariesForDomain = domain.additionalData.boundaries;
   const boundariesForChainId = boundariesForDomain.filter((boundary) => boundary.chain === chainId);
-  if (boundariesForChainId.length === 0) return [];
-  const segmentsStringsForDomains = datum.additionalData.segmentsResidNumbers;
+  if (boundariesForChainId.length === 0) return undefined;
+  const segmentsStringsForDomains = domain.additionalData.segmentsResidNumbers;
   const segmentsStringsForChainId = segmentsStringsForDomains.filter((segment) => segment[0] === chainId);
 
-  const segmentsForDomains = datum.segments;
+  const segmentsForDomains = domain.segments;
   const segmentsForChainId = segmentsForDomains.filter((_segment, i) => boundariesForDomain[i].chain === chainId);
   const segmentsForOtherChains = segmentsForDomains.filter((_segment, i) => boundariesForDomain[i].chain !== chainId);
 
-  const domainDescription = `${datum.resource} domain: ${datum.domain}; Segments: ${segmentsStringsForChainId.join(', ')} (Auth: ${segmentsForChainId.join(', ')})`;
+  const domainDescription = `${domain.resource} domain: ${domain.domain}; Segments: ${segmentsStringsForChainId.join(', ')} (Auth: ${segmentsForChainId.join(', ')})`;
   const otherChains = segmentsForOtherChains.length > 0 ? `; Other auth segments: ${segmentsForOtherChains.join(', ')})` : '';
 
   let seqForViewer = macromolecule.pdb_sequence;
@@ -124,8 +176,8 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
   }
 
   const sequenceDetail: SequenceDetail = {
-    title: `>FASTA pdb|${entryId}|${moleculeName}; Chain ${chainId}; ${domainDescription}${otherChains}`,
-    fullSequence: macromolecule.sequence,
+    title: `>FASTA pdb|${entryId}|${getCleanMoleculeName(macromolecule)}; Chain ${chainId}; ${domainDescription}${otherChains}`,
+    fullSequence: macromolecule.sequence ?? '',
     segments: [],
     sequenceForViewer: seqForViewer,
     indexWithMultipleResidues: index_with_multiple_residues,
@@ -156,8 +208,7 @@ export function getDomainSequenceDetails(entryId: string, macromoleculesOfDomain
       sequence: sequenceDetail.fullSequence.substring(currentCharIndex),
     });
   }
-  sequenceDetails.push(sequenceDetail);
-  return sequenceDetails;
+  return sequenceDetail;
 }
 
 function convertLigandDatumToString(id: string, selectedLigandInstance: QueryParamForHelpers[], inPrefAssembly: boolean) {
@@ -166,11 +217,11 @@ function convertLigandDatumToString(id: string, selectedLigandInstance: QueryPar
   const chainId = selectedLigandInstance[0].auth_asym_id;
   const ligandString = inPrefAssembly
     ? `${id} ${resNum}${insCode} in chain ${chainId}`
-    : `${id} ${resNum}${insCode} in chain ${chainId} <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px;" />`;
+    : `${id} ${resNum}${insCode} in chain ${chainId} <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px;" />`;
   return ligandString;
 }
 
-export function getLigandsDropdownOptions(datum: ProcessedLigandOrMod) {
+function getLigandsDropdownOptions(datum: ProcessedLigandOrMod) {
   const dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
   const selections = datum.additionalData.selections;
   const selectionsInPrefAssembly = datum.additionalData.selectionsInPrefAssembly;
@@ -183,13 +234,36 @@ export function getLigandsDropdownOptions(datum: ProcessedLigandOrMod) {
   return dropdownOptionsToMolstar;
 }
 
+export function makeLigandsDropdownOptions(ligand: ProcessedLigandOrMod | undefined) {
+  if (!ligand) return [];
+  const options = getLigandsDropdownOptions(ligand);
+  return Object.keys(options).map((name, idx): DropdownOptionWithData<CommonDropdownOptionData> => {
+    const molstarSelection = options[name];
+    const authAsymId = molstarSelection[0].auth_asym_id;
+    if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+    return {
+      name: name,
+      url: `lig-${idx + 1}`,
+      downloadable: false,
+      data: {
+        authAsymId,
+        molstarSelection,
+        inPrefAssembly: ligand.additionalData.selectionsInPrefAssembly[idx],
+        symmOperators: ligand.symmOpListForEachLigOrMod[idx] ?? [],
+        detail: ligand.type === 'modification' ? { kind: 'modification', item: ligand.additionalData.source[idx] } : { kind: 'ligand', item: undefined },
+      },
+    };
+  });
+}
+
 export function getDomainChainsAsString(datum: ProcessedDomain) {
-  let uniqueChains: string[] = [];
+  const foundChains: string[] = [];
   for (const selection of datum.additionalData.selections) {
-    const uniqueChainsInSelection = selection.map((sel) => sel.auth_asym_id!).filter((ch, idx, chains) => chains.indexOf(ch) === idx);
-    uniqueChains.push(...uniqueChainsInSelection);
+    for (const sel of selection) {
+      foundChains.push(sel.auth_asym_id!);
+    }
   }
-  uniqueChains = uniqueChains.filter((e, i, self) => i === self.indexOf(e));
+  const uniqueChains = unique(foundChains);
 
   const hasPlural = uniqueChains.length > 1 ? 's' : '';
   return `Chain${hasPlural} ${uniqueChains.join(', ')}`;
@@ -199,4 +273,24 @@ export function getMacromoleculeOfDomain(datum: ProcessedDomain, macromolecules:
   const macromoleculeName = datum.moleculeNames[0];
   const macromolecule = macromolecules.filter((mol) => mol.name.molecule === macromoleculeName)[0]; // should always be true, let it fail
   return macromolecule;
+}
+
+export function makeSymmetryDropdownOptions(symOperators: string[] | undefined) {
+  if (!symOperators) return [];
+  const ALL_VALUE = 'All';
+  const sortedSymOperators = sortSymmetryInstanceIds(symOperators.filter((op) => op !== ALL_VALUE));
+  if (symOperators.includes(ALL_VALUE)) {
+    sortedSymOperators.unshift(ALL_VALUE);
+  }
+
+  return sortedSymOperators.map(
+    (op): DropdownOptionWithData<SymmetryDropdownOptionData> => ({
+      name: op,
+      url: `symop-${op}`,
+      downloadable: false,
+      data: {
+        instanceId: op === ALL_VALUE ? undefined : op,
+      },
+    })
+  );
 }

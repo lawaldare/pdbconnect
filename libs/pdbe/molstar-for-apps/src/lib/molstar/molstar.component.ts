@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, EventEmitter, inject, Input, input, OnChanges, Output, signal, SimpleChanges, ViewChild } from '@angular/core';
-// import { Mutex } from '@pdbc/core';
 import { Mutex } from '@pdbc/core';
 import type { PDBeMolstarPlugin } from 'pdbe-molstar/lib/viewer';
 import { BehaviorSubject } from 'rxjs';
@@ -91,7 +90,7 @@ export class MolstarComponent implements AfterViewInit, OnChanges {
     return this.molstarViewInstance;
   }
 
-  public getPDBeMolstarPluginClass(): typeof PDBeMolstarPlugin | undefined {
+  public getPDBeMolstarPluginClass() {
     return this.molstarPluginService.getClass();
   }
 

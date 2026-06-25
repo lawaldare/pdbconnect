@@ -1,22 +1,21 @@
-import { afterNextRender, Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
-import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, resourceUrls } from '../../../entry-constant';
+import { Component, computed, effect, inject, OnInit, Optional, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
-import { EntryStoreState } from '../../../store/entry-store.model';
-import { EntrySelectors } from '../../../store/entry.selectors';
-import { debounceTime, distinctUntilChanged, filter, firstValueFrom, take, timer } from 'rxjs';
-import { clearSelectionInMolstar, drawSelectionInMolstar, zoomOutStructureInMolstar, QueryParamForHelpers } from '../../../helpers/molstar-helpers';
-import { MobileStateService } from '../mobile-state.service';
-import { EntryActions } from '../../../store/entry.actions';
-import { ProcessedDomain } from '../../../store/data-processing/models/processed-entities.model';
-import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
-import { getDomainChainDropdownOptions } from '../../../helpers/processed-data-to-controls';
+import { ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
+import { DEFAULT_DOMAIN_HIGHLIGHT_COLOR, resourceUrls } from '../../../entry-constant';
+import { Dropdown, makeEntityColors } from '../../../helpers/misc';
+import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
+import { CommonDropdownOptionData, makeDomainChainDropdownOptions, makeSymmetryDropdownOptions } from '../../../helpers/processed-data-to-controls';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { ProcessedDomain } from '../../../store/data-processing/models/processed-entities.model';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntryActions } from '../../../store/entry.actions';
+import { EntrySelectors } from '../../../store/entry.selectors';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-domains',
@@ -28,64 +27,53 @@ export class MbDomainsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public configForMobileMolstar$ = toObservable(this.compCommunication.configForMobileMolstar);
 
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly processedDomainsObs$ = this.globalStore.select(EntrySelectors.processedDomains);
   public readonly processedDomains = toSignal(this.globalStore.select(EntrySelectors.processedDomains));
+  public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+
+  public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private readonly entityColors = computed(() => makeEntityColors(this.processedMacromolecules(), this.processedLigands()));
 
   public readonly resourceUrls = resourceUrls;
 
-  public currentViewState = signal<ViewState>(ViewState.List);
-  public viewStates = ViewState;
-  public selectedDomain = signal<any>({});
+  public selectedDomain = signal<ProcessedDomain | undefined>(undefined);
+  public currentViewState = computed<'list' | 'detail'>(() => (this.selectedDomain() ? 'detail' : 'list'));
   public expanded = signal<boolean>(false);
-  public title = this.state.domainTitle;
 
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
-
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownSelected!: string;
-
-  public symmetryDropdownSelected?: string;
-  public symmetryDropdownOptions: DownloadOption[] = [];
-
-  public readonly domainTableRows = computed(() => {
-    const rows = this.processedDomains();
-    if (rows === undefined) return [];
-    return rows;
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeDomainChainDropdownOptions(this.selectedDomain(), true),
   });
 
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+    defaultOption: (options) => options.find((opt) => opt.data.instanceId !== undefined) ?? options[0],
+  });
+
+  public readonly currentSelectionChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
+  private readonly selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+  private readonly inPrefAssemblyForChain = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No macromolecule selected -> true (no warning to display)
+
+  private readonly preferredAssemblyId = computed<string | undefined>(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForChain() ? this.preferredAssemblyId() : undefined));
+
+  public readonly domainTableRows = computed(() => this.processedDomains() ?? []);
+
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbDomainsComponent>) {
-    this.processedDomainsObs$
-      .pipe(
-        debounceTime(50),
-        distinctUntilChanged(),
-        filter((hasDom) => hasDom !== undefined)
-      )
-      .subscribe(async (hasDom) => {
-        // Wait until mobileMolstarLoaded$ is true before proceeding
-        await firstValueFrom(
-          this.compCommunication.mobileMolstarLoaded$.pipe(
-            filter((ready) => ready), // Proceed only when it's true
-            take(1) // Take the first value, then complete
-          )
-        );
-        this.renderInMolstar(undefined);
-      });
+    // Update MVS snapshot when needed
+    effect(() => this.compCommunication.mvsSnapshotSpec$.next(this.mvsSnapshotSpec()));
+
+    // Update global mobileIsPrefAssembly (for warning display)
+    effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForChain()));
   }
+
   ngOnInit(): void {
     // /* 1. Fetch data */
-    // this.globalStore.dispatch(EntryActions.getSummaryData());
-    // this.globalStore.dispatch(EntryActions.getAssemblies());
-    // this.globalStore.dispatch(EntryActions.getCathMapping());
-    // this.globalStore.dispatch(EntryActions.getPfamMapping());
-    // this.globalStore.dispatch(EntryActions.getScop175Mapping());
-    // this.globalStore.dispatch(EntryActions.getEntryPolymerCoverage());
-    // this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    // this.globalStore.dispatch(EntryActions.getProcessedDomains());
     this.applicationApiDispatcher.dispatchForList([
       EntryActions.getSummaryData,
       EntryActions.getAssemblies,
@@ -113,56 +101,12 @@ export class MbDomainsComponent implements OnInit {
   }
 
   public navigateToDetail(data: ProcessedDomain) {
-    this.currentViewState.set(ViewState.Detail);
     this.selectedDomain.set(data);
-    this.state.updateSelectedDomainTitle(data.accessionName);
-    this.updateCurrentDomain();
     this.scrollTabToTop();
   }
 
-  private async updateCurrentDomain(): Promise<void> {
-    const domain = this.selectedDomain();
-    if (domain) this.updateDropdownOptions(domain);
-    if (domain) this.updateSymmetryDropdownOptions(domain);
-    this.renderInMolstar(domain);
-  }
-
-  private updateDropdownOptions(domain: ProcessedDomain) {
-    this.dropdownOptionsToMolstar = getDomainChainDropdownOptions(domain, true);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
-        url: `domain-${idx + 1}`,
-        downloadable: false,
-      };
-    });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-  }
-
-  private updateSymmetryDropdownOptions(domain: ProcessedDomain) {
-    // update for symmetry operations dropdown
-    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const segmentSymmOperators = idxOfSelection > -1 ? domain.symmOpListForSegments[idxOfSelection] : undefined;
-
-    if (segmentSymmOperators) {
-      this.symmetryDropdownOptions = segmentSymmOperators.map((op, idx) => {
-        return {
-          name: op,
-          url: `domain-0-symop-${idx + 1}`,
-          downloadable: false,
-        };
-      });
-      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
-    } else {
-      this.symmetryDropdownSelected = undefined;
-      this.symmetryDropdownOptions = [];
-    }
-  }
-
   public async goBackToList() {
-    this.currentViewState.set(ViewState.List);
-    this.state.updateSelectedDomainTitle('Domains');
-    this.renderInMolstar(undefined);
+    this.selectedDomain.set(undefined);
     this.scrollTabToTop();
   }
 
@@ -171,52 +115,6 @@ export class MbDomainsComponent implements OnInit {
     if (container) {
       container.scrollTo({ top: 0, behavior: 'instant' });
     }
-  }
-
-  private selectionData?: QueryParamForHelpers[];
-
-  private async renderInMolstar(domain?: ProcessedDomain) {
-    await firstValueFrom(
-      this.compCommunication.mobileMolstarLoaded$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
-
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    if (domain) {
-      const chainId = this.dropdownSelected?.includes('Chain ') ? this.dropdownSelected?.split('Chain ')[1].split(' <img')[0] : undefined;
-      await this.updateConfigAssemblyAndSyncMolstar(domain, chainId);
-    }
-
-    const durationMs = this.compCommunication.mobileMolstar ? 200 : 0;
-    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
-    if (!instance) return;
-
-    if (!domain) {
-      if (this.compCommunication.mobileMolstarDisplay === 'domains') return;
-      await clearSelectionInMolstar(instance, durationMs);
-      this.compCommunication.mobileMolstarDisplay = 'domains';
-      return;
-    }
-
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-    this.selectionData = molstarSelection.map((eachSelection) => {
-      return {
-        ...eachSelection,
-        instance_id,
-        color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
-        focus: true,
-      };
-    });
-
-    await zoomOutStructureInMolstar(instance, durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await drawSelectionInMolstar(instance, this.selectionData, '#FEFEFE');
-    });
-    this.compCommunication.mobileMolstarDisplay = 'domains-specific';
   }
 
   public getDomainUrl(domain?: ProcessedDomain) {
@@ -229,68 +127,54 @@ export class MbDomainsComponent implements OnInit {
     return domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true) === false;
   }
 
-  private async updateConfigAssemblyAndSyncMolstar(domain: ProcessedDomain, chainId?: string) {
-    // check if ligand instance is in pref assembly based on idx of ligand instance
-    const inPrefAssemblyForChain = this.compCommunication.mobileIsPrefAssembly();
-
-    let isSelectionPrefAssembly = false;
-    let changedDisplayedAssembly = false;
-
-    // with chain and symop selection
-    if (chainId !== undefined) {
-      const chainsOfDomainSegments = domain.additionalData.boundaries.map((bd) => bd.chain);
-      // get list of segments for selected chain by idx
-      const chainSegmentsIdx = chainsOfDomainSegments.map((chainStr, chainIdx) => (chainStr === chainId ? chainIdx : -1)).filter((idx) => idx !== -1);
-      // check whether all segments in preferred assembly
-      isSelectionPrefAssembly = chainSegmentsIdx.every((idx) => domain.additionalData.selectionsInPrefAssembly[idx] === true);
-      changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
-    } else {
-      isSelectionPrefAssembly = domain.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
-      changedDisplayedAssembly = inPrefAssemblyForChain !== isSelectionPrefAssembly;
-    }
-
-    if (changedDisplayedAssembly && isSelectionPrefAssembly === false) {
-      this.compCommunication.mobileHasClosedMessage.set(false);
-    }
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
-    this.compCommunication.mobileIsPrefAssembly.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMobileMolstar$.pipe(take(1)));
-
-      const newCfg = await firstValueFrom(
-        this.configForMobileMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this.compCommunication.mobileMolstar!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
-  }
-
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected = event;
-
-    const domain = this.selectedDomain();
-    if (!domain) return;
-    this.updateSymmetryDropdownOptions(domain);
-    await this.renderInMolstar(domain);
+    this.dropdown.select(event);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
+    this.symmetryDropdown.select(event);
+  }
+
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
 
     const domain = this.selectedDomain();
-    if (!domain) return;
-    await this.renderInMolstar(domain);
-  }
+    if (!domain) {
+      return {
+        name: `Preferred complex`,
+        kind: 'pdbconnect_complex',
+        params: { entry: entryId, assemblyId: this.preferredAssemblyId(), entityColors: this.entityColors(), volumeStreaming: true },
+      };
+    }
+
+    const assemblyId = this.displayedAssemblyId();
+    const instanceId = this.selectedInstanceId();
+
+    return {
+      name: 'Domain',
+      kind: 'pdbconnect_domains',
+      params: {
+        entry: entryId,
+        assemblyId,
+        domains: [
+          {
+            name: domain.additionalData.accession,
+            color: DEFAULT_DOMAIN_HIGHLIGHT_COLOR,
+            selector: domain.additionalData.boundaries.map(
+              (segment) =>
+                ({
+                  auth_asym_id: segment.chain,
+                  beg_label_seq_id: segment.start,
+                  end_label_seq_id: segment.end,
+                  instance_id: instanceId,
+                }) satisfies ComponentExpressionT
+            ),
+          },
+        ],
+        focus: true,
+        volumeStreaming: true,
+      },
+    };
+  });
 }
