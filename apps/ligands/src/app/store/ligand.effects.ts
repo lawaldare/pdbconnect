@@ -141,4 +141,18 @@ export class LigandEffects {
       )
     )
   );
+
+  getMdpositInchikeys$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(LigandActions.getMdpositInchikeys),
+      mergeMap(() =>
+        this.aggregatedApiService.getMdpositInchikeys().pipe(
+          map((mdpositInchikeys) => {
+            return LigandActions.getMdpositInchikeysSuccess({ mdpositInchikeys });
+          }),
+          catchError(() => of(LigandActions.getMdpositInchikeysFailure()))
+        )
+      )
+    )
+  );
 }

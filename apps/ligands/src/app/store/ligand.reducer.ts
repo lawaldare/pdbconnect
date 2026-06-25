@@ -27,6 +27,7 @@ const initialState: LigandStoreState = {
   numberOfLigandInstances: 0,
   numberOfPDBStructures: 0,
   numberOfProteins: 0,
+  mdpositInchikeys: [],
 };
 
 export const ligandReducer = createReducer(
@@ -104,5 +105,9 @@ export const ligandReducer = createReducer(
   on(LigandActions.saveNumberOfDistinctProteins, (state, action) => ({
     ...state,
     numberOfProteins: action.numberOfProteins,
+  })),
+  on(LigandActions.getMdpositInchikeysSuccess, (state, action) => ({
+    ...state,
+    mdpositInchikeys: action.mdpositInchikeys,
   }))
 );

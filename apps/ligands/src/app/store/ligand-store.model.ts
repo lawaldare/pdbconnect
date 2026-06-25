@@ -21,4 +21,5 @@ export interface LigandStoreState {
   numberOfProteins: number;
   numberOfPDBStructures: number;
   numberOfLigandInstances: number;
+  mdpositInchikeys: string[];
 }
