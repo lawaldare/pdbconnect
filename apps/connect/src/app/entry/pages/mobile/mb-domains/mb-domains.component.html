@@ -1,18 +1,14 @@
 <section>
   @if(domainTableRows().length){
   <header>
-    @if(currentViewState() === viewStates.Detail){
+    @if(currentViewState() === 'detail'){
     <nav>
       <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
       <span (click)="goBackToList()">Go to Domains list </span>
     </nav>
     }
     <section class="header">
-      <h2>
-        {{title()}} @if(currentViewState() === viewStates.List){
-        <span>({{domainTableRows().length}})</span>
-        }
-      </h2>
+      <h2>{{currentViewState()==='list' ? `Domains (${domainTableRows().length})`: selectedDomain()?.accessionName ?? ''}}</h2>
       <div class="controls">
         <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
         <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
@@ -21,12 +17,12 @@
   </header>
 
   <!-- 1st Level Overlay -->
-  @if(currentViewState() === viewStates.List){ @for(row of domainTableRows(); track row.domain){
+  @if(currentViewState() === 'list'){ @for(row of domainTableRows(); track row.domain){
   <div class="row" (click)="navigateToDetail(row)">
     <div class="row__header">
       <p class="row__header__name">
         {{row?.accessionName}} @if (anyNonPrefAssembly(row)) {
-        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
         }
       </p>
       <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
@@ -37,38 +33,38 @@
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){
+  @if(currentViewState() === 'detail'){
   <!-- <p class="sub-header">Chain {{selectedDomain()?.segments?.join(', ')}}</p> -->
   <div class="chains">
-    @if(dropdownOptions.length > 1){
+    @if(dropdown.options.length > 1){
     <div class="dropdown-container">
       <pdbc-entry-dropdown
         [searchable]="false"
         searchTitle="''"
         [downloadable]="false"
         [islink]="false"
-        [options]="dropdownOptions"
-        [title]="dropdownSelected"
+        [options]="dropdown.options"
+        [title]="dropdown.selectedName() ?? ''"
         (optionClickedEvent)="onDropdownSelect($event)"
       >
       </pdbc-entry-dropdown>
     </div>
-    }@else if(dropdownOptions.length === 1){
-    <p class="title" [innerHTML]="dropdownOptions[0].name"></p>
-    } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+    }@else if(dropdown.options.length === 1){
+    <p class="title" [innerHTML]="dropdown.options[0].name"></p>
+    } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
     <p class="title">Symmetry Operation Id</p>
     <pdbc-entry-dropdown
       [searchable]="false"
       [searchTitle]="''"
       [downloadable]="false"
       [islink]="false"
-      [options]="symmetryDropdownOptions"
-      [title]="symmetryDropdownSelected"
+      [options]="symmetryDropdown.options"
+      [title]="symmetryDropdown.selectedName() ?? ''"
       (optionClickedEvent)="onSymmetryDropdownSelect($event)"
     ></pdbc-entry-dropdown>
-    } @else if(symmetryDropdownOptions.length === 1){
+    } @else if(symmetryDropdown.options.length === 1){
     <p class="title">Symmetry Operation Id</p>
-    <p class="content" [innerHTML]="symmetryDropdownOptions[0].name"></p>
+    <p class="content" [innerHTML]="symmetryDropdown.options[0].name"></p>
     }
   </div>
   <p class="title">Description</p>
@@ -82,7 +78,7 @@
     </a>
   </p>
   <p class="title">Molecule name</p>
-  <p class="content">{{selectedDomain()?.moleculeNames.join(', ')}}</p>
+  <p class="content">{{selectedDomain()?.moleculeNames?.join(', ')}}</p>
   <p class="title">Domain name</p>
   <p class="content">{{selectedDomain()?.domain}}</p>
   <p class="title">Authors segments</p>

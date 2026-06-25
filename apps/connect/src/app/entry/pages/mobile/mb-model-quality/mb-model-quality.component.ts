@@ -1,19 +1,20 @@
-import { Component, DestroyRef, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, effect, inject, OnInit, Optional, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Store } from '@ngrx/store';
-import { combineLatest, debounceTime, distinctUntilChanged, filter, firstValueFrom, mergeMap, take, timer } from 'rxjs';
-import { EntryStoreState } from '../../../store/entry-store.model';
-import { EntrySelectors } from '../../../store/entry.selectors';
+import { filter, mergeMap } from 'rxjs';
 import { ProcessedExperimentalDetails } from '../../../components/model-quality-tab/data-models-and-definitions/processed-experimental-details.model';
 import { ValidationDataProcessingFacade } from '../../../components/model-quality-tab/validation-data.facade';
-import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { StrucQualityGradientsComponent } from '../../../components/shared/struc-quality-gradients/struc-quality-gradients.component';
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { cameraResetInMolstar, drawSelectionInMolstar, QueryParamForHelpers } from '../../../helpers/molstar-helpers';
-import { MobileStateService } from '../mobile-state.service';
-import { EntryActions } from '../../../store/entry.actions';
+import { OUTLIER_TYPE_LABELS, VALIDATION_LEGENDS_AND_COLORS } from '../../../entry-constant';
+import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntryActions } from '../../../store/entry.actions';
+import { EntrySelectors } from '../../../store/entry.selectors';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-model-quality',
@@ -36,48 +37,17 @@ export class MbModelQualityComponent implements OnInit {
   public readonly entryId = toSignal(this.entryIdObs);
   public readonly summaryObs = this.globalStore.select(EntrySelectors.summaryData);
   public readonly summary = toSignal(this.summaryObs);
-  public readonly outliersByModelId = toSignal(this.globalStore.select(EntrySelectors.outliersByModelId));
-  private outliers$ = this.globalStore.select(EntrySelectors.outliersByModelId);
+  public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
+  private readonly modelId = toSignal(this.compCommunication.mobileModelIdx$);
 
   public expanded = signal<boolean>(false);
-  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbModelQualityComponent>) {
-    combineLatest([
-      this.outliers$.pipe(
-        debounceTime(50),
-        distinctUntilChanged(),
-        filter((otl) => otl !== undefined)
-      ),
-      this.compCommunication.mobileModelIdx$.pipe(debounceTime(50), distinctUntilChanged()),
-    ])
-      .pipe(takeUntilDestroyed(this.destroyRef)) // Ensures cleanup when the component is destroyed
-      .subscribe(async ([_outliers, _modelIdx]) => {
-        // Wait until mobileMolstarLoaded$ is true before proceeding
-        await firstValueFrom(
-          this.compCommunication.mobileMolstarLoaded$.pipe(
-            filter((ready) => ready), // Proceed only when it's true
-            take(1) // Take the first value, then complete
-          )
-        );
 
-        // Now that mobileMolstarLoaded$ is true, proceed with the logic
-        this.displayMolstarMQuality();
-      });
+  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbModelQualityComponent>) {
+    effect(() => this.compCommunication.mvsSnapshotSpec$.next(this.mvsSnapshotSpec()));
   }
 
   async ngOnInit() {
     /* 1. Fetch tab data */
-    // this.globalStore.dispatch(EntryActions.getExperiment());
-    // this.globalStore.dispatch(EntryActions.getPDBRedoQualityScores());
-    // this.globalStore.dispatch(EntryActions.getEntryResidueWiseOutliers());
-    // // this.globalStore.dispatch(EntryActions.getModelQualityXray());
-    // this.globalStore.dispatch(EntryActions.getExperimentSBGridRawData());
-    // this.globalStore.dispatch(EntryActions.getExperimentIRRMCRawData());
-    // this.globalStore.dispatch(EntryActions.getExperimentEMPIARRawData());
-    // this.globalStore.dispatch(EntryActions.getExperimentPDBRawData());
-    // this.globalStore.dispatch(EntryActions.getExperimentBMRBRawData());
-    // this.globalStore.dispatch(EntryActions.getValidationKeyStats());
-    // // this.globalStore.dispatch(EntryActions.getValidationXrayRefine());
-
     this.applicationApiDispatcher.dispatchForList([
       EntryActions.getExperiment,
       EntryActions.getPDBRedoQualityScores,
@@ -122,37 +92,26 @@ export class MbModelQualityComponent implements OnInit {
     }
   }
 
-  public async displayMolstarMQuality() {
-    if (this.compCommunication.mobileMolstarDisplay === 'mquality') return;
-    const currentModelIdx = this.compCommunication.mobileModelIdx$.getValue();
-    // get model quality data and display here
-    const allOutliers = this.outliersByModelId();
-    if (!allOutliers) return;
-    const outliers = allOutliers[currentModelIdx];
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
 
-    const colours = ['#D4D5D4', '#E5E501', '#DA6E03', '#B2182B'];
-    const outlierList = [outliers.residuesWith1Outlier, outliers.residuesWith2Outliers, outliers.residuesWith3OrMoreOutliers];
-    const selectionData: QueryParamForHelpers[] = [];
+    const currentModelId = this.modelId() ?? '1';
+    const validationData = this.residueWiseOutliers();
 
-    for (let i = 0; i < outlierList.length; i++) {
-      const outlierResids = outlierList[i];
-      selectionData.push(
-        ...outlierResids.map((outlier) => {
-          return {
-            ...outlier,
-            color: colours[i + 1],
-            focus: false,
-          };
-        })
-      );
-    }
-    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
-    if (!instance) return;
-    await drawSelectionInMolstar(instance, selectionData, colours[0]);
-
-    timer(500).subscribe(async () => {
-      await cameraResetInMolstar(instance);
-    });
-    this.compCommunication.mobileMolstarDisplay = 'mquality';
-  }
+    return {
+      name: 'Validation',
+      kind: 'pdbconnect_quality',
+      params: {
+        entry: entryId,
+        assemblyId: undefined,
+        modelId: parseInt(currentModelId),
+        validationData: validationData,
+        validationType: { kind: 'issue_count' },
+        validationColors: VALIDATION_LEGENDS_AND_COLORS.map((t) => t.color),
+        niceIssueNames: OUTLIER_TYPE_LABELS,
+        volumeStreaming: true,
+      },
+    };
+  });
 }

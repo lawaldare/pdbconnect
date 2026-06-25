@@ -5,7 +5,8 @@ import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community/';
 
 /** Human-friendly name from atom interactions.
- * This is not exhaustive (e.g. 'OE' in 1og5). */
+ * This is not exhaustive (e.g. 'OE' in 1og5).
+ * Use `standardizeInteractionType` instead if you can. */
 export const INTX_NAME_STANDARDIZER = {
   clash: 'Covalent clash',
   covalent: 'Covalent',
@@ -32,27 +33,13 @@ export const INTX_NAME_STANDARDIZER = {
   weak_hbond: 'Weak hydrogen bond',
 };
 
-type InteractionType =
-  | 'clash'
-  | 'covalent'
-  | 'vdw_clash'
-  | 'vdw'
-  | 'hbond'
-  | 'xbond'
-  | 'ionic'
-  | 'metal_complex'
-  | 'aromatic'
-  | 'hydrophobic'
-  | 'carbonyl'
-  | 'polar'
-  | 'CARBONPI'
-  | 'CATIONPI'
-  | 'DONORPI'
-  | 'HALOGENPI'
-  | 'METSULPHURPI'
-  | 'plane_plane'
-  | 'AMIDEAMIDE'
-  | 'AMIDERING';
+type InteractionType = keyof typeof INTX_NAME_STANDARDIZER;
+
+/** Return human-friendly name for atom interaction type, e.g. 'hbond' -> 'Hydrogen bond'.
+ * Return the original name if not found in the list of known interaction types, e.g. 'OE' -> 'OE' (in 1og5). */
+export function standardizeInteractionType(interactionTypeName: string): string {
+  return INTX_NAME_STANDARDIZER[interactionTypeName as InteractionType] ?? interactionTypeName;
+}
 
 @Component({
   standalone: true,
@@ -79,8 +66,6 @@ export class InteractionTypeRendererComponent implements ICellRendererAngularCom
     return true;
   }
   private generateInteractionType(types: string[]): void {
-    this.value = types.map((type) => {
-      return INTX_NAME_STANDARDIZER[type as InteractionType];
-    });
+    this.value = types.map(standardizeInteractionType);
   }
 }

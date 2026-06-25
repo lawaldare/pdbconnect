@@ -1,14 +1,15 @@
+import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX } from '@pdbe-lib/molstar-for-apps';
 import { AssemblyData } from '../../data-models/assembly.model';
+import { BoundMolecule } from '../../data-models/bound-molecule.model';
 import { LigandMonomer } from '../../data-models/ligand-monomers.model';
 import { ModifiedResidue } from '../../data-models/modified-residues.model';
 import { Molecule } from '../../data-models/molecule.model';
-import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
-import { COLORBREWER_SET2_COLORS, ELEMENT_COLORS_HEX } from '@pdbe-lib/molstar-for-apps';
 import { BANG_WONG_COLORBLIND_SCALE } from '../../entry-constant';
-import { Filter } from './models/other-models';
-import { BoundMolecule } from '../../data-models/bound-molecule.model';
+import { getSymmetryInstancesFromRenamedChains, unique } from '../../helpers/misc';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
 import { sortByBooleanFlag } from './domain-processing';
+import { Filter } from './models/other-models';
 
 export function filterLigandsByPreferredAssembly(ligands: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
   const entityMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
@@ -204,7 +205,7 @@ export function filterLigandMonomersForMolecule(ligand: Molecule, ligandMonomers
       ligandMonomer.chain_id &&
       ligandMonomer.struct_asym_id &&
       ligandMonomer.entity_id === ligand.entity_id &&
-      ligand.in_struct_asyms.indexOf(ligandMonomer.struct_asym_id) > -1
+      ligand.in_struct_asyms.includes(ligandMonomer.struct_asym_id)
     );
   });
   return filteredLigandMonomersForMol;
@@ -287,11 +288,12 @@ export function generateLigandsCards(
 
     const inPrefAssembly = ligandMonomersForThisLigand.every((ligandMonomer) => ligandMonomer.in_pref_assembly === true);
 
-    const annotationTypes = ligandMonomersForThisLigand
-      .map((ligandMonomer) => ligandMonomer.annotations)
-      .flat()
-      .map((annotation) => annotation.type)
-      .filter((v, i, arr) => arr.indexOf(v) === i);
+    const annotationTypes = unique(
+      ligandMonomersForThisLigand
+        .map((ligandMonomer) => ligandMonomer.annotations)
+        .flat()
+        .map((annotation) => annotation.type)
+    );
 
     if (entryInstancesCount > 0) {
       ligandOrModCards.push({
@@ -308,7 +310,7 @@ export function generateLigandsCards(
     }
   }
 
-  const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+  const modificationIds = unique(modifications.map((mod) => mod.chem_comp_id));
   for (let modIdx = 0; modIdx < modificationIds.length; modIdx++) {
     const chemCompId = modificationIds[modIdx];
     const modificationsOfId = modifications.filter((mod) => mod.chem_comp_id === chemCompId);
@@ -359,7 +361,7 @@ export function generateLigandsAndModsTableFilters(ligands: Molecule[], ligandMo
     });
   }
 
-  const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+  const modificationIds = unique(modifications.map((mod) => mod.chem_comp_id));
 
   if (modificationIds.length > 0) {
     const word = modificationIds.length > 1 ? 'residues' : 'residue';
@@ -374,8 +376,8 @@ export function generateLigandsAndModsTableFilters(ligands: Molecule[], ligandMo
   return newFilters;
 }
 
-export interface ProcessedLigandOrMod {
-  type: string;
+interface _ProcessedLigandOrMod<TType extends string, TSourceData> {
+  type: TType;
   id: string;
   codeAndName: {
     name: string;
@@ -386,7 +388,7 @@ export interface ProcessedLigandOrMod {
   allInstancesInPrefAssembly: boolean;
   symmOpListForEachLigOrMod: string[][];
   additionalData: {
-    source: Molecule | ModifiedResidue[];
+    source: TSourceData;
     selections: QueryParamForHelpers[][];
     selectionNames: string[];
     selectionsInPrefAssembly: boolean[];
@@ -394,49 +396,28 @@ export interface ProcessedLigandOrMod {
   molstarColorHex?: string;
 }
 
-export function generateSymmetryOperatorsListForLigand(entityId: number, ligandMonomersForEntity: LigandMonomer[], preferredAssembly: AssemblyData) {
-  const ligandsSymmOperators: string[][] = [];
-  for (const ligandMonomer of ligandMonomersForEntity) {
-    const instanceStructAsym = ligandMonomer.struct_asym_id;
+export type ProcessedLigand = _ProcessedLigandOrMod<'ligand', Molecule>;
+export type ProcessedModification = _ProcessedLigandOrMod<'modification', ModifiedResidue[]>;
+export type ProcessedLigandOrMod = ProcessedLigand | ProcessedModification;
 
-    const currentLigMonomerSymmOperators: string[] = [];
-    const assemblyEntityOfLigandSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === entityId);
-    if (assemblyEntityOfLigandSearch.length === 0) {
-      ligandsSymmOperators.push([]);
-      continue;
-    } else if (assemblyEntityOfLigandSearch.length > 1) console.warn('Warning: multiple assembly entities found for single macromolecule');
-    const assemblyEntityOfLigand = assemblyEntityOfLigandSearch[0];
-
-    const hasSymmetryOp = !assemblyEntityOfLigand.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
-    if (hasSymmetryOp === false) {
-      ligandsSymmOperators.push([]);
-      continue;
-    }
-
-    const prefAssemblyStructAsymsForLigand = assemblyEntityOfLigand.in_chains.filter((structAsymIdWithOp) => structAsymIdWithOp.split('-')[0] === instanceStructAsym);
-
-    const noStructAsymsWithOp = prefAssemblyStructAsymsForLigand.length === 0;
-    const onlyCurrentChainId = prefAssemblyStructAsymsForLigand.length === 1 && prefAssemblyStructAsymsForLigand[0] === instanceStructAsym;
-    const onlyCurrentChainWithOp = prefAssemblyStructAsymsForLigand.length === 1 && prefAssemblyStructAsymsForLigand[0] !== instanceStructAsym;
-
-    if (noStructAsymsWithOp || onlyCurrentChainId) {
-      ligandsSymmOperators.push([]);
-      continue;
-    }
-    if (onlyCurrentChainWithOp) {
-      const symmetryOperator = prefAssemblyStructAsymsForLigand[0].split('-')[1];
-      ligandsSymmOperators.push([`ASM-${symmetryOperator}`]);
-      continue;
-    }
-
-    // add each operator to list
-    for (const structAsymIdWithOp of prefAssemblyStructAsymsForLigand) {
-      const symmetryOperator = structAsymIdWithOp === instanceStructAsym ? '1' : structAsymIdWithOp.split('-')[1];
-      currentLigMonomerSymmOperators.push(`ASM-${symmetryOperator}`);
-    }
-    ligandsSymmOperators.push(currentLigMonomerSymmOperators);
+function generateSymmetryOperatorsListForLigandMonomer(entityId: number, ligandMonomer: LigandMonomer, preferredAssembly: AssemblyData): string[] {
+  const ligandEntity = preferredAssembly.entities.find((ent) => ent.entity_id === entityId);
+  if (!ligandEntity) {
+    return [];
   }
-  return ligandsSymmOperators;
+  /** Struct asym IDs of the ligand chain, optionally renamed by appending symmetry instance ID, e.g. A, A-2, A-3, A-4) */
+  const renamedChains = ligandEntity.in_chains.filter((renamedChain) => renamedChain.split('-')[0] === ligandMonomer.struct_asym_id);
+
+  const hasSymmetryOps = renamedChains.some((renamedChain) => renamedChain.includes('-'));
+  if (!hasSymmetryOps) {
+    return [];
+  }
+
+  return getSymmetryInstancesFromRenamedChains(renamedChains);
+}
+
+export function generateSymmetryOperatorsListForLigand(entityId: number, ligandMonomersForEntity: LigandMonomer[], preferredAssembly: AssemblyData) {
+  return ligandMonomersForEntity.map((monomer) => generateSymmetryOperatorsListForLigandMonomer(entityId, monomer, preferredAssembly));
 }
 
 export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: LigandMonomer[], preferredAssembly: AssemblyData, verbose = false) {
@@ -452,7 +433,7 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
     const colorEntityIdx = ligand.entity_id - 1;
     let ligandColor = COLORBREWER_SET2_COLORS[colorEntityIdx % COLORBREWER_SET2_COLORS.length];
     const elementKeys = Object.keys(ELEMENT_COLORS_HEX);
-    if (elementKeys.indexOf(ligand.chem_comp_ids[0]) > -1) {
+    if (elementKeys.includes(ligand.chem_comp_ids[0])) {
       ligandColor = ELEMENT_COLORS_HEX[ligand.chem_comp_ids[0]];
     }
 
@@ -468,12 +449,9 @@ export function generateProcessedLigands(ligands: Molecule[], ligandMonomers: Li
     const molstarSelectionsInPrefAssembly = ligandMonomersForThisLigand.map((ligandMonomer) => ligandMonomer.in_pref_assembly || false);
     const allInstancesInPrefAssembly = molstarSelectionsInPrefAssembly.every((inPrefAssembly) => inPrefAssembly === true);
 
-    const uniqueLigandAnnotationTypes = ligandMonomersForThisLigand
-      .map((ligandMonomer) => {
-        return ligandMonomer.annotations.map((annotation) => annotation.type);
-      })
-      .flat()
-      .filter((v, i, arr) => arr.indexOf(v) === i);
+    const uniqueLigandAnnotationTypes = unique(
+      ligandMonomersForThisLigand.map((ligandMonomer) => ligandMonomer.annotations.map((annotation) => annotation.type)).flat()
+    );
     const annotationsOfLigand = uniqueLigandAnnotationTypes.length > 0 ? uniqueLigandAnnotationTypes : [];
 
     const unsortedSymmOpListForEachLigOrMod = generateSymmetryOperatorsListForLigand(ligand.entity_id, ligandMonomersForThisLigand, preferredAssembly);
@@ -563,7 +541,7 @@ export function generateSymmetryOperatorsListForModification(modifications: Modi
 export function generateProcessedModifications(modifications: ModifiedResidue[], preferredAssembly: AssemblyData) {
   if ((<any>modifications).empty === true) modifications = [];
   const processedModifications: ProcessedLigandOrMod[] = [];
-  const modificationIds = modifications.map((mod) => mod.chem_comp_id).filter((mod, idx, array) => array.indexOf(mod) === idx);
+  const modificationIds = unique(modifications.map((mod) => mod.chem_comp_id));
   for (let modIdx = 0; modIdx < modificationIds.length; modIdx++) {
     const modId = modificationIds[modIdx];
     const modificationsOfId = modifications.filter((mod) => mod.chem_comp_id === modId);

@@ -36,7 +36,7 @@ export interface ProcessedMacromolecule {
   length: number;
   organisms: string[];
   genes: string[];
-  chainSymmOperators: { [key: string]: string[] };
+  chainSymmOperators: { [authAsymId: string]: string[] };
   additionalData: {
     molecule: Molecule;
     selections: QueryParamForHelpers[][];

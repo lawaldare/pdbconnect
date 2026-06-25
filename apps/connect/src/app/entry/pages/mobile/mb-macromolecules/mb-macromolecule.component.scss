@@ -20,6 +20,9 @@ section {
 
   .row {
     padding: 8px;
+    padding-block: 4px;
+    margin-block: 4px;
+    border-left: 4px solid #d0d0ce; // color will be adjusted via inline style to match macromolecule color
     border-bottom: 1px solid #d0d0ce;
     cursor: pointer;
 

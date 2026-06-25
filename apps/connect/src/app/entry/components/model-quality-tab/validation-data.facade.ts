@@ -2,8 +2,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { DestroyRef, inject, Injectable } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Store } from '@ngrx/store';
+import { UtilService } from '@pdbc/core';
+import { catchError, combineLatest, map, mergeMap, Observable, of, retry, startWith } from 'rxjs';
+import {
+  BMRBExperimentRawData,
+  EMPIARExperimentRawData,
+  IRRMCExperimentRawData,
+  PDBExperimentRawData,
+  SBGRIDExperimentRawData,
+} from '../../data-models/experiment-raw-data.model';
 import { ExperimentDetail } from '../../data-models/experimental-details.model';
 import { XRayRefine } from '../../data-models/x-ray-refine.model';
+import { unique } from '../../helpers/misc';
+import { EntryStoreState } from '../../store/entry-store.model';
+import { EntrySelectors } from '../../store/entry.selectors';
 import {
   ExperimentalInfoData,
   ExperimentalRawDatum,
@@ -20,19 +34,6 @@ import {
   ValidationInfoRow,
   XRayStatsRow,
 } from './data-models-and-definitions/table-rows.model';
-import {
-  BMRBExperimentRawData,
-  EMPIARExperimentRawData,
-  IRRMCExperimentRawData,
-  PDBExperimentRawData,
-  SBGRIDExperimentRawData,
-} from '../../data-models/experiment-raw-data.model';
-import { EntryStoreState } from '../../store/entry-store.model';
-import { Store } from '@ngrx/store';
-import { EntrySelectors } from '../../store/entry.selectors';
-import { UtilService } from '@pdbc/core';
-import { startWith, catchError, of, combineLatest, map, retry, mergeMap, Observable } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 // TODO
 // move all logic here to store (effect, data-processing)
@@ -183,10 +184,11 @@ export class ValidationDataProcessingFacade {
       if (namesWithStrains.length > 0) sampleInfoData.sourceOrganismsWithStrains = data.namesWithStrains;
 
       if (experimentalDetail.expression_host_scientific_name) {
-        const uniqueHostOrganismNames = experimentalDetail.expression_host_scientific_name
-          .filter((eachName: any) => eachName.scientific_name !== null && eachName.scientific_name !== undefined)
-          .map((eachName: any) => eachName.scientific_name!)
-          .filter((name: any, i: any, names: string | any[]) => names.indexOf(name) === i);
+        const uniqueHostOrganismNames = unique<string>(
+          experimentalDetail.expression_host_scientific_name
+            .filter((eachName: any) => eachName.scientific_name !== null && eachName.scientific_name !== undefined)
+            .map((eachName: any) => eachName.scientific_name!)
+        );
         if (uniqueHostOrganismNames.length > 0) sampleInfoData.expressionSystem = uniqueHostOrganismNames;
       }
       sampleInfoData.authorDesc = data.entryTitle;

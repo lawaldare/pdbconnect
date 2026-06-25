@@ -25,7 +25,7 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
-import { modelQualityTooltips, MQTContentNavigationLinks, OUTLIER_TYPE_LABELS } from '../../entry-constant';
+import { modelQualityTooltips, MQTContentNavigationLinks, OUTLIER_TYPE_LABELS, VALIDATION_LEGENDS_AND_COLORS } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
@@ -153,24 +153,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
     },
   ];
 
-  public readonly legends = [
-    {
-      label: '0 outliers',
-      color: '#F0F0F0',
-    },
-    {
-      label: '1 outlier',
-      color: '#E5E501',
-    },
-    {
-      label: '2 outliers',
-      color: '#DA6E03',
-    },
-    {
-      label: '3 and more outliers',
-      color: '#B2182B',
-    },
-  ];
+  public readonly legends = VALIDATION_LEGENDS_AND_COLORS;
 
   public readonly specificIssueKinds = signal<{ label: string; value: string }[]>([]);
 
@@ -178,9 +161,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public selectedSpecificIssueKindValue = signal<ValueLabel | undefined>(undefined);
 
   public selectedSpecificIssueKind = new FormControl('', { nonNullable: true });
-
-  /** Signal for dynamic model index (default to 1) */
-  public modelId = signal<string>('1');
 
   public molstarModelQualityRendered = signal(false);
 
@@ -236,7 +216,7 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
   public currentModelId$ = new BehaviorSubject<string>('1');
-
+  public readonly modelId = toSignal(this.currentModelId$);
   protected readonly contentNavigatorLinks = MQTContentNavigationLinks;
 
   constructor() {
@@ -265,11 +245,6 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    /* 2b. Every time NMR model Id updates, data for smart seq viewer is refreshed */
-    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      this.modelId.set(newModelId);
-    });
-
     /* 3. (TODO: Refactor) Data processing for tab */
     combineLatest([
       this.globalStore.select(EntrySelectors.modelQualityXray),

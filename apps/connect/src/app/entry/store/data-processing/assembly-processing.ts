@@ -27,7 +27,7 @@ export function processPreferredAssemblyData(summaryData: ProcessedSummary, comp
   let preferredAssemblyData = undefined;
   let preferredAssemblyId = undefined;
 
-  const hasAssemblies = Object.keys(summaryData).indexOf('assemblies') > -1;
+  const hasAssemblies = 'assemblies' in summaryData;
   if (!hasAssemblies) return undefined;
 
   for (const complexDetail of complexDetails) {
@@ -76,7 +76,7 @@ export function getComplexDetailByAssemblyId(assemblyDatum: AssemblyData, comple
   if ((<any>complexDetails).empty === true) complexDetails = [];
   const complexDetailFiltered = complexDetails.filter((eachComplexDetail) => {
     const complexAssemblyIds = eachComplexDetail.assemblies.map((assemblyInfo) => assemblyInfo.assembly_id + '');
-    return complexAssemblyIds.indexOf(assemblyDatum.assembly_id) > -1;
+    return complexAssemblyIds.includes(assemblyDatum.assembly_id);
   });
   if (complexDetailFiltered.length > 0) complexDetail = complexDetailFiltered[0];
   if (complexDetail === undefined) {
@@ -233,7 +233,7 @@ export function generateProcessedAssemblies(
 
     // ... we then generate some necessary row data by processing fields of the above
     const preferredWord = assemblyDatum.assembly_id === `${preferredAssemblyId}` ? ' (preferred)' : '';
-    let moleculeNames = assemblyDatum.entities.filter((mol) => ALLOWEDTYPES.indexOf(mol.molecule_type) > -1).map((assembly) => assembly.molecule_name[0]);
+    let moleculeNames = assemblyDatum.entities.filter((mol) => ALLOWEDTYPES.includes(mol.molecule_type)).map((assembly) => assembly.molecule_name[0]);
     if (moleculeNames.length > 5) {
       moleculeNames = [`${moleculeNames.length} molecules`];
     }

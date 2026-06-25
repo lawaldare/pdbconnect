@@ -94,6 +94,7 @@ export class MbStructureOverviewComponent implements OnInit {
       EntryActions.getProcLigandsFilters,
       EntryActions.getProcMacromoleculesFilters,
       EntryActions.getExperiment,
+      EntryActions.getEntryPolymerCoverage,
     ]);
     //   this.globalStore.dispatch(EntryActions.getAssemblies());
     //   this.globalStore.dispatch(EntryActions.getEntryMolecules());

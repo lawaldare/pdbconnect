@@ -43,6 +43,8 @@ export type SnapshotSpecParams = {
     volumeStreaming: boolean;
     /** List of entity IDs of ligand entities */
     ligandEntityIds: string[];
+    /** Optional list of modified residues to highlight along with ligands, (`name` to show in tooltip) */
+    modifications: { labelCompId: string; color: string; name: string | undefined }[] | undefined;
     /** Colors for entities */
     entityColors: { [entityId: string]: string } | undefined;
   };

@@ -3,32 +3,34 @@
 
 import { ComponentType } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, linkedSignal, OnInit, signal, untracked, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { GoogleAnalyticsService, MaterialModule, Mutex, ScriptLoaderService, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ProtvistaWrapperComponent } from '@pdbe-lib/pv-nightingale-components';
 import { AlternativeNumbering, SmartSequenceAnnotation, SmartSeqViewerComponent } from '@pdbe-lib/smart-seq-viewer';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, interval, map, of, take, timeout } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, filter } from 'rxjs';
 import { ProteinSummaryStats } from '../../data-models/protein-summary-stats.model';
 import { ECMapping, GOMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
 import { dashboardStatLinks, entryMacromoleculeTooltips, symmOperatorTooltip } from '../../entry-constant';
-import { whenSignalFirstTrue } from '../../helpers/misc';
+import { Dropdown, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
+import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
 import { convertOutliersToSmartSequenceAnnotation, createAuthAlternateNumbering, getNonObserved } from '../../helpers/procesing-for-smart-seq-viewer';
 import {
+  CommonDropdownOptionData,
   getCleanMoleculeName,
   getCleanSelectionName,
-  getMacromoleculeChainDropdownOptions,
   getMacromoleculeSequenceDetails,
+  makeMacromoleculeChainDropdownOptions,
+  makeSymmetryDropdownOptions,
 } from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
@@ -49,6 +51,7 @@ import { MacromoleculesTabFacade } from './macromolecules-tab.facade';
 // necessary to render the topology viewer
 declare let PdbTopologyViewerPlugin: any;
 declare let PdbRnaViewerPlugin: any;
+
 @Component({
   selector: 'pdbc-macromolecules-tab',
   standalone: true,
@@ -68,7 +71,7 @@ declare let PdbRnaViewerPlugin: any;
   templateUrl: './macromolecules-tab.component.html',
   styleUrl: './macromolecules-tab.component.scss',
 })
-export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
+export class MacromoleculesTabComponent implements OnInit {
   public readonly utilService = inject(UtilService);
   public readonly compCommunication = inject(ComponentCommunicationService);
   public readonly visInteractivity = inject(VisualisationInteractivityService);
@@ -88,7 +91,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly ecMapping = toSignal(this.globalStore.select(EntrySelectors.ecMapping));
   public readonly residueWiseOutliers = toSignal(this.globalStore.select(EntrySelectors.residueWiseOutliers));
   public readonly residueWiseOutliersObservable = this.globalStore.select(EntrySelectors.residueWiseOutliers);
-  public readonly residueListingObservable = this.globalStore.select(EntrySelectors.residueListing);
+  private readonly residueListing = toSignal(this.globalStore.select(EntrySelectors.residueListing));
   public readonly summaryData = toSignal(this.globalStore.select(EntrySelectors.summaryData));
   public readonly uniprotMappings = toSignal(this.globalStore.select(EntrySelectors.uniprotMapping));
   public readonly polymerCoverage = toSignal(this.globalStore.select(EntrySelectors.polymerCoverage));
@@ -96,7 +99,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   private protvistaDataFacade = inject(PvDataProcessingFacade);
   public macromolSequence = this.protvistaDataFacade.sequence;
   public loadingStatus = this.protvistaDataFacade.loadingStatus;
-  public macromolIsNucleic = signal(false);
+  public macromolIsNucleic = computed<boolean>(() => this.currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type.includes('nucleotide') ?? false);
 
   public readonly protvistaTooltips = computed(() => this.protvistaDataFacade.tooltips());
   public readonly protvistaData = computed(() => {
@@ -215,16 +218,30 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   public readonly entryMacromoleculeTooltips = entryMacromoleculeTooltips;
   public readonly symmOperatorTooltip = symmOperatorTooltip;
 
-  public dropdownSelected!: string;
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeMacromoleculeChainDropdownOptions(this.currentMacromoleculeDatum()),
+  });
 
-  public symmetryDropdownSelected?: string;
-  public symmetryDropdownOptions: DownloadOption[] = [];
-  private getSelectedInstanceId() {
-    if (this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All') return this.symmetryDropdownSelected;
-    else return undefined;
-  }
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+  });
+
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+
+  public inPrefAssembly = computed(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return true; // No macromolecule selected -> true (no warning to display)
+    return macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly);
+  });
+
+  public inPrefAssemblyForChain = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No chain selected -> true (no warning to display)
+
+  public currentSelectionChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.authAsymId);
+  public currentSelectionEntityId = computed<string | undefined>(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    return String(macromolecule.additionalData.molecule.entity_id);
+  });
 
   public dashboardStatLinks = dashboardStatLinks;
 
@@ -236,7 +253,19 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return this.sequenceDetails()?.indexWithMultipleResidues;
   });
 
-  public backgroundAnnotation = signal<SmartSequenceAnnotation | undefined>(undefined);
+  public backgroundAnnotation = computed<SmartSequenceAnnotation | undefined>(() => {
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    const sequence = macromolecule.additionalData.molecule.sequence;
+    if (!sequence) return undefined;
+
+    const outliers = this.residueWiseOutliers();
+    const entityId = macromolecule.additionalData.molecule.entity_id;
+    const chainId = this.currentSelectionChainId();
+    if (chainId === undefined) return undefined;
+    const modelId = this.currentModelId() ?? '1';
+    return convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
+  });
 
   public getCleanSelectionName = getCleanSelectionName;
 
@@ -275,9 +304,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     const forceLoad = this.compCommunication.forceLoad();
     this.compCommunication.forceLoad.set(!forceLoad);
   }
-
-  public inPrefAssembly = signal(true);
-  public inPrefAssemblyForChain = signal(true);
 
   private readonly preferredAssemblyId = computed(() => this.summaryData()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
 
@@ -379,20 +405,15 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     const uniprotsAllowed = this.uniprotsAllowed();
     if (!uniprotsAllowed) return [];
 
-    let isoformsMappingKeys = Object.keys(this.isoformsMapping() ?? {});
-    isoformsMappingKeys = isoformsMappingKeys.filter((isoform) => {
-      const hasAllowed = uniprotsAllowed.some((uniprot) => isoform.includes(uniprot));
-      return hasAllowed;
-    });
-
-    const filteredIsoformsMapping: any[] = [];
-
-    isoformsMappingKeys.forEach((uniprot: string) => {
-      if (uniprot.indexOf('-') !== -1) {
-        filteredIsoformsMapping.push({ ...this.isoformsMapping()?.[uniprot], uniprot });
+    const isoformsMapping = this.isoformsMapping();
+    if (!isoformsMapping) return [];
+    const isoformsMappingKeys = Object.keys(isoformsMapping).filter((isoform) => uniprotsAllowed.some((uniprot) => isoform.includes(uniprot)));
+    const filteredIsoformsMapping = [];
+    for (const uniprot of isoformsMappingKeys) {
+      if (uniprot.includes('-')) {
+        filteredIsoformsMapping.push({ ...isoformsMapping[uniprot], uniprot });
       }
-    });
-
+    }
     return filteredIsoformsMapping;
   });
 
@@ -401,8 +422,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   private readonly onlyMolstarVisuals = ['carbohydrate polymer', 'peptide nucleic acid'];
 
   public hasProtvista = false;
-  public currentSelectionEntityId = signal<string | undefined>(undefined);
-  public currentSelectionChainId = signal<string | undefined>(undefined);
 
   public hasTopologyViewer = false;
   @ViewChild('topologyViewerContainer', { static: false }) topologyViewerContainer!: ElementRef;
@@ -412,21 +431,13 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   @ViewChild('rnaViewerContainer', { static: false }) rnaViewerContainer!: ElementRef;
   private rnaViewerInstance: any;
 
-  public sequenceDetails = signal<
-    | {
-        title: string;
-        fullSequence: string;
-        sequenceForViewer: string;
-        indexWithMultipleResidues: {
-          [key: string]: {
-            three_letter_code: string;
-            one_letter_code: string;
-            parent_chem_comp_ids: string[];
-          };
-        };
-      }
-    | undefined
-  >(undefined);
+  public sequenceDetails = computed(() => {
+    const entryId = this.entryId();
+    const macromolecule = this.currentMacromoleculeDatum();
+    const chainId = this.currentSelectionChainId();
+    if (!entryId || !macromolecule || !chainId) return undefined;
+    return getMacromoleculeSequenceDetails(entryId, macromolecule, chainId);
+  });
 
   public readonly selectionUniprotId = computed(() => {
     const allowed = this.uniprotsAllowed();
@@ -436,15 +447,16 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public selectionTypeText?: string;
 
-  public readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+  public readonly macromoleculeTableRows = computed(() => this.processedMacromolecules() ?? []);
 
-  public readonly macromoleculeTableRows = computed(() => {
-    const rows = this.processedMacromolecules();
-    if (rows === undefined) return [];
-    return rows;
+  /** Index of the currently selected macromolecule row in the left panel */
+  private readonly selectedMacromoleculeIdx = toSignal(this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+
+  public readonly currentMacromoleculeDatum = computed<ProcessedMacromolecule | undefined>(() => {
+    const idx = this.selectedMacromoleculeIdx();
+    if (idx === undefined) return undefined;
+    return this.macromoleculeTableRows()[idx];
   });
-
-  public currentMacromoleculeDatum = signal<ProcessedMacromolecule | undefined>(undefined);
 
   public collapsedChains = true;
 
@@ -486,7 +498,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!mappedUnps) return false;
     if (!currentChain) return false;
 
-    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+    const mappingsForChains = mappedUnps.labelUniProtMappings.filter((mapped) => mapped.chainIds.includes(currentChain));
 
     if (mappingsForChains.length > 1 || mappingsForChains[0].uniprotSegments.length > 2) {
       return true;
@@ -504,11 +516,23 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     if (!currentChain) return undefined;
 
     const mappingsForChains = mappedUnps.labelUniProtMappings;
-    return mappingsForChains.filter((mapped) => mapped.chainIds.indexOf(currentChain) > -1);
+    return mappingsForChains.filter((mapped) => mapped.chainIds.includes(currentChain));
   });
 
-  public altSequences = signal<AlternativeNumbering[] | undefined>(undefined);
-  public nonObserved = signal<number[] | undefined>(undefined);
+  /** undefined means residueListing hasn't been retrieved yet, [] means it has been retrieved and is empty  */
+  public readonly altSequences = computed<AlternativeNumbering[] | undefined>(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.chain_id !== this.currentSelectionChainId()) return undefined;
+    if (residueListing.residues.length === 0) return [];
+    const authNumbering = createAuthAlternateNumbering(residueListing.residues);
+    return [authNumbering];
+  });
+
+  public readonly nonObserved = computed<number[] | undefined>(() => {
+    const residueListing = this.residueListing();
+    if (!residueListing || residueListing.chain_id !== this.currentSelectionChainId()) return undefined;
+    return getNonObserved(residueListing.residues);
+  });
 
   public seqViewerReady = computed(() => {
     const hasSequence = this.macromoleculeSequence() !== undefined;
@@ -520,7 +544,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return hasSequence && hasAltSequences && hasNonObserved && hasBgAnnotations && hasCurrentSelectionEntityId && hasCurrentSelectionChainId;
   });
 
-  public currentModelId$ = new BehaviorSubject<string>('1');
+  private currentModelId$ = new BehaviorSubject<string>('1');
+  private currentModelId = toSignal(this.currentModelId$);
 
   private topolViewerMutex = Mutex('topolViewerMutex');
   private rnaViewerMutex = Mutex('rnaViewerMutex');
@@ -533,26 +558,36 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return rows.length > 0;
   });
 
-  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
-
   constructor() {
     whenSignalFirstTrue(this.molstarFirstRenderFinished).subscribe(() => {
       // run after molstar rendered
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
-    });
-  }
 
-  ngAfterViewInit(): void {
-    this.compCommunication.macromoleculeSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
-      if (idx === undefined || idx === null) return;
-      const datum = this.macromoleculeTableRows()[idx];
-      if (datum) {
-        this.sequenceDetails.set(undefined);
-        this.currentMacromoleculeDatum.set(datum);
-        await this.triggerMacromoleculeUpdateSideEffects(datum);
+      // Once molstar has rendered, initializes mutation observer for NMR model Id
+      initializeModelIdTracking(this.currentModelId$, this._molstarComponent?.getContainer()); // do not await, this never resolves unless a multi-model structure is loaded (promise keeps ref to this.currentModelId$, is this is memory leak?)
+    });
+
+    // Update Protvista data when entity changes
+    effect(() => {
+      const currentEntityId = this.currentSelectionEntityId();
+      const isNucleic = this.macromolIsNucleic();
+      if (currentEntityId !== undefined) {
+        untracked(() => this.protvistaDataFacade.processNewData(currentEntityId, isNucleic)); // When called without `untracked`, `processNewData` enters an infinite loop
       }
     });
+
+    // Update visualizations (Protvista, Topology) when entity changes
+    effect(() => {
+      const macromolecule = this.currentMacromoleculeDatum();
+      if (!macromolecule) return;
+      macromolecule.additionalData.molecule.entity_id;
+      return this.triggerMacromoleculeUpdateSideEffects(macromolecule);
+    });
+
+    effect(() => this.visInteractivity.currentSelectionEntityId.set(this.currentSelectionEntityId()));
+    effect(() => this.visInteractivity.currentSelectionChainId.set(this.currentSelectionChainId()));
+    effect(() => this.visInteractivity.selectedSymOpInstanceId.set(this.selectedInstanceId()));
   }
 
   ngOnInit() {
@@ -566,11 +601,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
     this.rnaViewerMutex.run(async () => {
       await this.scriptLoader.loadScript('./assets/pdb-rna-viewer-plugin-0.3.1.js');
-    });
-
-    // every time NMR model Id updates, data for smart seq viewer is refreshed
-    this.currentModelId$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (newModelId) => {
-      await this.updateBackgroundAnnotation();
     });
 
     // when uniprot listing has arrived and been processed
@@ -592,24 +622,6 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
           );
         }
       });
-
-    this.residueListingObservable
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        distinctUntilChanged(),
-        filter((resList) => resList !== undefined)
-      )
-      .subscribe((residueListing) => {
-        if (residueListing.length > 0) {
-          const authNumbering = createAuthAlternateNumbering(residueListing);
-          const nonObservedResidues = getNonObserved(residueListing);
-          this.altSequences.set([authNumbering]);
-          this.nonObserved.set(nonObservedResidues);
-        } else {
-          this.altSequences.set([]);
-          this.nonObserved.set([]);
-        }
-      });
   }
 
   getStatValue(id: string): number | undefined {
@@ -617,113 +629,18 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     return stats ? stats[id as keyof ProteinSummaryStats] : undefined;
   }
 
-  private updateInPrefAssemblyForChain(macromolecule: ProcessedMacromolecule) {
-    // check if macromolecule chain is in pref assembly based on idx of chain
-    const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const isSelectionPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
-    this.inPrefAssemblyForChain.set(isSelectionPrefAssembly);
-  }
-
   async triggerMacromoleculeUpdateSideEffects(macromolecule: ProcessedMacromolecule) {
-    // refreshes chain dropdown options on new macromolecule
-    await this.updateDropdownOptions(macromolecule);
-    await this.updateSymmetryDropdownOptions(macromolecule);
-
-    // check whether chain is in pref assembly
-    this.updateInPrefAssemblyForChain(macromolecule);
-    // check whether any chain not in pref assembly for this macromolecule
-    const allChainsInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
-    this.inPrefAssembly.set(allChainsInPrefAssembly);
-
     // updates shown sequence on new macromolecule
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-    await this.updateSequenceDetailsFromChainId(macromolecule, chainId);
+    const chainId = this.currentSelectionChainId();
+    if (chainId === undefined) return;
 
-    this.altSequences.set(undefined);
-    this.nonObserved.set(undefined);
-    this.globalStore.dispatch(
-      EntryActions.getResidueListing({
-        chainId: chainId,
-      })
-    );
+    this.globalStore.dispatch(EntryActions.getResidueListing({ chainId: chainId }));
 
     // updates layout display details on new macromolecule
     this.updateVisualsDisplayed(macromolecule);
 
     // renders necessary visualisations according to display options and data
     this.renderVisualisations(macromolecule);
-
-    // updates smart sequence viewer annotations
-    await this.updateBackgroundAnnotation();
-  }
-
-  async updateDropdownOptions(macromolecule: ProcessedMacromolecule) {
-    this.dropdownOptionsToMolstar = getMacromoleculeChainDropdownOptions(macromolecule);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
-        url: `macro-${idx + 1}`,
-        downloadable: false,
-      };
-    });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-  }
-
-  async updateSymmetryDropdownOptions(macromolecule: ProcessedMacromolecule) {
-    // update for symmetry operations dropdown
-    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const chainId = macromolecule.additionalData.selections[idxOfSelection][0]['auth_asym_id'];
-    const chainSymmOperators = chainId ? macromolecule.chainSymmOperators[chainId] : undefined;
-    if (chainSymmOperators) {
-      this.symmetryDropdownOptions = chainSymmOperators.map((op, idx) => {
-        return {
-          name: op,
-          url: `macro-${chainId}-symop-${idx + 1}`,
-          downloadable: false,
-        };
-      });
-      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
-    } else {
-      this.symmetryDropdownSelected = undefined;
-      this.symmetryDropdownOptions = [];
-    }
-  }
-
-  private async updateSequenceDetailsFromChainId(macromolecule: ProcessedMacromolecule, chainId: string) {
-    this.sequenceDetails.set(undefined);
-    const sequenceDetails = getMacromoleculeSequenceDetails(this.entryId() ?? '', macromolecule, chainId);
-    console.log('sequenceDetails');
-    console.log(sequenceDetails);
-    this.sequenceDetails.set(sequenceDetails);
-    await this.updateBackgroundAnnotation();
-  }
-
-  private async updateBackgroundAnnotation() {
-    this.backgroundAnnotation.set(undefined);
-
-    const macromolecule = this.currentMacromoleculeDatum();
-    if (!macromolecule) return;
-    const sequence = macromolecule.additionalData.molecule.sequence;
-    if (!sequence) return;
-
-    // wait max 10s for residueWiseOutliers to populate
-    let outliers = this.residueWiseOutliers();
-    if (outliers === undefined) {
-      outliers = await firstValueFrom(
-        interval(200).pipe(
-          map(() => this.residueWiseOutliers()),
-          filter((o) => o !== undefined), // stop when defined
-          take(1), // only take the first defined
-          timeout({ first: 10000, with: () => of([]) }) // fallback if still undefined
-        )
-      );
-    }
-
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-    const modelId = this.currentModelId$.value || '1';
-    const annotation = convertOutliersToSmartSequenceAnnotation(sequence, entityId, chainId, modelId, outliers);
-    this.backgroundAnnotation.set(annotation);
   }
 
   updateVisualsDisplayed(macromolecule: ProcessedMacromolecule) {
@@ -767,27 +684,16 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected = event;
+    this.dropdown.select(event);
 
     // all possible rendering functions are called for a dashboard
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
-    await this.updateSymmetryDropdownOptions(macromolecule);
-
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-    await this.updateSequenceDetailsFromChainId(macromolecule, chainId);
-
-    // check whether chain is in pref assembly
-    this.updateInPrefAssemblyForChain(macromolecule);
-
     await this.renderVisualisations(macromolecule);
-    await this.updateBackgroundAnnotation();
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
-    const instance_id = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'All' ? this.symmetryDropdownSelected : undefined;
-    this.visInteractivity.selectedSymOpInstanceId.set(instance_id);
+    this.symmetryDropdown.select(event);
 
     const macromolecule = this.currentMacromoleculeDatum();
     if (!macromolecule) return;
@@ -835,8 +741,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
   }
 
   private async renderVisualisations(macromolecule: ProcessedMacromolecule) {
-    this.renderInMolstar(macromolecule);
-    await this.initOrRefreshProtvista(macromolecule);
+    // this.renderInMolstar(macromolecule);
+    // await this.initOrRefreshProtvista(macromolecule);
     setTimeout(async () => {
       await this.initOrRefreshTopologyViewer(macromolecule);
       await this.initOrRNATopologyViewer(macromolecule);
@@ -845,23 +751,22 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
 
   public selectionData?: QueryParamForHelpers[];
 
-  private renderInMolstar(macromolecule: ProcessedMacromolecule) {
-    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(macromolecule));
-  }
-
-  private getMvsSnapshotSpec(macromolecule: ProcessedMacromolecule): SnapshotSpec | undefined {
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
-    const entityId = `${macromolecule.additionalData.molecule.entity_id}`;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const macromolecule = this.currentMacromoleculeDatum();
+    if (!macromolecule) return undefined;
+    const entityId = String(macromolecule.additionalData.molecule.entity_id);
+
+    const dropdownSelected = this.dropdown.selectedOption();
+    if (!dropdownSelected) return undefined;
+    const { molstarSelection, inPrefAssembly } = dropdownSelected.data;
     const labelAsymId = molstarSelection[0].label_asym_id;
     const authAsymId = molstarSelection[0].auth_asym_id;
 
-    const chainIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const isSelectionInPrefAssembly = macromolecule.additionalData.selectionsInPrefAssembly[chainIdx];
-    const assemblyId = isSelectionInPrefAssembly ? this.preferredAssemblyId() : undefined;
-    const instanceId = this.getSelectedInstanceId();
+    const assemblyId = inPrefAssembly ? this.preferredAssemblyId() : undefined;
+    const instanceId = this.selectedInstanceId();
 
     return {
       name: `Macromolecule ${entityId}`,
@@ -878,23 +783,8 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
         color: macromolecule.molstarColorHex,
       },
     };
-  }
-
-  private async initOrRefreshProtvista(macromolecule: ProcessedMacromolecule) {
-    // stop if this dashboard does not have protvista (initially false and then set in onTableRowSelection according to tabName input)
-    if (!this.hasProtvista) return;
-    // const datum = this.currentMacromoleculeDatum();
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-    const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
-
-    this.currentSelectionEntityId.set(`${entityId}`);
-    this.currentSelectionChainId.set(chainId);
-    this.visInteractivity.currentSelectionEntityId.set(`${entityId}`);
-    this.visInteractivity.currentSelectionChainId.set(chainId);
-    const isNucleic = macromolecule?.additionalData?.molecule?.molecule_type.includes('nucleotide');
-    this.macromolIsNucleic.set(isNucleic);
-    this.protvistaDataFacade.processNewData(`${entityId}`, isNucleic);
-  }
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
   private async initOrRefreshTopologyViewer(macromolecule: ProcessedMacromolecule) {
     this.topolViewerMutex.run(async () => {
@@ -909,7 +799,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       // topology viewer is only currently shown for macromolecules
       // const datum = this.currentMacromoleculeDatum();
       const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
-      const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+      const chainId = this.currentSelectionChainId();
 
       // topology viewer load or reload in page is simple
       this.topologyViewerInstance = new PdbTopologyViewerPlugin();
@@ -939,7 +829,7 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
       // topology viewer is only currently shown for macromolecules
       // const datum = this.currentMacromoleculeDatum();
       const entityId = (macromolecule as ProcessedMacromolecule).additionalData.molecule.entity_id;
-      const chainId = this.dropdownSelected?.split('Chain ')[1].split(' <img')[0];
+      const chainId = this.currentSelectionChainId();
 
       // topology viewer load or reload in page is simple
       this.rnaViewerInstance = new PdbRnaViewerPlugin();
@@ -982,5 +872,3 @@ export class MacromoleculesTabComponent implements OnInit, AfterViewInit {
     });
   }
 }
-
-// TODO: Fix wrong inPrefAssembly for macromolecule 2 in 7p19 (same on other tabs)

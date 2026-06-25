@@ -1,15 +1,16 @@
-import { Molecule } from '../../data-models/molecule.model';
-import { UniProtMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
-import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
-import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
-import { AssemblyData } from '../../data-models/assembly.model';
-import { Filter, LabelUniProtMappingRows, UniProtMappingRows } from './models/other-models';
-import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { DEFAULT_SET_25 } from '@pdbe-lib/molstar-for-apps';
-import { ProcessedMacromolecule } from './models/processed-entities.model';
+import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
+import { CarbohydrateMolecule } from '../../data-models/carbohydrate-polymer.model';
+import { Molecule } from '../../data-models/molecule.model';
+import { PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
+import { UniProtMapping, UniProtMappingObj } from '../../data-models/uniprot-mapping.model';
+import { getSymmetryInstancesFromRenamedChains } from '../../helpers/misc';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
+import { getEntityToStructAsymsMapOfAssembly } from './assembly-processing';
 import { sortByBooleanFlag } from './domain-processing';
+import { Filter, LabelUniProtMappingRows, UniProtMappingRows } from './models/other-models';
+import { ProcessedMacromolecule } from './models/processed-entities.model';
 
 export interface MacromoleculesDescriptions {
   macromoleculesDescription: string;
@@ -50,7 +51,7 @@ export function processMacromoleculesDescriptions(macromolecules: Molecule[]): M
   ];
 
   moleculeTypeConditions = moleculeTypeConditions.filter((condition) => {
-    const macromoleculesForCondition = (macromolecules ?? []).filter((mol) => condition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+    const macromoleculesForCondition = (macromolecules ?? []).filter((mol) => condition.moleculeTypes.includes(mol.molecule_type));
     return macromoleculesForCondition.length > 0;
   });
 
@@ -62,7 +63,7 @@ export function processMacromoleculesDescriptions(macromolecules: Molecule[]): M
   for (let i = 0; i < moleculeTypeConditions.length; i++) {
     const moleculeTypeCondition = moleculeTypeConditions[i];
     // filter the complete macromolecule list by the type
-    const filteredMacromolecules = (macromolecules ?? []).filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+    const filteredMacromolecules = (macromolecules ?? []).filter((mol) => moleculeTypeCondition.moleculeTypes.includes(mol.molecule_type));
 
     // add comma if this is between second and penultimate item
     if (i > 0 && i < moleculeTypeConditions.length - 1) macromoleculesDescription += ', ';
@@ -117,10 +118,11 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
 
   Object.entries(uniprotMappings).forEach(([uniprotId, uniprot]) => {
     for (const mapping of uniprot.mappings) {
-      if (mapping.entity_id !== entityId) return;
+      if (!mapping?.entity_id || !mapping?.chain_id || !mapping?.struct_asym_id) continue;
+      if (mapping.entity_id !== entityId) continue;
       // filter for preferredAssembly given that macromolecule already has filtered fields
-      if (allowedAsyms.indexOf(mapping.chain_id) === -1) continue;
-      if (allowedStructAsyms.indexOf(mapping.struct_asym_id) === -1) continue;
+      if (!allowedAsyms.includes(mapping.chain_id)) continue;
+      if (!allowedStructAsyms.includes(mapping.struct_asym_id)) continue;
 
       const identity = mapping.identity;
       const coverage = mapping.coverage;
@@ -184,10 +186,11 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
         }
         // if we are looking just for end auth
         else if (end === null && start !== null) {
-          // we take the first segment with smaller label end than mapping label emd
-          // e.g we have: [0, 4], [10, 38], [50, 70] (label segments)
-          // and 5 as mapping label end, we should take 4
-          const seg = sortedSegments.find((seg) => seg.end.residue_number <= labelEnd);
+          // take the nearest observed segment ending at or before the mapping label end
+          // e.g. observed label segments: [0, 4], [10, 38], [50, 70]
+          // labelEnd = 5  -> take [0, 4]
+          // labelEnd = 60 -> take [10, 38]
+          const seg = sortedSegments.filter((seg) => seg.end.residue_number <= labelEnd).at(-1);
 
           if (seg) {
             end = `${seg.end.author_residue_number}${seg.end.author_insertion_code || ''}`;
@@ -361,31 +364,33 @@ export function filterMacromoleculesByPreferredAssembly(macromolecules: Molecule
   );
 }
 
-export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[], preferredAssembly: AssemblyData): Molecule[] {
+function getChainIdToStuctAsymMap(coverage: PolymerCoverageMolecule[]) {
+  const map: { [chainId: string]: string } = {};
+  for (const entity of coverage) {
+    for (const chain of entity.chains) {
+      map[chain.chain_id] = chain.struct_asym_id;
+    }
+  }
+  return map;
+}
+
+export function mapMacromoleculesByPreferredAssembly(macromolecules: Molecule[], preferredAssembly: AssemblyData, coverage: PolymerCoverageMolecule[]): Molecule[] {
+  const chainIdToStructAsymMap = getChainIdToStuctAsymMap(coverage);
   const preferredAssemblyEntitiesMap = getEntityToStructAsymsMapOfAssembly(preferredAssembly);
-  return macromolecules.map((molecule) => {
+  return macromolecules.map<Molecule>((molecule) => {
     // Get list of struct_asyms of preferred assembly
-    const allowedAsyms = preferredAssemblyEntitiesMap.get(molecule.entity_id);
+    const allowedStructAsyms = new Set(preferredAssemblyEntitiesMap.get(molecule.entity_id));
 
-    // Filter the in_struct_asyms and in_chains to only
-    // include those present in the preferred assembly entity
-    const in_struct_asyms_in_pref_assembly: boolean[] = [];
-    const in_chains_in_pref_assembly: boolean[] = [];
-
-    molecule.in_struct_asyms.forEach((asymId, idx) => {
-      if (allowedAsyms && allowedAsyms.includes(asymId)) {
-        in_struct_asyms_in_pref_assembly.push(true);
-        in_chains_in_pref_assembly.push(true); // Keep corresponding chain
-      } else {
-        in_struct_asyms_in_pref_assembly.push(false);
-        in_chains_in_pref_assembly.push(false); // Keep corresponding chain
-      }
-    });
+    // Filter the in_struct_asyms and in_chains to only include those present in the preferred assembly entity
+    const in_struct_asyms_in_pref_assembly: boolean[] = molecule.in_struct_asyms.map((labelAsymId) => allowedStructAsyms.has(labelAsymId));
+    const in_chains_in_pref_assembly: boolean[] = molecule.in_chains.map((authAsymId) => allowedStructAsyms.has(chainIdToStructAsymMap[authAsymId]));
+    // These two might have different order!
 
     return {
       ...molecule,
       in_struct_asyms_in_pref_assembly,
       in_chains_in_pref_assembly,
+      auth_asym_id_to_label_asym_id: chainIdToStructAsymMap,
     };
   });
 }
@@ -398,8 +403,8 @@ export function generateMolstarSelectionsForMacromolecule(macromolecule: Molecul
     const chainId = macromolecule.in_chains[chain_idx];
 
     // add flag for not in preferred assembly
-    if (macromolecule.in_chains_in_pref_assembly?.[chain_idx] === false) selectionsInPrefAssembly.push(false);
-    else selectionsInPrefAssembly.push(true);
+    const isInPrefAssembly = macromolecule.in_chains_in_pref_assembly?.[chain_idx] ?? false;
+    selectionsInPrefAssembly.push(isInPrefAssembly);
 
     const molstarSelection: QueryParamForHelpers[] = [];
     if (macromolecule.molecule_type.includes('carbohydrate') === false) {
@@ -512,7 +517,7 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
   // for each set of molecule types ...
   for (const moleculeTypeCondition of moleculeTypeConditions) {
     // ... filter the complete macromolecule list by this set of types
-    const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.indexOf(mol.molecule_type) > -1);
+    const filteredMacromolecules = macromolecules.filter((mol) => moleculeTypeCondition.moleculeTypes.includes(mol.molecule_type));
     // ... and create a filter based on these set of types and a dynamically generated description
     const plural = filteredMacromolecules.length > 1 ? 's' : '';
     if (filteredMacromolecules.length > 0) {
@@ -530,52 +535,57 @@ export function generateMacromoleculesTableFilters(macromolecules: Molecule[]): 
   return newFilters;
 }
 
-export function generateSymmetryOperatorsDict(macromolecule: Molecule, preferredAssembly: AssemblyData) {
-  const chainToSymmOp: { [key: string]: string[] } = {};
-  const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === macromolecule.entity_id);
-  if (assemblyEntityOfMacromolSearch.length === 0) return chainToSymmOp;
-  else if (assemblyEntityOfMacromolSearch.length > 1) console.warn('Warning: multiple assembly entities found for single macromolecule');
-  const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
-  // has any symmetry op = inverse of has no symmetry op
-  const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
-  if (hasSymmetryOp === false) return chainToSymmOp;
+export function generateSymmetryOperatorsDict(macromolecule: Molecule, assemblyEntity: AssemblyEntity | undefined) {
+  if (!macromolecule.auth_asym_id_to_label_asym_id) throw new Error('macromolecule.auth_asym_id_to_label_asym_id is missing');
 
-  for (let chainIdx = 0; chainIdx < macromolecule.in_chains.length; chainIdx++) {
-    const chainId = macromolecule.in_chains[chainIdx];
-    const structAsymId = macromolecule.in_struct_asyms[chainIdx];
-    const assemblyStructAsymsWithOp = assemblyEntityOfMacromol.in_chains.filter((chainidWithOp) => chainidWithOp.split('-')[0] === structAsymId);
+  if (!assemblyEntity) {
+    return {};
+  }
+  const hasSymmetryOp = assemblyEntity.in_chains.some((chainidWithOp) => chainidWithOp.includes('-'));
+  if (!hasSymmetryOp) {
+    return {};
+  }
 
-    const noStructAsymsWithOp = assemblyStructAsymsWithOp.length === 0;
-    const onlyCurrentChainId = assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] === structAsymId;
-    const onlyCurrentChainWithOp =
-      assemblyStructAsymsWithOp.length === 1 && assemblyStructAsymsWithOp[0] !== structAsymId && assemblyStructAsymsWithOp[0].includes('-');
-
-    if (noStructAsymsWithOp || onlyCurrentChainId) {
-      console.warn(`Warning: no chains with symmetry operator found for chain ${chainId}. Skipping...`);
-      continue;
+  const chainToSymmOp: { [authAsymId: string]: string[] } = {};
+  for (const chainId of macromolecule.in_chains) {
+    // This cannot be done by iterating in_chains and in_struct_asyms at the same time because they are not necessarily in the same order (see 7p19 entity 2: B [auth E], D [auth C])
+    const structAsymId = macromolecule.auth_asym_id_to_label_asym_id[chainId];
+    const symmetryInstances = generateSymmetryOperatorsForChain(assemblyEntity, structAsymId);
+    if (symmetryInstances) {
+      chainToSymmOp[chainId] = symmetryInstances;
     }
-    if (onlyCurrentChainWithOp) {
-      const symmetryOperator = assemblyStructAsymsWithOp[0].split('-')[1];
-      chainToSymmOp[chainId] = [`ASM-${symmetryOperator}`];
-      continue;
-    }
-
-    const operatorsList = ['All'];
-    for (const assemblyStructAsymWithOp of assemblyStructAsymsWithOp) {
-      const symmetryOperator = assemblyStructAsymWithOp === structAsymId ? '1' : assemblyStructAsymWithOp.split('-')[1];
-
-      operatorsList.push(`ASM-${symmetryOperator}`);
-    }
-    chainToSymmOp[chainId] = operatorsList;
   }
   return chainToSymmOp;
 }
 
+export function generateSymmetryOperatorsForChain(assemblyEntity: AssemblyEntity, structAsymId: string) {
+  const renamedChains = assemblyEntity.in_chains.filter((renamedChain) => renamedChain.split('-')[0] === structAsymId);
+  if (renamedChains.length === 0) {
+    // This chain is not in preferred assembly
+    return undefined;
+  }
+
+  const hasSymmetryOps = renamedChains.some((renamedChain) => renamedChain.includes('-'));
+  if (!hasSymmetryOps) {
+    console.warn(`Warning: no renamed chains with symmetry operator found for structAsymId ${structAsymId}. Skipping...`);
+    return undefined;
+  }
+
+  return ['All', ...getSymmetryInstancesFromRenamedChains(renamedChains)];
+}
+
 export function generateProcessedMacromolecules(macromolecules: Molecule[], preferredAssembly: AssemblyData, carbohydrates?: CarbohydrateMolecule[]) {
   if ((<any>carbohydrates).empty === true) carbohydrates = [];
+
+  // Index entities to avoid using .find repeatedly
+  const assemblyEntitiesById: { [entityId: number]: AssemblyEntity } = {};
+  for (const entity of preferredAssembly.entities) {
+    assemblyEntitiesById[entity.entity_id] = entity;
+  }
+
   const processedMacromolecules: ProcessedMacromolecule[] = [];
   for (const molecule of macromolecules) {
-    let moleculeLength = molecule.length;
+    let moleculeLength = molecule.length ?? 0;
     let carbohydrate: CarbohydrateMolecule | undefined = undefined;
 
     if (molecule.molecule_type.includes('carbohydrate')) {
@@ -590,7 +600,8 @@ export function generateProcessedMacromolecules(macromolecules: Molecule[], pref
     const selectionData = generateMolstarSelectionsForMacromolecule(molecule, carbohydrate);
 
     const colorEntityIdx = molecule.entity_id - 1;
-    const chainSymmOperators = generateSymmetryOperatorsDict(molecule, preferredAssembly);
+    const assemblyEntity = assemblyEntitiesById[molecule.entity_id];
+    const chainSymmOperators = generateSymmetryOperatorsDict(molecule, assemblyEntity);
 
     const { selections, selectionNames, selectionsInPrefAssembly } = sortByBooleanFlag(
       {

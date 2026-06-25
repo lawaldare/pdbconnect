@@ -280,3 +280,5 @@ export const dataBaseOrder = [
   'Nikkaji',
   'ChemicalBook',
 ];
+
+export const MDpositTooltip = `Provides molecular dynamics simulations associated with this ligand (when available). MDposit standardizes, analyzes, and visualizes associated MD trajectories, enabling exploration of ligand–protein interactions, residue dynamics, and conformational changes mapped to the reference sequence.`;

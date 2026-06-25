@@ -1,19 +1,20 @@
 /* eslint-disable @angular-eslint/component-selector */
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, linkedSignal, OnInit, signal, ViewChild } from '@angular/core';
-import { AgGridAngular } from 'ag-grid-angular';
-import { gridOptions, colDefs, initialState, rowSelection } from './ag-grid';
-import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { PisaSelectors } from '../../store/pisa.selectors';
+import { pisaComplexView } from '@pdbc/core';
+import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { AgGridAngular } from 'ag-grid-angular';
+import { GridApi, GridReadyEvent, SelectionChangedEvent } from 'ag-grid-community';
+import type { MVSData } from 'molstar/lib/extensions/mvs/mvs-data';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { filter } from 'rxjs';
 import { PisaUtilService } from '../../services/pisa-util.service';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
-import { ComplexTabSingleInterfaceComponent } from '../complex-tab-single-interface/complex-tab-single-interface';
-import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { pisaComplexView } from '@pdbc/core';
 import { PisaActions } from '../../store/pisa.actions';
+import { PisaSelectors } from '../../store/pisa.selectors';
+import { ComplexTabSingleInterfaceComponent } from '../complex-tab-single-interface/complex-tab-single-interface';
+import { colDefs, gridOptions, initialState, rowSelection } from './ag-grid';
 
 @Component({
   selector: 'pisa-complexes-tab',
@@ -33,7 +34,7 @@ export class ComplexesTabComponent implements OnInit {
   public readonly initialState = initialState;
   public readonly rowSelection = rowSelection;
 
-  private mvsData = null;
+  private mvsData?: MVSData;
 
   public paginationPageSizeSelector = signal<number[]>([10, 20]);
 
@@ -193,6 +194,7 @@ export class ComplexesTabComponent implements OnInit {
   public async downloadComplex() {
     const MVS = this.molstarPluginService.getClass()?.extensions.MVS;
     if (!MVS) return;
+    if (!this.mvsData) throw new Error('MolViewSpec not loaded yet');
     const mvsx = await MVS.MVSData.toMVSX(this.mvsData);
 
     const link = document.createElement('a');

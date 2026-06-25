@@ -74,6 +74,7 @@ export class MbOverviewMacromoleculesComponent implements OnInit {
       EntryActions.getEntryMolecules,
       EntryActions.getCarbohydrates,
       EntryActions.getProcessedMacromolecules,
+      EntryActions.getEntryPolymerCoverage,
     ]);
   }
 

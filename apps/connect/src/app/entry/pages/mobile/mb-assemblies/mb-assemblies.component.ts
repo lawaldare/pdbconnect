@@ -1,19 +1,19 @@
-import { Component, computed, inject, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EntryStoreState } from '../../../store/entry-store.model';
-import { Store } from '@ngrx/store';
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
-import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { Component, computed, effect, inject, OnInit, Optional, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { EntrySelectors } from '../../../store/entry.selectors';
-import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { FormsModule } from '@angular/forms';
-import { filter, firstValueFrom, take } from 'rxjs';
-import { clearSelectionInMolstar } from '../../../helpers/molstar-helpers';
-import { MobileStateService } from '../mobile-state.service';
-import { EntryActions } from '../../../store/entry.actions';
-import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { Store } from '@ngrx/store';
+import { GoogleAnalyticsService, MaterialModule } from '@pdbc/core';
 import { baseUrl } from '../../../entry-constant';
+import { makeEntityColors } from '../../../helpers/misc';
+import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
+import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntryActions } from '../../../store/entry.actions';
+import { EntrySelectors } from '../../../store/entry.selectors';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-assemblies',
@@ -58,15 +58,12 @@ export class MbAssembliesComponent implements OnInit {
     return undefined;
   });
 
-  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbAssembliesComponent>) {}
+  constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbAssembliesComponent>) {
+    effect(() => this.compCommunication.mvsSnapshotSpec$.next(this.mvsSnapshotSpec()));
+  }
 
   async ngOnInit() {
     /* 1. Fetch data */
-    // this.globalStore.dispatch(EntryActions.getSymmetry());
-    // this.globalStore.dispatch(EntryActions.getSummaryData());
-    // this.globalStore.dispatch(EntryActions.getAssemblies());
-    // this.globalStore.dispatch(EntryActions.getPreferredAssembly());
-    // this.globalStore.dispatch(EntryActions.getProcessedAssemblies());
     this.applicationApiDispatcher.dispatchForList([
       EntryActions.getSymmetry,
       EntryActions.getSummaryData,
@@ -74,21 +71,6 @@ export class MbAssembliesComponent implements OnInit {
       EntryActions.getPreferredAssembly,
       EntryActions.getProcessedAssemblies,
     ]);
-
-    /* 2. Draw in Molstar */
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.compCommunication.mobileMolstarLoaded$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
-    if (this.compCommunication.mobileMolstarDisplay === 'assemblies') return;
-
-    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
-    if (!instance) return;
-    await clearSelectionInMolstar(instance, 700);
-    this.compCommunication.mobileMolstarDisplay = 'assemblies';
   }
 
   toggleBottomsheetHeight() {
@@ -104,4 +86,21 @@ export class MbAssembliesComponent implements OnInit {
     this.state.updateSelectedComponent(null);
     this.state.updateSelectedTabName('');
   }
+
+  private readonly procMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  private readonly procLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private readonly entityColors = computed(() => makeEntityColors(this.procMacromolecules(), this.procLigands()));
+
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    const complex = this.preferredAssembly();
+    if (!entryId || !complex) return;
+
+    const assemblyId = complex.assemblyId;
+    return {
+      name: `Complex ${assemblyId}`,
+      kind: 'pdbconnect_complex',
+      params: { entry: entryId, assemblyId, entityColors: this.entityColors(), volumeStreaming: true },
+    };
+  });
 }

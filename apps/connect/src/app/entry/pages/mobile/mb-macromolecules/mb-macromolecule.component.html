@@ -1,18 +1,14 @@
 <section>
   @if(macromoleculeTableRows().length){
   <header>
-    @if(currentViewState() === viewStates.Detail){
+    @if(currentViewState() === 'detail'){
     <nav>
       <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
       <span (click)="goBackToList()">Go to Macromolecules list </span>
     </nav>
     }
     <section class="header">
-      <h2 #macroMoleculeTitle>
-        {{title()}} @if(currentViewState() === viewStates.List){
-        <span>({{macromoleculeTableRows().length}})</span>
-        }
-      </h2>
+      <h2 #macroMoleculeTitle>{{title()}}</h2>
       <div class="controls">
         <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
         <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
@@ -21,8 +17,8 @@
   </header>
 
   <!-- 1st Level Overlay -->
-  @if(currentViewState() === viewStates.List){ @for(row of macromoleculeTableRows(); track row.name.molecule){
-  <div class="row" (click)="navigateToDetail(row)">
+  @if(currentViewState() === 'list'){ @for(row of macromoleculeTableRows(); track row.name.molecule){
+  <div class="row" (click)="navigateToDetail(row)" [style]="row.molstarColorHex ? `border-left-color: ${row.molstarColorHex};` : undefined">
     <div class="row__header">
       <p class="row__header__name">{{row.name.molecule}}</p>
       <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
@@ -30,14 +26,14 @@
     <p class="row__content">
       Chain @for(chain of row.name.chains; track chain; let islast = $last){
       <span>{{chain[chain.length - 1]}}</span>{{ islast ? '' : ',' }} } @if (anyNonPrefAssembly(row)) {
-      <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+      <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
       }
     </p>
   </div>
   } }
 
   <!-- 2nd Level Overlay -->
-  @if(currentViewState() === viewStates.Detail){
+  @if(currentViewState() === 'detail'){
 
   <mat-tab-group class="mb-macromolecule">
     <!-- Information Tab -->
@@ -173,23 +169,36 @@
     <mat-tab label="Sequence">
       <p class="title" style="margin-bottom: 4px">Select chain</p>
       <div class="chains">
-        @if(dropdownOptions.length > 1){
+        @if(dropdown.options.length > 1){
         <div class="dropdown-container">
-          <!-- <span class="dropdown-title">{{ dropdownTitle }}</span> -->
           <pdbc-entry-dropdown
             [searchable]="false"
             searchTitle="''"
             [downloadable]="false"
             [islink]="false"
-            [options]="dropdownOptions"
-            [title]="dropdownSelected"
+            [options]="dropdown.options"
+            [title]="dropdown.selectedName() ?? ''"
             (optionClickedEvent)="onDropdownSelect($event)"
           >
           </pdbc-entry-dropdown>
         </div>
-        }@else if(dropdownOptions.length === 1){
-        <p>{{dropdownOptions[0].name}}</p>
-        } @else {}
+        }@else if(dropdown.options.length === 1){
+        <p>{{dropdown.options[0].name}}</p>
+        } @else {} @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
+        <p class="title">Symmetry Operation Id</p>
+        <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
+          [downloadable]="false"
+          [islink]="false"
+          [options]="symmetryDropdown.options"
+          [title]="symmetryDropdown.selectedOption()?.name ?? 'All'"
+          (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+        ></pdbc-entry-dropdown>
+        } @else if(symmetryDropdown.options.length === 1){
+        <p class="title">Symmetry Operation Id</p>
+        <p class="content" [innerHTML]="symmetryDropdown.options[0].name"></p>
+        }
       </div>
       @if (sequenceDetails()) {
       <div class="sequence-container">
