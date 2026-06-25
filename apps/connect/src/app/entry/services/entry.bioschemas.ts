@@ -1,9 +1,10 @@
-import { effect, EnvironmentInjector, inject, Injectable, Renderer2, runInInjectionContext } from '@angular/core';
+import { effect, EnvironmentInjector, inject, Injectable, PLATFORM_ID, Renderer2, runInInjectionContext } from '@angular/core';
 import { BioschemasService } from '@pdbc/core';
 import { EntryStoreState } from '../store/entry-store.model';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EntrySelectors } from '../store/entry.selectors';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -12,8 +13,12 @@ export class EntryBioschemasService {
   private readonly bioschemasService = inject(BioschemasService);
   private readonly environmentInjector = inject(EnvironmentInjector);
   private readonly globalStore = inject(Store<EntryStoreState>);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public setUpRenderedForBioschemas(renderer: Renderer2): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.buildDataSetJsonLd(renderer);
     this.buildBreadcrumbJsonLd(renderer);
   }

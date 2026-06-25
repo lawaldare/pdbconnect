@@ -1,6 +1,6 @@
 /* eslint-disable @angular-eslint/prefer-inject */
 
-import { effect, EnvironmentInjector, inject, Injectable, Renderer2, runInInjectionContext } from '@angular/core';
+import { effect, EnvironmentInjector, inject, Injectable, PLATFORM_ID, Renderer2, runInInjectionContext } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { BioschemasService } from '@pdbc/core';
 import { ComplexStoreState } from '../store/complex-store.model';
@@ -8,6 +8,7 @@ import { ComplexSelectors } from '../store/complex.selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ComplexInteraction, Participant } from '../models/complex-structure.model';
 import { filter } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -16,8 +17,12 @@ export class ComplexBioschemasService {
   private readonly globalStore = inject(Store<ComplexStoreState>);
   private readonly bioschemasService = inject(BioschemasService);
   private readonly environmentInjector = inject(EnvironmentInjector);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public setUpRenderedForBioschemas(renderer: Renderer2): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.buildProteinJsonLd(renderer);
     this.buildBreadcrumbJsonLd(renderer);
   }

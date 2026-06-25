@@ -1,10 +1,11 @@
-import { effect, EnvironmentInjector, inject, Injectable, Renderer2, runInInjectionContext } from '@angular/core';
+import { effect, EnvironmentInjector, inject, Injectable, PLATFORM_ID, Renderer2, runInInjectionContext } from '@angular/core';
 import { LigandStoreState } from '../store/ligand-store.model';
 import { Store } from '@ngrx/store';
 import { LigandSelectors } from '../store/ligand.selectors';
 import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { BioschemasService } from '@pdbc/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -13,8 +14,12 @@ export class LigandsBioschemasService {
   private readonly globalStore = inject(Store<LigandStoreState>);
   private readonly bioschemasService = inject(BioschemasService);
   private readonly environmentInjector = inject(EnvironmentInjector);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public setUpRenderedForBioschemas(renderer: Renderer2): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.buildMolecularEntityJsonLd(renderer);
     this.buildBreadcrumbJsonLd(renderer);
   }
