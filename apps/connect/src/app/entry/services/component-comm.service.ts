@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
-import type { InitParams } from 'pdbe-molstar/lib/spec';
+import type { SnapshotSpec } from '../helpers/mvs-views/mvs-snapshot-types';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,13 +14,10 @@ export class ComponentCommunicationService {
   public isCPUSlow = signal<boolean | undefined>(undefined);
   public forceLoad = signal(false);
 
-  public mobileMolstar?: MolstarComponent;
-  public mobileMolstarLoaded$ = new BehaviorSubject<boolean>(false);
   public mobileModelIdx$ = new BehaviorSubject<string>('1');
-  public configForMobileMolstar = signal<any>(undefined);
   public mobileIsPrefAssembly = signal(true);
   public mobileHasClosedMessage = signal(false);
-  public mobileMolstarDisplay = 'none';
+  public readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
 
   public assemblySelection$ = new BehaviorSubject<number | undefined>(undefined);
   public macromoleculeSelection$ = new BehaviorSubject<number | undefined>(undefined);

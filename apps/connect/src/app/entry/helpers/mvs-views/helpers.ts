@@ -1,5 +1,6 @@
 import type * as Builder from 'molstar/lib/extensions/mvs/tree/mvs/mvs-builder';
 import type { ColorT, ComponentExpressionT } from 'molstar/lib/extensions/mvs/tree/mvs/param-types';
+import { unique } from '../misc';
 
 export type StandardComponentType = 'polymer' | 'branched' | 'branchedLinkage' | 'ligand' | 'ion' | 'nonstandard' | 'water';
 
@@ -216,38 +217,6 @@ export function applyElementColors(repr: Builder.Representation, selector?: Comp
 export function applyOpacity(repr: Builder.Representation, opacity: number | undefined) {
   if (opacity !== undefined && opacity !== 1) return repr.opacity({ opacity });
   else return repr;
-}
-
-/** Return list of unique/distinct values from `values` in the order of their first occurrence.
- * If `key` is provided, use it to judge equality. */
-export function unique<T>(values: T[]): T[];
-export function unique<T, K>(values: T[], key: (v: T) => K): T[];
-export function unique<T, K>(values: T[], key: (v: T) => K = ((x: T) => x) as any) {
-  const out: T[] = [];
-  const seen = new Set<K>();
-  for (const value of values) {
-    const k = key(value);
-    if (!seen.has(k)) {
-      seen.add(k);
-      out.push(value);
-    }
-  }
-  return out;
-}
-
-export function max<T>(array: T[]): T;
-export function max<T, V>(array: T[], key: (elem: T) => V): T;
-export function max<T, V>(array: T[], key: (elem: T) => V = ((x: T) => x) as any): T {
-  let argMax = array[0];
-  let max = key(argMax);
-  for (const elem of array) {
-    const value = key(elem);
-    if (value > max) {
-      argMax = elem;
-      max = value;
-    }
-  }
-  return argMax;
 }
 
 export function wholeResidues(selection: ComponentExpressionT[]): ComponentExpressionT[] {

@@ -176,19 +176,19 @@ export const dashboardStatLinks = {
       id: 'bound_entries',
       displayName: 'bound structures',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
-      linkSuffix: '#structures-section',
+      linkSuffix: '?activeTab=structures',
     },
     {
       id: 'total_interactions',
       displayName: 'interaction statistics',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
-      linkSuffix: '#interaction-section',
+      linkSuffix: '?activeTab=interactions',
     },
     {
       id: 'related_ligands',
       displayName: 'related ligands',
       link: `${ligandBaseUrl}chemicalCompound/show/`,
-      linkSuffix: '#related-ligand-section',
+      linkSuffix: '?activeTab=related-ligands',
     },
   ],
   Domains: [],
@@ -215,6 +215,25 @@ export const OUTLIER_TYPE_LABELS: Record<string, string> = {
   suite_outliers: 'RNA-Suite Outliers',
   pucker_outliers: 'RNA Pucker Outliers',
 };
+
+export const VALIDATION_LEGENDS_AND_COLORS = [
+  {
+    label: '0 outliers',
+    color: '#F0F0F0',
+  },
+  {
+    label: '1 outlier',
+    color: '#E5E501',
+  },
+  {
+    label: '2 outliers',
+    color: '#DA6E03',
+  },
+  {
+    label: '3 and more outliers',
+    color: '#B2182B',
+  },
+];
 
 // https://web.archive.org/web/20250209115645/https://personal.sron.nl/~pault/
 export const PAUL_TOL_COLORBLIND_SCALE: string[] = ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255'];
@@ -415,6 +434,7 @@ export const DEFAULT_DOMAIN_HIGHLIGHT_COLOR = '#B5CB93'; // Higher-contrast vers
 
 /** Color for marking annotations on Text Annotations tab */
 export const TEXT_ANNOTATION_HIGHLIGHT_COLOR = '#4F81C3';
+export const TEXT_ANNOTATION_HIGHLIGHT_COLOR_3D = '#147AFF'; // Higher-contrast version of TEXT_ANNOTATION_HIGHLIGHT_COLOR for use in 3D
 
 export const labelGroups = {
   Popular: ['mmCIF file (Updated)', 'PDB file', 'Compatible PDB file bundle (tar.gz)', 'FASTA (Entry)', 'Full report (PDF)', 'Validation data (mmCIF)'],

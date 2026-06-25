@@ -1,17 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { EntryStoreState } from './entry-store.model';
-import { EntryActions } from './entry.actions';
 import { catchError, combineLatest, filter, forkJoin, map, mergeMap, of, switchMap, take } from 'rxjs';
-import { EntryApiService } from '../services/entry-api.service';
-import { EntrySelectors } from './entry.selectors';
-import { AnyExperimentDetail } from '../data-models/experimental-details.model';
-import { CitationDetail } from '../data-models/publication.model';
 import { IRRMCExperimentRawData } from '../data-models/experiment-raw-data.model';
+import { AnyExperimentDetail } from '../data-models/experimental-details.model';
+import { MoleculeSource } from '../data-models/molecule.model';
+import { CitationDetail } from '../data-models/publication.model';
+import { EntryApiService } from '../services/entry-api.service';
 import { PvDataApiService } from '../services/entry-pv-nightingale-api.service';
 import { EntryUtilService } from '../services/entry-util.service';
-import { processFilesData, processResidueOutliersData } from './data-processing/others-processing';
 import {
   generateAssembliesCards,
   generateAssembliesTableFilters,
@@ -19,16 +16,7 @@ import {
   getPreferredAssemblyDatum,
   processPreferredAssemblyData,
 } from './data-processing/assembly-processing';
-import {
-  generateMacromoleculesCards,
-  generateMacromoleculesTableFilters,
-  generateProcessedMacromolecules,
-  getUniProtMappingsForMacromolecule,
-  mapMacromoleculesByPreferredAssembly,
-  mapMacromoleculesChainsToEntityId,
-  mapPolymerCoverageByPreferredAssembly,
-  processMacromoleculesDescriptions,
-} from './data-processing/macromolecule-processing';
+import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
 import {
   generateLigandsAndModsTableFilters,
   generateLigandsCards,
@@ -38,9 +26,22 @@ import {
   mapLigandsByPreferredAssembly,
   mapModificationsByPreferredAssembly,
 } from './data-processing/ligand-processing';
-import { generateDomainsCards, generateDomainsTableFilters, generateProcessedDomains, processDomainsWithMacromolecules } from './data-processing/domain-processing';
-import { MoleculeSource } from '../data-models/molecule.model';
 import { filterMacromoleculesForLLM } from './data-processing/llm-processing';
+import {
+  generateMacromoleculesCards,
+  generateMacromoleculesTableFilters,
+  generateProcessedMacromolecules,
+  mapMacromoleculesByPreferredAssembly,
+  mapMacromoleculesChainsToEntityId,
+  mapPolymerCoverageByPreferredAssembly,
+  processMacromoleculesDescriptions,
+} from './data-processing/macromolecule-processing';
+import { processFilesData, processResidueOutliersData } from './data-processing/others-processing';
+import { EntryStoreState } from './entry-store.model';
+import { EntryActions } from './entry.actions';
+import { EntrySelectors } from './entry.selectors';
+import { ProcessedSummary } from '../data-models/summary.model';
+import { AssemblyData } from '../data-models/assembly.model';
 
 @Injectable()
 export class EntryEffects {
@@ -408,7 +409,7 @@ export class EntryEffects {
             ];
 
             const macroMolecules = molecules
-              .filter((mol) => macromoleculeSortedTypesArray.indexOf(mol.molecule_type) > -1)
+              .filter((mol) => macromoleculeSortedTypesArray.includes(mol.molecule_type))
               .sort((a, b) => macromoleculeSortedTypesArray.indexOf(a.molecule_type) - macromoleculeSortedTypesArray.indexOf(b.molecule_type));
 
             const boundLigands = molecules.filter((mol) => mol.molecule_type === 'bound');
@@ -854,14 +855,8 @@ export class EntryEffects {
   getProcAssembliesFilters$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EntryActions.getProcAssembliesFilters),
-      switchMap(() =>
-        combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.assemblies)]).pipe(
-          filter(([summaryData, assemblies]) => summaryData !== undefined && assemblies !== undefined)
-          // take(1)
-        )
-      ),
+      switchMap(() => combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.assemblies)]).pipe(filter(allDefined))),
       map(([summaryData, assemblies]) => {
-        if (assemblies === undefined || summaryData === undefined) throw 'missing data to process assemblies';
         const procAssembliesFilters = generateAssembliesTableFilters(summaryData, assemblies);
         return EntryActions.getProcAssembliesFiltersSuccess({ procAssembliesFilters });
       }),
@@ -877,13 +872,9 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.complexDetails),
           this.store.select(EntrySelectors.assemblies),
-        ]).pipe(
-          filter(([summaryData, complexDetails, assemblies]) => summaryData !== undefined && complexDetails !== undefined && assemblies !== undefined)
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, complexDetails, assemblies]) => {
-        if (assemblies === undefined || complexDetails === undefined || summaryData === undefined) throw 'missing data to process assemblies';
         const procAssembliesCards = generateAssembliesCards(assemblies, complexDetails, summaryData);
         return EntryActions.getProcAssembliesCardsSuccess({ procAssembliesCards });
       }),
@@ -901,17 +892,9 @@ export class EntryEffects {
             this.store.select(EntrySelectors.pisaAssemblies),
             this.store.select(EntrySelectors.summaryData),
             this.store.select(EntrySelectors.complexDetails),
-          ]).pipe(
-            filter(
-              ([assemblies, pisaAssemblies, summaryData, complexDetails]) =>
-                assemblies !== undefined && pisaAssemblies !== undefined && summaryData !== undefined && complexDetails !== undefined
-            ),
-            take(1)
-          ) // take a snapshot
+          ]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
       map(([assemblies, pisaAssemblies, summaryData, complexDetails]) => {
-        if (assemblies === undefined || complexDetails === undefined || summaryData === undefined || pisaAssemblies === undefined)
-          throw 'missing data to process assemblies';
         const processedAssemblies = generateProcessedAssemblies(assemblies, complexDetails, summaryData, pisaAssemblies);
         return EntryActions.getProcessedAssembliesSuccess({ processedAssemblies });
       }),
@@ -927,15 +910,12 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.macroMolecules),
-        ]).pipe(
-          filter(([summaryData, assemblies]) => summaryData !== undefined && assemblies !== undefined)
-          // take(1)
-        )
+          this.store.select(EntrySelectors.polymerCoverage),
+        ]).pipe(filter(allDefined))
       ),
-      map(([summaryData, assemblies, macromolecules]) => {
-        if (assemblies === undefined || summaryData === undefined || macromolecules === undefined) throw 'missing data to process macromolecules';
+      map(([summaryData, assemblies, macromolecules, polymerCoverage]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const procMacromoleculesFilters = generateMacromoleculesTableFilters(macromoleculesWithPrefAssembly);
         return EntryActions.getProcMacromoleculesFiltersSuccess({ procMacromoleculesFilters });
       }),
@@ -952,19 +932,12 @@ export class EntryEffects {
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.macroMolecules),
           this.store.select(EntrySelectors.carbohydrates),
-        ]).pipe(
-          filter(
-            ([summaryData, assemblies, macromolecules, carbohydrates]) =>
-              summaryData !== undefined && assemblies !== undefined && macromolecules !== undefined && carbohydrates !== undefined
-          )
-          // take(1)
-        )
+          this.store.select(EntrySelectors.polymerCoverage),
+        ]).pipe(filter(allDefined))
       ),
-      map(([summaryData, assemblies, macromolecules, carbohydrates]) => {
-        if (summaryData === undefined || assemblies === undefined || macromolecules === undefined || carbohydrates === undefined)
-          throw 'missing data to process macromolecules';
+      map(([summaryData, assemblies, macromolecules, carbohydrates, polymerCoverage]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblies);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const procMacromoleculesCards = generateMacromoleculesCards(macromoleculesWithPrefAssembly, carbohydrates);
         return EntryActions.getProcMacromoleculesCardsSuccess({ procMacromoleculesCards });
       }),
@@ -982,19 +955,12 @@ export class EntryEffects {
             this.store.select(EntrySelectors.assemblies),
             this.store.select(EntrySelectors.macroMolecules),
             this.store.select(EntrySelectors.carbohydrates),
-          ]).pipe(
-            filter(
-              ([summaryData, assemblyData, macromolecules, carbohydrates]) =>
-                summaryData !== undefined && assemblyData !== undefined && macromolecules !== undefined && carbohydrates !== undefined
-            ),
-            take(1)
-          ) // take a snapshot
+            this.store.select(EntrySelectors.polymerCoverage),
+          ]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
-      map(([summaryData, assemblyData, macromolecules, carbohydrates]) => {
-        if (summaryData === undefined || assemblyData === undefined || macromolecules === undefined || carbohydrates === undefined)
-          throw 'missing data to process macromolecules';
+      map(([summaryData, assemblyData, macromolecules, carbohydrates, coverage]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, coverage);
         const processedMacromolecules = generateProcessedMacromolecules(macromoleculesWithPrefAssembly, preferredAssembly, carbohydrates);
         return EntryActions.getProcessedMacromoleculesSuccess({ processedMacromolecules });
       }),
@@ -1010,32 +976,11 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.boundLigands),
-          this.store.select(EntrySelectors.boundMolecules),
           this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
-        ]).pipe(
-          filter(
-            ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              ligands !== undefined &&
-              boundMolecules !== undefined &&
-              ligandMonomers !== undefined &&
-              modifications !== undefined
-          )
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
-      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          ligands === undefined ||
-          boundMolecules === undefined ||
-          ligandMonomers === undefined ||
-          modifications === undefined
-        )
-          throw 'missing data to process ligands';
+      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
         const ligandMonomersMapped = mapLigandMonomersForPrefAssembly(ligandMonomers, preferredAssembly);
@@ -1055,32 +1000,11 @@ export class EntryEffects {
           this.store.select(EntrySelectors.summaryData),
           this.store.select(EntrySelectors.assemblies),
           this.store.select(EntrySelectors.boundLigands),
-          this.store.select(EntrySelectors.boundMolecules),
           this.store.select(EntrySelectors.ligandMonomers),
           this.store.select(EntrySelectors.modifications),
-        ]).pipe(
-          filter(
-            ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              ligands !== undefined &&
-              boundMolecules !== undefined &&
-              ligandMonomers !== undefined &&
-              modifications !== undefined
-          )
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
-      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          ligands === undefined ||
-          boundMolecules === undefined ||
-          ligandMonomers === undefined ||
-          modifications === undefined
-        )
-          throw 'missing data to process ligands';
+      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
         const ligandMonomersMapped = mapLigandMonomersForPrefAssembly(ligandMonomers, preferredAssembly);
@@ -1101,32 +1025,11 @@ export class EntryEffects {
             this.store.select(EntrySelectors.summaryData),
             this.store.select(EntrySelectors.assemblies),
             this.store.select(EntrySelectors.boundLigands),
-            this.store.select(EntrySelectors.boundMolecules),
             this.store.select(EntrySelectors.ligandMonomers),
             this.store.select(EntrySelectors.modifications),
-          ]).pipe(
-            filter(
-              ([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                ligands !== undefined &&
-                boundMolecules !== undefined &&
-                ligandMonomers !== undefined &&
-                modifications !== undefined
-            ),
-            take(1)
-          ) // take a snapshot
+          ]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
-      map(([summaryData, assemblyData, ligands, boundMolecules, ligandMonomers, modifications]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          ligands === undefined ||
-          boundMolecules === undefined ||
-          ligandMonomers === undefined ||
-          modifications === undefined
-        )
-          throw 'missing data to process ligands';
+      map(([summaryData, assemblyData, ligands, ligandMonomers, modifications]) => {
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const ligandsWithPrefAssembly = mapLigandsByPreferredAssembly(ligands, preferredAssembly);
         const ligandMonomersMapped = mapLigandMonomersForPrefAssembly(ligandMonomers, preferredAssembly);
@@ -1151,29 +1054,9 @@ export class EntryEffects {
           this.store.select(EntrySelectors.cathMapping),
           this.store.select(EntrySelectors.scop175Mapping),
           this.store.select(EntrySelectors.pfamMapping),
-        ]).pipe(
-          filter(
-            ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              polymerCoverage !== undefined &&
-              cathMappings !== undefined &&
-              scopMappings !== undefined &&
-              pfamMappings !== undefined
-          )
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          polymerCoverage === undefined ||
-          cathMappings === undefined ||
-          scopMappings === undefined ||
-          pfamMappings === undefined
-        )
-          throw 'missing data to process Domains';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const procDomainsFilters = generateDomainsTableFilters(cathMappings, scopMappings, pfamMappings, polymerCoverageWithPrefAssembly);
@@ -1194,29 +1077,9 @@ export class EntryEffects {
           this.store.select(EntrySelectors.cathMapping),
           this.store.select(EntrySelectors.scop175Mapping),
           this.store.select(EntrySelectors.pfamMapping),
-        ]).pipe(
-          filter(
-            ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              polymerCoverage !== undefined &&
-              cathMappings !== undefined &&
-              scopMappings !== undefined &&
-              pfamMappings !== undefined
-          )
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          polymerCoverage === undefined ||
-          cathMappings === undefined ||
-          scopMappings === undefined ||
-          pfamMappings === undefined
-        )
-          throw 'missing data to process Domains';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const procDomainsCards = generateDomainsCards(cathMappings, scopMappings, pfamMappings, polymerCoverageWithPrefAssembly);
@@ -1239,33 +1102,11 @@ export class EntryEffects {
             this.store.select(EntrySelectors.scop175Mapping),
             this.store.select(EntrySelectors.pfamMapping),
             this.store.select(EntrySelectors.macroMolecules),
-          ]).pipe(
-            filter(
-              ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings, macromolecules]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                polymerCoverage !== undefined &&
-                cathMappings !== undefined &&
-                scopMappings !== undefined &&
-                pfamMappings !== undefined &&
-                macromolecules !== undefined
-            ),
-            take(1)
-          ) // take a snapshot
+          ]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
       map(([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings, macromolecules]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          polymerCoverage === undefined ||
-          cathMappings === undefined ||
-          scopMappings === undefined ||
-          pfamMappings === undefined ||
-          macromolecules === undefined
-        )
-          throw 'missing data to process Domains';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const processedDomains = generateProcessedDomains(
           cathMappings,
@@ -1292,29 +1133,9 @@ export class EntryEffects {
           this.store.select(EntrySelectors.uniprotMapping),
           this.store.select(EntrySelectors.llmAnnotations),
           this.store.select(EntrySelectors.polymerCoverage),
-        ]).pipe(
-          filter(
-            ([summaryData, assemblyData, macromolecules, uniprotMappings, llmAnnotations, polymerCoverage]) =>
-              summaryData !== undefined &&
-              assemblyData !== undefined &&
-              macromolecules !== undefined &&
-              uniprotMappings !== undefined &&
-              llmAnnotations !== undefined &&
-              polymerCoverage !== undefined
-          )
-          // take(1)
-        )
+        ]).pipe(filter(allDefined))
       ),
       map(([summaryData, assemblyData, macromolecules, uniprotMappings, llmAnnotations, polymerCoverage]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          macromolecules === undefined ||
-          uniprotMappings === undefined ||
-          llmAnnotations === undefined ||
-          polymerCoverage === undefined
-        )
-          throw 'missing data to process LLM';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
         if ((<any>uniprotMappings).empty === true) uniprotMappings = {};
 
@@ -1339,31 +1160,9 @@ export class EntryEffects {
             this.store.select(EntrySelectors.uniprotMapping),
             this.store.select(EntrySelectors.llmAnnotations),
             this.store.select(EntrySelectors.polymerCoverage),
-          ]).pipe(
-            filter(
-              ([summaryData, assemblyData, macromolecules, carbohydrates, uniprotMappings, llmAnnotations, polymerCoverage]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                macromolecules !== undefined &&
-                carbohydrates !== undefined &&
-                uniprotMappings !== undefined &&
-                llmAnnotations !== undefined &&
-                polymerCoverage !== undefined
-            ),
-            take(1)
-          ) // take a snapshot
+          ]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
       map(([summaryData, assemblyData, macromolecules, carbohydrates, uniprotMappings, llmAnnotations, polymerCoverage]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          macromolecules === undefined ||
-          carbohydrates === undefined ||
-          uniprotMappings === undefined ||
-          llmAnnotations === undefined ||
-          polymerCoverage === undefined
-        )
-          throw 'missing data to process LLM macromolecules';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
 
         const filteredMacromolecules = filterMacromoleculesForLLM(macromolecules, llmAnnotations, preferredAssembly, uniprotMappings, polymerCoverage);
@@ -1388,35 +1187,11 @@ export class EntryEffects {
             this.store.select(EntrySelectors.pfamMapping),
             this.store.select(EntrySelectors.macroMolecules),
             this.store.select(EntrySelectors.carbohydrates),
-          ]).pipe(
-            filter(
-              ([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings, macromolecules, carbohydrates]) =>
-                summaryData !== undefined &&
-                assemblyData !== undefined &&
-                polymerCoverage !== undefined &&
-                cathMappings !== undefined &&
-                scopMappings !== undefined &&
-                pfamMappings !== undefined &&
-                macromolecules !== undefined &&
-                carbohydrates !== undefined
-            ),
-            take(1)
-          ) // take a snapshot
+          ]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
       map(([summaryData, assemblyData, polymerCoverage, cathMappings, scopMappings, pfamMappings, macromolecules, carbohydrates]) => {
-        if (
-          summaryData === undefined ||
-          assemblyData === undefined ||
-          polymerCoverage === undefined ||
-          cathMappings === undefined ||
-          scopMappings === undefined ||
-          pfamMappings === undefined ||
-          macromolecules === undefined ||
-          carbohydrates === undefined
-        )
-          throw 'missing data to process DomainsWithMacromols';
         const preferredAssembly = getPreferredAssemblyDatum(summaryData, assemblyData);
-        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+        const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
         const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
         const processedMacromolecules = generateProcessedMacromolecules(macromoleculesWithPrefAssembly, preferredAssembly, carbohydrates);
         const processedDomains = generateProcessedDomains(
@@ -1439,14 +1214,9 @@ export class EntryEffects {
     this.actions$.pipe(
       ofType(EntryActions.getProcessedPrefAssembly),
       switchMap(
-        () =>
-          combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.complexDetails)]).pipe(
-            filter(([summaryData, complexDetails]) => summaryData !== undefined && complexDetails !== undefined),
-            take(1)
-          ) // take a snapshot
+        () => combineLatest([this.store.select(EntrySelectors.summaryData), this.store.select(EntrySelectors.complexDetails)]).pipe(filter(allDefined), take(1)) // take a snapshot
       ),
       map(([summaryData, complexDetails]) => {
-        if (summaryData === undefined || complexDetails === undefined) throw 'missing data to process assemblies';
         const processedPrefAssembly = processPreferredAssemblyData(summaryData, complexDetails);
         return EntryActions.getProcessedPrefAssemblySuccess({ processedPrefAssembly });
       }),
@@ -1900,4 +1670,12 @@ export class EntryEffects {
       })
     )
   );
+}
+
+/** Tuple type where each item is not undefined nor null */
+type NonnullableTuple<T extends unknown[]> = { [K in keyof T]: NonNullable<T[K]> };
+
+/** Return `true` if all items in `inputs` are not undefined nor null */
+function allDefined<T extends unknown[]>(inputs: T): inputs is NonnullableTuple<T> {
+  return inputs.every((input) => input !== undefined);
 }

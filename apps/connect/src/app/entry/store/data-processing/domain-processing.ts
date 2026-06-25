@@ -1,10 +1,12 @@
-import { AssemblyData } from '../../data-models/assembly.model';
+import { AssemblyData, AssemblyEntity } from '../../data-models/assembly.model';
 import { CathMappings, DomainMapping, PfamMappings, ScopMappings } from '../../data-models/domains.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { ObservedSegments, PolymerCoverageMolecule } from '../../data-models/polymer-coverage.model';
 import { FILTERED_KELLY22_COLORBLIND_SCALE } from '../../entry-constant';
+import { unique } from '../../helpers/misc';
 import { QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { getCleanMoleculeName } from '../../helpers/processed-data-to-controls';
+import { generateSymmetryOperatorsForChain } from './macromolecule-processing';
 import { Filter } from './models/other-models';
 import { DomainsBoundaries, ProcessedDomain, ProcessedMacromolecule } from './models/processed-entities.model';
 
@@ -257,7 +259,7 @@ export function generateDomainsCards(
     // domain names in CATH are unique 'domain' fields inside mappings
     const accessionName = data.homology;
 
-    const domainIds = data.mappings.map((mapping) => mapping.domain!).filter((domainId, idx, ids) => ids.indexOf(domainId) === idx);
+    const domainIds = unique(data.mappings.map((mapping) => mapping.domain!));
 
     // for each unique cath domain ...
     for (const domainId of domainIds) {
@@ -296,7 +298,7 @@ export function generateDomainsCards(
   for (const [scopAccession, data] of Object.entries(scopMappings)) {
     // domain names in SCOP 1.75 are unique 'scop_id' fields inside mappings
     const accessionName = data.description;
-    const domainIds = data.mappings.map((mapping) => mapping.scop_id!).filter((domainId, idx, ids) => ids.indexOf(domainId) === idx);
+    const domainIds = unique(data.mappings.map((mapping) => mapping.scop_id!));
 
     // for each unique SCOP 1.75 domain ...
     for (const domainId of domainIds) {
@@ -401,7 +403,7 @@ export function generateDomainsTableFilters(
       const filteredCathMapping = filterMappingObservedWithCoverage([mapping], polymerCoverage);
       if (filteredCathMapping.length === 0) continue;
 
-      if (domainIds.indexOf(mapping.domain!) === -1) {
+      if (!domainIds.includes(mapping.domain!)) {
         domainIds.push(mapping.domain!);
       }
     }
@@ -418,7 +420,7 @@ export function generateDomainsTableFilters(
       const filteredScopMapping = filterMappingObservedWithCoverage([mapping], polymerCoverage);
       if (filteredScopMapping.length === 0) continue;
 
-      if (domainIds.indexOf(mapping.scop_id!) === -1) {
+      if (!domainIds.includes(mapping.scop_id!)) {
         domainIds.push(mapping.scop_id!);
       }
     }
@@ -467,51 +469,21 @@ export function generateDomainsTableFilters(
   return newFilters;
 }
 
-export function generateSymmetryOperatorsDictForDomain(segmentsEntityIds: number[], segmentsStructAsymIds: string[], preferredAssembly: AssemblyData) {
+export function generateSymmetryOperatorsForDomainSegments(segmentsEntityIds: number[], segmentsStructAsymIds: string[], preferredAssembly: AssemblyData) {
+  // Index entities to avoid using .find repeatedly
+  const assemblyEntitiesById: { [entityId: number]: AssemblyEntity } = {};
+  for (const entity of preferredAssembly.entities) {
+    assemblyEntitiesById[entity.entity_id] = entity;
+  }
+
   const segmentsSymmOperators: string[][] = [];
+  const cachedOperators: { [structAsymId: string]: string[] } = {};
   for (let iSeg = 0; iSeg < segmentsEntityIds.length; iSeg++) {
-    const segmentEntityId = segmentsEntityIds[iSeg];
-    const segmentStructAsymId = segmentsStructAsymIds[iSeg];
-    const currentSegmentSymmOperators: string[] = [];
-    const assemblyEntityOfMacromolSearch = preferredAssembly.entities.filter((ent) => ent.entity_id === segmentEntityId);
-    if (assemblyEntityOfMacromolSearch.length === 0) {
-      segmentsSymmOperators.push([]);
-      continue;
-    } else if (assemblyEntityOfMacromolSearch.length > 1) console.warn('Warning: multiple assembly entities found for single macromolecule');
-    const assemblyEntityOfMacromol = assemblyEntityOfMacromolSearch[0];
-
-    const hasSymmetryOp = !assemblyEntityOfMacromol.in_chains.every((chainidWithOp) => chainidWithOp.includes('-') === false);
-    if (hasSymmetryOp === false) {
-      segmentsSymmOperators.push([]);
-      continue;
-    }
-
-    const prefAssemblyStructAsymsForSegment = assemblyEntityOfMacromol.in_chains.filter(
-      (structAsymIdWithOp) => structAsymIdWithOp.split('-')[0] === segmentStructAsymId
-    );
-
-    const noStructAsymsWithOp = prefAssemblyStructAsymsForSegment.length === 0;
-    const onlyCurrentChainId = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] === segmentStructAsymId;
-    const onlyCurrentChainWithOp = prefAssemblyStructAsymsForSegment.length === 1 && prefAssemblyStructAsymsForSegment[0] !== segmentStructAsymId;
-
-    if (noStructAsymsWithOp || onlyCurrentChainId) {
-      segmentsSymmOperators.push([]);
-      continue;
-    }
-    if (onlyCurrentChainWithOp) {
-      const symmetryOperator = prefAssemblyStructAsymsForSegment[0].split('-')[1];
-      segmentsSymmOperators.push([`ASM-${symmetryOperator}`]);
-      continue;
-    }
-    // All for default selection
-    currentSegmentSymmOperators.push('All');
-
-    // add each operator to list
-    for (const structAsymIdWithOp of prefAssemblyStructAsymsForSegment) {
-      const symmetryOperator = structAsymIdWithOp === segmentStructAsymId ? '1' : structAsymIdWithOp.split('-')[1];
-      currentSegmentSymmOperators.push(`ASM-${symmetryOperator}`);
-    }
-    segmentsSymmOperators.push(currentSegmentSymmOperators);
+    const entityId = segmentsEntityIds[iSeg];
+    const assemblyEntity = assemblyEntitiesById[entityId];
+    const structAsymId = segmentsStructAsymIds[iSeg];
+    cachedOperators[structAsymId] ??= generateSymmetryOperatorsForChain(assemblyEntity, structAsymId) ?? [];
+    segmentsSymmOperators.push(cachedOperators[structAsymId]);
   }
   return segmentsSymmOperators;
 }
@@ -533,7 +505,7 @@ export function generateProcessedDomains(
   for (const [resourceAcc, data] of Object.entries(cathMappings)) {
     // domain names in CATH are unique 'domain' fields inside mappings
     const domainDesc = data.homology;
-    const domainNames = data.mappings.map((mapping) => mapping.domain!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+    const domainNames = unique(data.mappings.map((mapping) => mapping.domain!));
 
     // for each unique cath domain ...
     for (const domainName of domainNames) {
@@ -541,8 +513,8 @@ export function generateProcessedDomains(
       const mappings = data.mappings.filter((mapping) => mapping.domain! === domainName);
 
       // we get some data needed to be rendered in the table
-      const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
-      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => getCleanMoleculeName(mol));
+      const entityIds = unique(mappings.map((mapping) => mapping.entity_id));
+      const moleculeNames = macromolecules.filter((mol) => entityIds.includes(mol.entity_id)).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
@@ -559,7 +531,7 @@ export function generateProcessedDomains(
       // get list
       const segmentsEntityIds = segmentData.segmentsEntityIds;
       const segmentsStructAsymId = segmentData.segmentsStructAsymId;
-      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+      const symmOpListForSegments = generateSymmetryOperatorsForDomainSegments(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
 
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
@@ -590,7 +562,7 @@ export function generateProcessedDomains(
   for (const [resourceAcc, data] of Object.entries(scopMappings)) {
     // domain names in SCOP 1.75 are unique 'scop_id' fields inside mappings
     const domainDesc = data.description;
-    const domainNames = data.mappings.map((mapping) => mapping.scop_id!).filter((domainName, idx, ids) => ids.indexOf(domainName) === idx);
+    const domainNames = unique(data.mappings.map((mapping) => mapping.scop_id!));
 
     // for each unique SCOP 1.75 domain ...
     for (const domainName of domainNames) {
@@ -598,8 +570,8 @@ export function generateProcessedDomains(
       const mappings = data.mappings.filter((mapping) => mapping.scop_id! === domainName);
 
       // we get some data needed to be rendered in the table
-      const entityIds = mappings.map((mapping) => mapping.entity_id).filter((entityId, idx, ids) => ids.indexOf(entityId) === idx);
-      const moleculeNames = macromolecules.filter((mol) => entityIds.indexOf(mol.entity_id) > -1).map((mol) => getCleanMoleculeName(mol));
+      const entityIds = unique(mappings.map((mapping) => mapping.entity_id));
+      const moleculeNames = macromolecules.filter((mol) => entityIds.includes(mol.entity_id)).map((mol) => getCleanMoleculeName(mol));
 
       // ... and use the formatSegments function to get:
       // 1 - molstarSelections to each cath domain (molstarSelection)
@@ -615,7 +587,7 @@ export function generateProcessedDomains(
 
       const segmentsEntityIds = segmentData.segmentsEntityIds;
       const segmentsStructAsymId = segmentData.segmentsStructAsymId;
-      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+      const symmOpListForSegments = generateSymmetryOperatorsForDomainSegments(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
 
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
@@ -669,7 +641,7 @@ export function generateProcessedDomains(
 
       const segmentsEntityIds = segmentData.segmentsEntityIds;
       const segmentsStructAsymId = segmentData.segmentsStructAsymId;
-      const symmOpListForSegments = generateSymmetryOperatorsDictForDomain(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
+      const symmOpListForSegments = generateSymmetryOperatorsForDomainSegments(segmentsEntityIds, segmentsStructAsymId, preferredAssembly);
 
       // ... we also check whether all domain segments are in pref assembly for warning messages
       const allSegmentsInPrefAssembly = !segmentData.segmentsInPrefAssembly.some((v) => v === false);
@@ -711,22 +683,15 @@ export function generateProcessedDomains(
 export type DomainsWithMacromolecules = { macromolecule: ProcessedMacromolecule; domains: ProcessedDomain[] }[];
 
 export function processDomainsWithMacromolecules(macromoleculesData: ProcessedMacromolecule[], domainsData: ProcessedDomain[]): DomainsWithMacromolecules {
-  const nestedMap = new Map<number, { macromolecule: ProcessedMacromolecule; domains: ProcessedDomain[] }>();
-
-  for (const macromolecule of macromoleculesData) {
-    const entityId = macromolecule.additionalData.molecule.entity_id;
-
-    const domainsOfMacromolecule = domainsData.filter((eachDomain) => eachDomain.moleculeNames[0] === macromolecule.name.molecule);
-
-    if (!nestedMap.has(entityId)) {
-      nestedMap.set(entityId, { macromolecule, domains: [] });
-    }
-
-    for (const domainOfMacromolecule of domainsOfMacromolecule) {
-      const currentDomainNames = nestedMap.get(entityId)!.domains.map((eachDomain) => eachDomain.domain);
-      const domainNotInMap = currentDomainNames.indexOf(domainOfMacromolecule.domain) === -1;
-      if (domainNotInMap) nestedMap.get(entityId)!.domains.push(domainOfMacromolecule);
+  const domainsByEntity: { [entityId: number]: ProcessedDomain[] } = {};
+  for (const domain of domainsData) {
+    const entitiesForDomain = new Set(domain.additionalData.boundaries.map((b) => b.entity)); // Each domain should only belong to one entity but just to be sure
+    for (const entityId of entitiesForDomain) {
+      (domainsByEntity[entityId] ??= []).push(domain);
     }
   }
-  return Array.from(nestedMap.values());
+  return macromoleculesData.map((macromolecule) => ({
+    macromolecule,
+    domains: domainsByEntity[macromolecule.additionalData.molecule.entity_id] ?? [],
+  }));
 }

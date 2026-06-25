@@ -43,7 +43,7 @@
     } @if (inPrefAssembly() === false) {
     <section class="info-banner">
       <p>
-        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
         One or more of this macromolecule's chains are <b>not</b> included in the
         <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
           >preferred assembly/complex</a
@@ -107,29 +107,29 @@
       }
       <div class="info-row">
         <span class="micro-title"> Annotated residues </span>
-        <article>{{ numberOfAnnotatedResids() }}</article>
+        <article>{{ nAnnotatedResiduesForCurrentMacromolecule() }}</article>
       </div>
     </section>
     }
 
     <div id="ai-annotations-sequence-viewer-tour">
       <div class="chains">
-        @if(dropdownOptions.length > 1){
+        @if(dropdown.options.length > 1){
         <div class="dropdown-container">
           <pdbc-entry-dropdown
             [searchable]="false"
             searchTitle="''"
             [downloadable]="false"
             [islink]="false"
-            [options]="dropdownOptions"
-            [title]="dropdownSelected"
+            [options]="dropdown.options"
+            [title]="dropdown.selectedName() ?? ''"
             (optionClickedEvent)="onDropdownSelect($event)"
           >
           </pdbc-entry-dropdown>
         </div>
-        }@else if(dropdownOptions.length === 1){
-        <span>{{getCleanSelectionName(dropdownOptions)}}</span>
-        } @if (symmetryDropdownSelected && symmetryDropdownOptions.length > 1) {
+        }@else if(dropdown.options.length === 1){
+        <span>{{getCleanSelectionName(dropdown.options)}}</span>
+        } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
         <span class="symm-op-txt">
           Symmetry Op.
           <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
@@ -139,23 +139,23 @@
           [searchTitle]="''"
           [downloadable]="false"
           [islink]="false"
-          [options]="symmetryDropdownOptions"
-          [title]="symmetryDropdownSelected"
+          [options]="symmetryDropdown.options"
+          [title]="symmetryDropdown.selectedName() ?? ''"
           (optionClickedEvent)="onSymmetryDropdownSelect($event)"
         ></pdbc-entry-dropdown>
-        } @else if (symmetryDropdownOptions.length === 1) {
+        } @else if (symmetryDropdown.options.length === 1) {
         <span class="symm-op-txt">
           Symmetry Op.
           <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
-          <span> {{ symmetryDropdownOptions[0].name }}</span>
+          <span> {{ symmetryDropdown.options[0].name }}</span>
         </span>
         }
       </div>
-      @if (dropdownSelected && inPrefAssemblyForChain() === false) { @let chainName = dropdownSelected!.split(' <')![0];
+      @if (dropdown.selectedOption() && !inPrefAssemblyForChain()) {
       <section class="info-banner">
         <p>
-          <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
-          {{ chainName }} is <b>not</b> included in the
+          <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
+          Chain {{ dropdown.selectedOption()!.data.authAsymId }} is <b>not</b> included in the
           <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
             >preferred assembly/complex</a
           >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
@@ -174,7 +174,7 @@
           class="sequence"
           [sequence]="macromoleculeSequence()!"
           [entityId]="currentSelectionEntityId()!"
-          [chainId]="currentSelectionChainId()!"
+          [chainId]="selectedChainLabelAsymId()!"
           [backgroundDataInput]="backgroundAnnotation()!"
           [circleAboveDataInput]="llmAnnotationForSeq()!"
           [isNucleic]="molType.includes('nucleotide')"
@@ -194,7 +194,7 @@
         <ag-grid-angular
           class="ag-theme-quartz"
           style="width: 100%; height: 100%"
-          [rowData]="filteredLLMAnnotations()"
+          [rowData]="filteredAnnotations()"
           [columnDefs]="colDefs"
           [gridOptions]="gridOptions"
           [paginationPageSizeSelector]="paginationPageSizeSelector()"

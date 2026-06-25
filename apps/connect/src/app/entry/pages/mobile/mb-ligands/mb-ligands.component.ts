@@ -1,35 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, DestroyRef, effect, inject, OnDestroy, OnInit, Optional, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ViewState } from '../mb-macromolecules/mb-macromolecule.component';
+import { Component, computed, effect, inject, OnInit, Optional, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { Store } from '@ngrx/store';
 import { TruncatePipe, TruncateTextDirective } from '@pdbc/core';
 import { EntryDropdownComponent } from '../../../components/entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { Store } from '@ngrx/store';
-import { EntryStoreState } from '../../../store/entry-store.model';
-import { EntrySelectors } from '../../../store/entry.selectors';
-import { MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { InteractionFromAPI } from '../../../data-models/interaction.model';
 import { annotationsTooltips } from '../../../entry-constant';
 import { interactionsToMolstar } from '../../../helpers/interactions-to-molstar-sel-obj';
-import { Interaction } from '../../../data-models/interaction.model';
-import { EntryActions } from '../../../store/entry.actions';
-import { debounceTime, distinctUntilChanged, filter, first, firstValueFrom, take, timer } from 'rxjs';
-import {
-  componentExistsInMolstar,
-  drawSelectionInMolstar,
-  QueryParamForHelpers,
-  removeComponent,
-  showInteractivityFocusInMolstar,
-  zoomOutStructureInMolstar,
-} from '../../../helpers/molstar-helpers';
-import type { Interaction as PDBeMolstarInteraction } from 'pdbe-molstar/lib/extensions/interactions';
-import { MobileStateService } from '../mobile-state.service';
-import { getLigandsDropdownOptions } from '../../../helpers/processed-data-to-controls';
-import { ProcessedLigandOrMod } from '../../../store/data-processing/ligand-processing';
+import { Dropdown, makeEntityColors, SymmetryOperatorMapping } from '../../../helpers/misc';
+import { QueryParamForHelpers } from '../../../helpers/molstar-helpers';
+import { SnapshotSpec } from '../../../helpers/mvs-views/mvs-snapshot-types';
+import { CommonDropdownOptionData, makeLigandsDropdownOptions, makeSymmetryDropdownOptions } from '../../../helpers/processed-data-to-controls';
 import { ApplicationAPIDispatcher } from '../../../services/application-api-dispacher.service';
+import { ComponentCommunicationService } from '../../../services/component-comm.service';
+import { ProcessedLigandOrMod } from '../../../store/data-processing/ligand-processing';
+import { EntryStoreState } from '../../../store/entry-store.model';
+import { EntryActions } from '../../../store/entry.actions';
+import { EntrySelectors } from '../../../store/entry.selectors';
+import { MobileStateService } from '../mobile-state.service';
 
 @Component({
   selector: 'pdbc-mb-ligands',
@@ -37,97 +27,86 @@ import { ApplicationAPIDispatcher } from '../../../services/application-api-disp
   templateUrl: './mb-ligands.component.html',
   styleUrls: ['../common-mb-header.scss', './mb-ligands.component.scss'],
 })
-export class MbLigandsComponent implements OnInit, OnDestroy {
+export class MbLigandsComponent implements OnInit {
   private readonly state = inject(MobileStateService);
 
   private readonly globalStore = inject(Store<EntryStoreState>);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  public configForMobileMolstar$ = toObservable(this.compCommunication.configForMobileMolstar);
 
-  private readonly molstarPluginService = inject(MolstarPluginService);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly applicationApiDispatcher = inject(ApplicationAPIDispatcher);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
+  private readonly interactions = toSignal(this.globalStore.select(EntrySelectors.interactions));
 
-  private currentChainId = signal<string | undefined>(undefined);
-  private currentResidueId = signal<string | undefined>(undefined);
+  /** All interactions for current ligand/chainId/residueId/instanceId, without applying filter. */
+  private interactionsForCurrentInstance = computed<InteractionFromAPI | undefined>(() => {
+    const chainId = this.currentChainId();
+    const residueId = this.currentResidueId();
+    if (!chainId || !residueId) return undefined;
+
+    const instanceId = this.selectedInstanceId();
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(chainId, instanceId, this.symmetryOperatorMapping());
+
+    const allInteractions = this.interactions();
+    return allInteractions?.[chainForInteractions]?.[residueId];
+  });
 
   public readonly annotationsTooltips: any = annotationsTooltips;
 
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
-
-  public currentViewState = signal<ViewState>(ViewState.List);
-  public viewStates = ViewState;
-  public selectedLigands = signal<any>({});
+  public currentViewState = computed<'list' | 'detail'>(() => (this.selectedLigand() ? 'detail' : 'list'));
+  public selectedLigand = signal<ProcessedLigandOrMod | undefined>(undefined);
   public expanded = signal<boolean>(false);
-  public title = this.state.ligandTitle;
 
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownSelected!: string;
-
-  public symmetryDropdownSelected?: string;
-  public symmetryDropdownOptions: DownloadOption[] = [];
-
-  public inPrefAssemblyForInstance = signal(true);
-
-  public readonly processedLigandsObs$ = this.globalStore.select(EntrySelectors.processedLigands);
-  public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
-
-  private hasInteractions = signal(false);
-
-  public readonly LigandTableRows = computed(() => {
-    const rows = this.processedLigands();
-    if (!rows) return [];
-    return rows;
+  public readonly ligandBoundDetails = computed(() => {
+    const ligand = this.selectedLigand();
+    if (ligand?.type === 'ligand') return ligand.additionalData.source.bound_details;
+    return undefined;
   });
 
-  private async triggerLigandInteractionsSideEffects(interactions: Interaction[] | undefined) {
-    const ligand = this.selectedLigands() as ProcessedLigandOrMod;
-    if (!interactions) return;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    if (!molstarSelection) return;
+  public readonly molecularWeight = computed(() => {
+    const ligand = this.selectedLigand();
+    if (ligand?.type === 'ligand') return ligand.additionalData.source.weight;
+    return undefined;
+  });
 
-    // await until molstar first render is finished
-    await firstValueFrom(
-      this.compCommunication.mobileMolstarLoaded$.pipe(
-        filter((ready) => ready === true),
-        first()
-      )
-    );
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeLigandsDropdownOptions(this.selectedLigand()),
+  });
 
-    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
-    if (!instance) return;
+  public symmetryDropdown = new Dropdown<{ instanceId: string | undefined }>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+  });
 
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+  public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
 
-    const { residuesMolstarSelections, interactionsMolstarSelections } = interactionsToMolstar(ligand, molstarSelection, interactions, instance_id);
+  /** Mapping for symmetry operator (if displayed structure is an assembly), or undefined (if displayed structure is deposited model) */
+  private symmetryOperatorMapping = computed(() => {
+    if (this.displayedAssemblyId() !== undefined) {
+      return SymmetryOperatorMapping.getSymmetryOperatorMapping(this.dropdown.selectedOption()?.data.symmOperators ?? []);
+    } else {
+      return undefined;
+    }
+  });
 
-    const residueSelectionData: QueryParamForHelpers[] = residuesMolstarSelections.map((resid) => {
-      return {
-        ...resid,
-        representation: 'ball-and-stick',
-        focus: false,
-      };
-    });
-    this.residuesAsSticks = residueSelectionData;
-    this.selectionData = this.ligandSelection ? [...this.ligandSelection] : [];
-    this.selectionData.push(...residueSelectionData);
+  private currentChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.molstarSelection[0].auth_asym_id);
+  private currentResidueId = computed<string | undefined>(() => {
+    const auth_seq_id = this.dropdown.selectedOption()?.data.molstarSelection[0].auth_seq_id;
+    if (auth_seq_id === undefined) return undefined;
+    return String(auth_seq_id);
+  });
 
-    timer(800).subscribe(async () => {
-      await drawSelectionInMolstar(instance, this.selectionData);
-      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
-      await removeComponent(instance, 'structure-focus-target-sel');
-      await removeComponent(instance, 'structure-focus-surr-sel');
-    });
+  public readonly processedMacromolecules = toSignal(this.globalStore.select(EntrySelectors.processedMacromolecules));
+  public readonly processedLigands = toSignal(this.globalStore.select(EntrySelectors.processedLigands));
+  private readonly entityColors = computed(() => makeEntityColors(this.processedMacromolecules(), this.processedLigands()));
 
-    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-    await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.loadInteractions(instance, {
-      interactions: interactionsMolstarSelections,
-      structureId: 1,
-    });
-  }
+  public readonly summary = toSignal(this.globalStore.select(EntrySelectors.summaryData));
+  private readonly preferredAssemblyId = computed(() => this.summary()?.assemblies.find((ass) => ass.preferred)?.assembly_id);
+  /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
+  private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined));
+
+  public readonly ligandTableRows = computed(() => this.processedLigands() ?? []);
 
   public allLigandsQueryParam = computed(() => {
     const ligandsSelectionData: QueryParamForHelpers[] = [];
@@ -154,46 +133,34 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
   });
 
   constructor(@Optional() public bottomSheetRef: MatBottomSheetRef<MbLigandsComponent>) {
-    this.processedLigandsObs$
-      .pipe(
-        debounceTime(50),
-        distinctUntilChanged(),
-        filter((hasLig) => hasLig !== undefined)
-      )
-      .subscribe(async (hasLig) => {
-        // Wait until mobileMolstarLoaded$ is true before proceeding
-        await firstValueFrom(
-          this.compCommunication.mobileMolstarLoaded$.pipe(
-            filter((ready) => ready), // Proceed only when it's true
-            take(1) // Take the first value, then complete
-          )
-        );
-        this.renderInMolstar(undefined);
-      });
+    // Update MVS snapshot when needed
+    effect(() => this.compCommunication.mvsSnapshotSpec$.next(this.mvsSnapshotSpec()));
 
-    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
-      this.hasInteractions.set(false);
+    // Fetch interaction data when ligand/chainId/residueId/instanceId changes
+    effect(() => {
+      const ligand = this.selectedLigand();
+      if (!ligand || ligand.type === 'modification') return; // Interaction data are not available for modifications
+
       const chainId = this.currentChainId();
       const residueId = this.currentResidueId();
-      const symOpForInteractions =
-        this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
-      const chainForInteractions = `${chainId}${symOpForInteractions}`;
-      if (!chainId || !residueId) return;
-      if (!allInteractions || Object.keys(allInteractions).length === 0) return;
-      const interactions = allInteractions[chainForInteractions][residueId].interactions;
-      if (interactions.length > 0) this.hasInteractions.set(true);
-      this.triggerLigandInteractionsSideEffects(interactions);
+      const instanceId = this.selectedInstanceId();
+      const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance(); // Interaction data are only available for preferred assembly
+      if (inPrefAssemblyForInstance && chainId !== undefined && residueId !== undefined) {
+        this.fetchInteractionData(chainId, residueId, instanceId);
+      }
     });
+
+    // Update global mobileIsPrefAssembly (for warning display)
+    effect(() => this.compCommunication.mobileIsPrefAssembly.set(this.inPrefAssemblyForInstance()));
+  }
+
+  private fetchInteractionData(authAsymId: string, residueId: string, instanceId: string | undefined) {
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(authAsymId, instanceId, this.symmetryOperatorMapping());
+    this.globalStore.dispatch(EntryActions.getInteractions({ chainId: chainForInteractions, residueId: residueId }));
   }
 
   ngOnInit(): void {
     /* 1. Fetch data */
-    // this.globalStore.dispatch(EntryActions.getSummaryData());
-    // this.globalStore.dispatch(EntryActions.getAssemblies());
-    // this.globalStore.dispatch(EntryActions.getEntryMolecules());
-    // this.globalStore.dispatch(EntryActions.getEntryLigandMonomers());
-    // this.globalStore.dispatch(EntryActions.getModifications());
-    // this.globalStore.dispatch(EntryActions.getProcessedLigands());
     this.applicationApiDispatcher.dispatchForList([
       EntryActions.getSummaryData,
       EntryActions.getAssemblies,
@@ -205,134 +172,12 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  async ngOnDestroy(): Promise<void> {
-    if (this.hasInteractions() === true) {
-      const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
-      if (!instance) return;
-      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-    }
+  private async setCurrentLigand(ligand: ProcessedLigandOrMod | undefined) {
+    this.selectedLigand.set(ligand);
   }
 
-  private async updateCurrentLigand() {
-    const ligand = this.selectedLigands();
-    this.updateDropdownOptions(ligand);
-    this.updateSymmetryDropdownOptions(ligand);
-    await this.renderInMolstar(this.selectedLigands());
-  }
   public mapSynonyms(synonyms: any[]): string {
     return synonyms.map((synonym) => synonym.value).join(', ');
-  }
-
-  private updateDropdownOptions(ligand: ProcessedLigandOrMod) {
-    this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
-        url: `lig-${idx + 1}`,
-        downloadable: false,
-      };
-    });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-  }
-
-  private updateSymmetryDropdownOptions(ligand: ProcessedLigandOrMod) {
-    // update for symmetry operations dropdown
-    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const ligandSymmOperators = idxOfSelection > -1 ? ligand.symmOpListForEachLigOrMod[idxOfSelection] : undefined;
-
-    if (ligandSymmOperators) {
-      this.symmetryDropdownOptions = ligandSymmOperators.map((op, idx) => {
-        return {
-          name: op,
-          url: `domain-0-symop-${idx + 1}`,
-          downloadable: false,
-        };
-      });
-      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
-    } else {
-      this.symmetryDropdownSelected = undefined;
-      this.symmetryDropdownOptions = [];
-    }
-  }
-
-  private selectionData?: QueryParamForHelpers[];
-  private ligandSelection?: QueryParamForHelpers[];
-  private residuesAsSticks?: QueryParamForHelpers[];
-
-  private async renderInMolstar(ligand?: ProcessedLigandOrMod) {
-    // Wait until first render is finished
-    await firstValueFrom(
-      this.compCommunication.mobileMolstarLoaded$.pipe(
-        filter((ready) => ready), // proceed when true
-        take(1)
-      )
-    );
-
-    // check whether chain is in pref assembly, molstar config needs update and wait for it
-    if (ligand) {
-      await this.updateConfigAssemblyAndSyncMolstar(ligand);
-    }
-
-    const durationMs = this.compCommunication.mobileMolstar ? 700 : 0;
-    const instance = this.compCommunication.mobileMolstar?.getInstance() ?? null;
-    if (!instance) return;
-
-    if (!ligand) {
-      if (this.compCommunication.mobileMolstarDisplay === 'ligands') return;
-      const ligandsSelectionData = this.allLigandsQueryParam();
-      await this.molstarPluginService.PDBeMolstarPluginClass.extensions.Interactions.clearInteractions(instance);
-      await drawSelectionInMolstar(instance, ligandsSelectionData, '#FEFEFE');
-      await zoomOutStructureInMolstar(instance, 700);
-      this.compCommunication.mobileMolstarDisplay = 'ligands';
-      return;
-    }
-
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const chainId = molstarSelection[0].auth_asym_id;
-    const residueId = molstarSelection[0].auth_seq_id;
-    this.currentChainId.set(chainId);
-    this.currentResidueId.set(`${residueId}`);
-
-    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
-    const symOpForInteractions = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
-    const chainForInteractions = `${chainId}${symOpForInteractions}`;
-    if (inPrefAssemblyForInstance) {
-      this.globalStore.dispatch(
-        EntryActions.getInteractions({
-          chainId: chainForInteractions ?? '',
-          residueId: `${residueId}`,
-        })
-      );
-    }
-
-    // Access Molstar instance
-    const entityColor = ligand.molstarColorHex;
-    const componentQuery = ligand.type === 'modification' ? 'non-standard' : 'ligand';
-    const hasLigandsOrMod = await componentExistsInMolstar(instance, componentQuery);
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-    this.ligandSelection = [
-      {
-        ...molstarSelection[0],
-        color: entityColor,
-        focus: true,
-        instance_id,
-        ...(hasLigandsOrMod === false && {
-          representation: 'ball-and-stick',
-          representationColor: ligand.molstarColorHex,
-        }),
-      },
-    ];
-    this.selectionData = [...this.ligandSelection];
-
-    await zoomOutStructureInMolstar(instance, durationMs);
-
-    timer(durationMs + 100).subscribe(async () => {
-      await drawSelectionInMolstar(instance, this.selectionData);
-      await showInteractivityFocusInMolstar(instance, this.ligandSelection);
-      await removeComponent(instance, 'structure-focus-target-sel');
-      await removeComponent(instance, 'structure-focus-surr-sel');
-    });
-    this.compCommunication.mobileMolstarDisplay = 'ligands-specific';
   }
 
   public toggleBottomsheetHeight() {
@@ -349,19 +194,13 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
     this.state.updateSelectedTabName('');
   }
 
-  public navigateToDetail(data: ProcessedLigandOrMod) {
-    this.currentViewState.set(ViewState.Detail);
-    this.selectedLigands.set(data);
-    const title = `${data.id}`;
-    this.state.updateSelectedLigandTitle(title);
-    this.updateCurrentLigand();
+  public navigateToDetail(ligand: ProcessedLigandOrMod) {
+    this.setCurrentLigand(ligand);
     this.scrollTabToTop();
   }
 
   public async goBackToList() {
-    this.currentViewState.set(ViewState.List);
-    this.state.updateSelectedLigandTitle('Ligands');
-    await this.renderInMolstar(undefined);
+    this.setCurrentLigand(undefined);
     this.scrollTabToTop();
   }
 
@@ -373,55 +212,71 @@ export class MbLigandsComponent implements OnInit, OnDestroy {
   }
 
   public anyNonPrefAssembly(ligand: ProcessedLigandOrMod) {
-    return ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true) === false;
-  }
-
-  private async updateConfigAssemblyAndSyncMolstar(ligand: ProcessedLigandOrMod) {
-    // check if ligand instance is in pref assembly based on idx of ligand instance
-    const inPrefAssemblyForInstance = this.compCommunication.mobileIsPrefAssembly();
-    const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const isSelectionPrefAssembly = ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
-    const changedDisplayedAssembly = inPrefAssemblyForInstance !== isSelectionPrefAssembly;
-
-    // setting inPrefAssemblyForInstance may trigger update on configForMolstar
-    this.compCommunication.mobileIsPrefAssembly.set(isSelectionPrefAssembly);
-    this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
-
-    // ... if this update is triggered
-    if (changedDisplayedAssembly) {
-      // wait until configForMolstar recomputes with new assembly/moleculeId
-      const oldCfg = await firstValueFrom(this.configForMobileMolstar$.pipe(take(1)));
-
-      const newCfg = await firstValueFrom(
-        this.configForMobileMolstar$.pipe(
-          filter((cfg) => cfg !== undefined && cfg !== oldCfg),
-          take(1)
-        )
-      );
-
-      // 2. Wait for MolstarComponent to APPLY the new config
-      await firstValueFrom(
-        this.compCommunication.mobileMolstar!.configUpdated.pipe(
-          filter((cfg) => JSON.stringify(cfg) === JSON.stringify(newCfg)),
-          take(1)
-        )
-      );
-    }
+    return !ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly);
   }
 
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected = event;
-
-    const ligand = this.selectedLigands();
-    if (ligand) this.updateSymmetryDropdownOptions(ligand);
-    await this.renderInMolstar(ligand);
+    this.dropdown.select(event);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
-
-    const ligand = this.selectedLigands();
-    if (!ligand) return;
-    await this.renderInMolstar(ligand);
+    this.symmetryDropdown.select(event);
   }
+
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
+    const entryId = this.entryId();
+    if (!entryId) return undefined;
+
+    const selectedLigand = this.selectedLigand();
+
+    if (!selectedLigand) {
+      return {
+        name: 'All ligands and modifications',
+        kind: 'pdbconnect_all_ligands',
+        params: {
+          entry: entryId,
+          assemblyId: this.preferredAssemblyId(),
+          volumeStreaming: true,
+          ligandEntityIds:
+            this.processedLigands()
+              ?.filter((ligand) => ligand.type === 'ligand')
+              ?.map((ligand) => String(ligand.additionalData.source.entity_id)) ?? [],
+          modifications:
+            this.processedLigands()
+              ?.filter((ligand) => ligand.type === 'modification')
+              ?.map((modres) => ({ labelCompId: modres.id, color: modres.molstarColorHex ?? 'gray', name: modres.codeAndName.name })) ?? [],
+          entityColors: this.entityColors(),
+        },
+      } satisfies SnapshotSpec;
+    } else {
+      const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
+      if (!molstarSelection) return undefined;
+
+      const authAsymId = molstarSelection[0].auth_asym_id;
+      const authSeqId = molstarSelection[0].auth_seq_id;
+      const authInsCode = molstarSelection[0].pdbx_PDB_ins_code ?? '';
+      if (authAsymId === undefined) throw new Error('authAsymId is undefined');
+      if (authSeqId === undefined) throw new Error('authSeqId is undefined');
+      const instanceId = this.selectedInstanceId();
+
+      const interactionsData = this.interactionsForCurrentInstance();
+      const mvsAtomInteractions = interactionsData ? interactionsToMolstar(interactionsData, this.symmetryOperatorMapping()) : undefined;
+
+      return {
+        name: 'Ligand environment',
+        kind: 'pdbconnect_environment',
+        params: {
+          entry: entryId,
+          assemblyId: this.displayedAssemblyId(),
+          authAsymId,
+          authSeqId,
+          authInsCode,
+          instanceId,
+          atomInteractions: mvsAtomInteractions ?? 'builtin',
+          volumeStreaming: true,
+          entityColors: this.entityColors(),
+        },
+      } satisfies SnapshotSpec;
+    }
+  });
 }

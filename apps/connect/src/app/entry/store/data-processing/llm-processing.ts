@@ -12,18 +12,18 @@ export function filterMacromoleculesForLLM(
   uniprotMappings: UniProtMapping,
   polymerCoverage: PolymerCoverageMolecule[]
 ) {
-  const primaryCitationYes = llmAnnotations.filter((a: any) => a.primaryCitation === 'Y');
-  const llmUniProtIds = new Set(primaryCitationYes?.map((a: any) => a.uniprotAccession));
-  const chainIds = new Set(primaryCitationYes?.map((a: any) => a.pdbChain));
+  const primaryCitationYes = llmAnnotations.filter((a) => a.primaryCitation === 'Y');
+  const llmUniProtIds = new Set(primaryCitationYes.map((a) => a.uniprotAccession));
+  const llmChainIds = new Set(primaryCitationYes.map((a) => a.pdbChain));
 
-  const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly);
+  const macromoleculesWithPrefAssembly = mapMacromoleculesByPreferredAssembly(macromolecules, preferredAssembly, polymerCoverage);
   const polymerCoverageWithPrefAssembly = mapPolymerCoverageByPreferredAssembly(polymerCoverage, preferredAssembly);
 
   const filteredMacromolecules = macromoleculesWithPrefAssembly.filter((macromolecule) => {
     const uniprotData = getUniProtMappingsForMacromolecule(macromolecule, uniprotMappings, polymerCoverageWithPrefAssembly);
     const macromoleculeUniProts = uniprotData.uniprotAccsForMacromolecule;
     const hasUniProtInCommon = macromoleculeUniProts.some((unp) => llmUniProtIds.has(unp));
-    const hasChainsInCommon = macromolecule.in_struct_asyms.some((ch) => chainIds.has(ch));
+    const hasChainsInCommon = macromolecule.in_struct_asyms.some((ch) => llmChainIds.has(ch));
     return hasUniProtInCommon && hasChainsInCommon;
   });
   return filteredMacromolecules;

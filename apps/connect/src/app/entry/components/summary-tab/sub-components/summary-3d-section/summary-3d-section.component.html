@@ -7,12 +7,12 @@
   <section class="molstar-details-container">
     <!-- molstar control bar: selection dropdown and zoom controls -->
     <div class="molstar-control-bar">
-      @if (dropdownOptions().length > 0 || symmetryDropdownOptions().length > 0) {
+      @if (dropdown.options.length > 0 || symmetryDropdown.options.length > 0) {
       <div>
         <div class="selector">
           <span class="molstar-control-txt">Select:</span>
           <span class="molstar-control-txt-info">
-            @if (dropdownOptions().length > 0) {
+            @if (dropdown.options.length > 0) {
             <pdbc-entry-dropdown
               [searchable]="false"
               [searchTitle]="''"
@@ -20,12 +20,12 @@
               [islink]="false"
               [isdark]="true"
               [issmall]="true"
-              [options]="dropdownOptions()"
-              [title]="dropdownSelected"
+              [options]="dropdown.options"
+              [title]="dropdown.selectedName() ?? ''"
               (optionClickedEvent)="onDropdownSelect($event)"
             >
             </pdbc-entry-dropdown>
-            } @if (symmetryDropdownSelected && symmetryDropdownOptions().length > 0) {
+            } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 0) {
             <pdbc-entry-dropdown
               [searchable]="false"
               [searchTitle]="''"
@@ -33,8 +33,8 @@
               [islink]="false"
               [isdark]="true"
               [issmall]="true"
-              [options]="symmetryDropdownOptions()"
-              [title]="symmetryDropdownSelected"
+              [options]="symmetryDropdown.options"
+              [title]="symmetryDropdown.selectedName() ?? ''"
               (optionClickedEvent)="onSymmetryDropdownSelect($event)"
             ></pdbc-entry-dropdown>
             }
@@ -71,7 +71,7 @@
     <section class="info-banner">
       <button class="close-btn" (click)="hasClosedMessage.set(true)">✖</button>
       <p>
-        <img src="assets/icons/warning_icon.webp" style="margin-left: 4px; width: 16px; height: 16px" />
+        <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
         Current selection is <b>not</b> included in the
         <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
           >preferred complex</a
@@ -191,7 +191,7 @@
               <button class="select-entity-btn">
                 {{ getCleanMoleculeName(listItem.additionalData.molecule) }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'Macromolecule not included in the preferred assembly/complex.'"
@@ -254,7 +254,7 @@
               <button class="select-entity-btn">
                 {{ listItem.codeAndName.name }} - {{ listItem.id }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'Ligand not included in the preferred assembly/complex.'"
@@ -342,7 +342,7 @@
                 <span>{{ listItem.segmentsAsText }}</span>
                 @if (hasNonPrefAssemblySelection(listItem, 'any')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'One or more segments not included in the preferred assembly/complex.'"
@@ -404,7 +404,7 @@
               <button class="select-entity-btn">
                 {{ listItem.codeAndName.name }} - {{ listItem.id }} @if (hasNonPrefAssemblySelection(listItem, 'all')) {
                 <img
-                  src="assets/icons/warning_icon.webp"
+                  src="assets/icons/warning-icon.svg"
                   style="margin-left: 4px; width: 16px; height: 16px"
                   matTooltipClass="complex-name-tooltip"
                   [matTooltip]="'Modification not included in the preferred assembly/complex.'"

@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, Renderer2, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
@@ -15,28 +15,34 @@ import {
   Mutex,
   PopupWindowService,
   ScriptLoaderService,
+  SingleAsyncQueue,
   TruncateTextDirective,
   UtilService,
 } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
-import { DownloadOption } from '@pdbe-lib/dropdown-menu';
-import { MolstarComponent, MolstarPluginService } from '@pdbe-lib/molstar-for-apps';
+import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { ToolTipComponent } from '@pdbe-lib/tool-tip';
 import { AgGridAngular } from 'ag-grid-angular';
 import { CellMouseOverEvent, SelectionChangedEvent } from 'ag-grid-community';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, firstValueFrom, map, take, timer } from 'rxjs';
-import { EntryApiService } from '../../services/entry-api.service';
+import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import { Interaction, InteractionFromAPI } from '../../data-models/interaction.model';
 import { Molecule } from '../../data-models/molecule.model';
 import { dashboardStatLinks, INTX_NAME_COLORS, symmOperatorTooltip } from '../../entry-constant';
-import { interactionsToMolstar, MVSAtomInteraction, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
-import { makeEntityColors, whenSignalFirstTrue } from '../../helpers/misc';
+import { interactionsToMolstar, normalizeInsertionCode } from '../../helpers/interactions-to-molstar-sel-obj';
+import { Dropdown, makeEntityColors, SymmetryOperatorMapping, whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams, QueryParamForHelpers } from '../../helpers/molstar-helpers';
 import { MVSHandler } from '../../helpers/mvs-handler';
 import { SnapshotSpec } from '../../helpers/mvs-views/mvs-snapshot-types';
-import { getCleanSelectionName, getLigandsDropdownOptions } from '../../helpers/processed-data-to-controls';
+import {
+  CommonDropdownOptionData,
+  getCleanSelectionName,
+  makeLigandsDropdownOptions,
+  makeSymmetryDropdownOptions,
+  SymmetryDropdownOptionData,
+} from '../../helpers/processed-data-to-controls';
 import { ComponentCommunicationService } from '../../services/component-comm.service';
+import { EntryApiService } from '../../services/entry-api.service';
 import { EntryPageTutorialTourService } from '../../services/entry-page-tutorial-tour.service';
 import { ProcessedLigandOrMod } from '../../store/data-processing/ligand-processing';
 import { EntryStoreState } from '../../store/entry-store.model';
@@ -45,7 +51,7 @@ import { EntrySelectors } from '../../store/entry.selectors';
 import { EntryDropdownComponent } from '../entry-page-header/sub-components/entry-dropdown/entry-dropdown.component';
 import { InteractiveTablesComponent } from '../shared/interactive-tables/interactive-tables.component';
 import { colDefs, gridOptions } from './ag-grid';
-import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
+import { INTX_NAME_STANDARDIZER, standardizeInteractionType } from './interaction-type.component';
 
 @Component({
   selector: 'pdbc-ligands-tab',
@@ -67,21 +73,33 @@ import { INTX_NAME_STANDARDIZER } from './interaction-type.component';
   templateUrl: './ligands-tab.component.html',
   styleUrl: './ligands-tab.component.scss',
 })
-export class LigandsTabComponent implements AfterViewInit {
+export class LigandsTabComponent {
   private readonly downloadFileTypeService = inject(DownloadFileTypeService);
   public readonly compCommunication = inject(ComponentCommunicationService);
-  private readonly molstarPluginService = inject(MolstarPluginService);
   private readonly scriptLoader = inject(ScriptLoaderService);
   private readonly globalStore = inject(Store<EntryStoreState>);
 
   public readonly symmOperatorTooltip = symmOperatorTooltip;
 
-  public dropdownSelected!: string;
-  public dropdownOptions: DownloadOption[] = [];
-  public dropdownOptionsToMolstar: { [key: string]: QueryParamForHelpers[] } = {};
+  public dropdown = new Dropdown<CommonDropdownOptionData>({
+    autoOptions: () => makeLigandsDropdownOptions(this.currentLigandDatum()),
+  });
 
-  public symmetryDropdownSelected?: string;
-  public symmetryDropdownOptions: DownloadOption[] = [];
+  public symmetryDropdown = new Dropdown<SymmetryDropdownOptionData>({
+    autoOptions: () => makeSymmetryDropdownOptions(this.dropdown.selectedOption()?.data.symmOperators),
+  });
+
+  private selectedInstanceId = computed(() => this.symmetryDropdown.selectedOption()?.data.instanceId);
+  public inPrefAssemblyForInstance = computed<boolean>(() => this.dropdown.selectedOption()?.data.inPrefAssembly ?? true); // No ligand selected -> true (no warning to display)
+
+  /** Mapping for symmetry operator (if displayed structure is an assembly), or undefined (if displayed structure is deposited model) */
+  private symmetryOperatorMapping = computed(() => {
+    if (this.displayedAssemblyId() !== undefined) {
+      return SymmetryOperatorMapping.getSymmetryOperatorMapping(this.dropdown.selectedOption()?.data.symmOperators ?? []);
+    } else {
+      return undefined;
+    }
+  });
 
   public renderer = inject(Renderer2);
   public elementRef = inject(ElementRef);
@@ -92,8 +110,6 @@ export class LigandsTabComponent implements AfterViewInit {
   private entryApiService = inject(EntryApiService);
 
   public readonly isSidebarDisplayed = signal<boolean>(true);
-
-  public readonly selectedLigandIdx = toSignal(this.compCommunication.ligandSelection$);
 
   public readonly entryId = toSignal(this.globalStore.select(EntrySelectors.entryId));
   public readonly interactionsObservable = this.globalStore.select(EntrySelectors.interactions);
@@ -110,36 +126,38 @@ export class LigandsTabComponent implements AfterViewInit {
   /** Assembly ID of the assembly to be displayed (undefined = deposited model) */
   private readonly displayedAssemblyId = computed<string | undefined>(() => (this.inPrefAssemblyForInstance() ? this.preferredAssemblyId() : undefined));
 
-  public residToInstanceId: { [key: string]: string | undefined } = {};
-
   public readonly tabDataLoaded = computed(() => this.processedLigands() !== undefined);
 
   public readonly util = inject(UtilService);
 
-  public readonly legendsColor = this.getInteractionLabelColorArray(INTX_NAME_COLORS, INTX_NAME_STANDARDIZER);
+  public readonly legendItems = getInteractionLegendItems(INTX_NAME_COLORS, INTX_NAME_STANDARDIZER);
 
   public getCleanSelectionName = getCleanSelectionName;
 
-  public initialColorCount = signal<number>(4);
+  public readonly legendExpanded = signal<boolean>(false);
+  /** Maximum number of legend items to display, unless the legend is fully expanded. */
+  public readonly LegendMaxItems = 4;
 
   public get isMobile(): boolean {
     return window.innerWidth <= 768; // typical mobile breakpoint
   }
 
-  public readonly ligandTableRows = computed(() => {
-    const rows = this.processedLigands();
-    if (rows === undefined) return [];
-    return rows;
+  public readonly ligandTableRows = computed(() => this.processedLigands() ?? []);
+
+  /** Index of the currently selected ligand row in the left panel */
+  private readonly selectedLigandIdx = toSignal<number | undefined>(this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()));
+
+  public readonly currentLigandDatum = computed<ProcessedLigandOrMod | undefined>(() => {
+    const idx = this.selectedLigandIdx();
+    if (idx === undefined) return undefined;
+    return this.ligandTableRows()[idx];
   });
 
-  public currentLigandDatum = signal<ProcessedLigandOrMod | undefined>(undefined);
-
-  public selectionIdentifier = 'None';
-  public selectionTypeText?: string;
-
-  @ViewChild('ligandEnvContainer') ligandEnvContainer!: ElementRef;
+  private readonly ligandEnvContainer = signal<ElementRef | undefined>(undefined);
+  @ViewChild('ligandEnvContainer') set _ligandEnvContainer(ref: ElementRef | undefined) {
+    this.ligandEnvContainer.set(ref);
+  }
   private ligandEv: any;
-  public hasLigandEnv = false;
 
   private molstarReady = signal(false);
   private _molstarComponent?: MolstarComponent;
@@ -170,8 +188,11 @@ export class LigandsTabComponent implements AfterViewInit {
     this.compCommunication.forceLoad.set(!forceLoad);
   }
 
-  public inPrefAssembly = signal(true);
-  public inPrefAssemblyForInstance = signal(true);
+  public inPrefAssembly = computed(() => {
+    const ligand = this.currentLigandDatum();
+    if (!ligand) return true;
+    return ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly);
+  });
 
   public messageNoInteractions = computed(() => {
     const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
@@ -184,32 +205,51 @@ export class LigandsTabComponent implements AfterViewInit {
     granularity: 'element',
   }));
 
-  private currentChainId = signal<string | undefined>(undefined);
-  private currentResidueId = signal<string | undefined>(undefined);
-
-  public readonly isInitialInteractionsMoreThanOne = computed(() => {
-    const chainId = this.currentChainId();
-    const residueId = this.currentResidueId();
-    if (!chainId || !residueId) return false;
-    const interactionsFromApi = this.interactions();
-    if (!interactionsFromApi) return false;
-    const interaction = interactionsFromApi[chainId][residueId].interactions;
-    return interaction && interaction.length > 1;
+  private currentChainId = computed<string | undefined>(() => this.dropdown.selectedOption()?.data.molstarSelection[0].auth_asym_id);
+  private currentResidueId = computed<string | undefined>(() => {
+    const auth_seq_id = this.dropdown.selectedOption()?.data.molstarSelection[0].auth_seq_id;
+    if (auth_seq_id === undefined) return undefined;
+    return String(auth_seq_id);
   });
 
-  public searchTerm = new FormControl('');
-  private noTermFiltering = signal<boolean>(false);
+  public searchTermForm = new FormControl('');
+  private searchTerm = toSignal(this.searchTermForm.valueChanges);
 
   public readonly gridOptions = gridOptions;
   public readonly themeClass = AG_Grid_Theme_Class;
   public readonly colDefs = colDefs;
 
-  public interactionsRawData = signal<InteractionFromAPI | undefined>(undefined);
-  public interactionsRowData = signal<Interaction[] | undefined>(undefined);
+  /** All interactions for current ligand/chainId/residueId/instanceId, without applying filter. */
+  private interactionsForCurrentInstance = computed<InteractionFromAPI | undefined>(() => {
+    const chainId = this.currentChainId();
+    const residueId = this.currentResidueId();
+    if (!chainId || !residueId) return undefined;
+
+    const instanceId = this.selectedInstanceId();
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(chainId, instanceId, this.symmetryOperatorMapping());
+
+    const allInteractions = this.interactions();
+    return allInteractions?.[chainForInteractions]?.[residueId];
+  });
+
+  /** Filtered interactions for current ligand/chainId/residueId/instanceId. */
+  public filteredInteractionsData = computed<InteractionFromAPI | undefined>(() => {
+    const interactionsForCurrentInstance = this.interactionsForCurrentInstance();
+    if (!interactionsForCurrentInstance) return undefined;
+
+    const searchQuery = this.searchTerm();
+    const filteredInteractions = this.filterItemsBySearchQuery(searchQuery, interactionsForCurrentInstance.interactions);
+    return {
+      ...interactionsForCurrentInstance,
+      interactions: filteredInteractions,
+    };
+  });
+
+  /** Filtered interactions for current ligand/chainId/residueId/instanceId. */
+  public filteredInteractionsRows = computed<Interaction[] | undefined>(() => this.filteredInteractionsData()?.interactions);
 
   public paginationPageSizeSelector = signal<number[]>([5, 10, 20]);
 
-  // public selectionStats: { [key: string]: any } | undefined;
   public selectionStats = computed(() => {
     const ligandSummaryList = this.ligandSummaryList();
     const currentLig = this.currentLigandDatum();
@@ -231,8 +271,8 @@ export class LigandsTabComponent implements AfterViewInit {
 
   public ligandBoundDetails = computed(() => {
     const datum = this.currentLigandDatum();
-    if (datum && datum.type === 'ligand') {
-      return (datum.additionalData.source as any).bound_details;
+    if (datum?.type === 'ligand') {
+      return datum.additionalData.source.bound_details;
     }
     return undefined;
   });
@@ -247,96 +287,11 @@ export class LigandsTabComponent implements AfterViewInit {
     }
   }
 
-  private getInteractionLabelColorArray(colors: Record<string, string>, labels: Record<string, string>): { label: string; color: string }[] {
-    return Object.entries(labels).map(([key, label]) => ({
-      label,
-      color: colors[key] || '#000000', // default color if not found
-    }));
-  }
-
-  private async updateInPrefAssemblyForInstance(ligand: ProcessedLigandOrMod) {
-    // check if ligand instance is in pref assembly based on idx of ligand instance
-    const ligInstanceIdx = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const isSelectionPrefAssembly = ligand.additionalData.selectionsInPrefAssembly[ligInstanceIdx];
-    this.inPrefAssemblyForInstance.set(isSelectionPrefAssembly);
-  }
-
-  async triggerLigandUpdateSideEffects(ligand: ProcessedLigandOrMod) {
-    // update ligand dropdown options
-    this.updateDropdownOptions(ligand);
-    this.updateSymmetryDropdownOptions(ligand);
-
-    // used in template for dashboard stats
-    this.selectionIdentifier = ligand.id;
-
-    // update whether we show the env viewer or not
-    await this.updateVisualsDisplayed(ligand);
-
-    // check if molstar config needs update and wait for it
-    await this.updateInPrefAssemblyForInstance(ligand);
-    const allLigandsInPrefAssembly = ligand.additionalData.selectionsInPrefAssembly.every((isInPrefAssembly) => isInPrefAssembly === true);
-    this.inPrefAssembly.set(allLigandsInPrefAssembly);
-
-    // update visualisations with data
-    // get interactions data, create ligand selection, zoom in ligand
-    this.renderInMolstar(ligand);
-
-    // if (this.ligandEv === undefined && this.hasLigandEnv) {
-    //   const interactionRawData = this.interactionsRawData();
-    //   // refresh data to ligand env viewer
-    //   await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
-    // }
-  }
-
-  updateDropdownOptions(ligand: ProcessedLigandOrMod) {
-    this.dropdownOptionsToMolstar = getLigandsDropdownOptions(ligand);
-    this.dropdownOptions = Object.keys(this.dropdownOptionsToMolstar).map((eachString, idx) => {
-      return {
-        name: eachString,
-        url: `lig-${idx + 1}`,
-        downloadable: false,
-      };
-    });
-    this.dropdownSelected = Object.keys(this.dropdownOptionsToMolstar)[0];
-  }
-
-  updateSymmetryDropdownOptions(ligand: ProcessedLigandOrMod) {
-    // update for symmetry operations dropdown
-    const idxOfSelection = Object.keys(this.dropdownOptionsToMolstar).indexOf(this.dropdownSelected);
-    const ligandSymmOperators = idxOfSelection > -1 ? ligand.symmOpListForEachLigOrMod[idxOfSelection] : undefined;
-
-    if (ligandSymmOperators) {
-      this.symmetryDropdownOptions = ligandSymmOperators.map((op, idx) => {
-        return {
-          name: op,
-          url: `domain-0-symop-${idx + 1}`,
-          downloadable: false,
-        };
-      });
-      this.symmetryDropdownSelected = this.symmetryDropdownOptions.length > 0 ? this.symmetryDropdownOptions[0].name : undefined;
-    } else {
-      this.symmetryDropdownSelected = undefined;
-      this.symmetryDropdownOptions = [];
-    }
-  }
-
-  async updateVisualsDisplayed(ligand: ProcessedLigandOrMod) {
-    // modification is a special case for Ligands table in which lig env viewer is not displayed
-    if (ligand.type.includes('modification') === false) {
-      this.hasLigandEnv = true;
-    } else {
-      // if it is a ligand
-      // we await destruction of current ligand env viewer (if there is one) and resetting of loading status vars
-      this.hasLigandEnv = false;
-      await this.destroyLigandEnv();
-    }
-  }
-
-  private getMvsSnapshotSpec(mvsAtomInteractions: MVSAtomInteraction[] | undefined): SnapshotSpec | undefined {
+  private readonly mvsSnapshotSpec = computed<SnapshotSpec | undefined>(() => {
     const entryId = this.entryId();
     if (!entryId) return undefined;
 
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
+    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
     if (!molstarSelection) return undefined;
 
     const authAsymId = molstarSelection[0].auth_asym_id;
@@ -344,6 +299,10 @@ export class LigandsTabComponent implements AfterViewInit {
     const authInsCode = molstarSelection[0].pdbx_PDB_ins_code ?? '';
     if (authAsymId === undefined) throw new Error('authAsymId is undefined');
     if (authSeqId === undefined) throw new Error('authSeqId is undefined');
+    const instanceId = this.selectedInstanceId();
+
+    const interactionsData = this.filteredInteractionsData();
+    const mvsAtomInteractions = interactionsData ? interactionsToMolstar(interactionsData, this.symmetryOperatorMapping()) : undefined;
 
     return {
       name: 'Ligand environment',
@@ -354,42 +313,21 @@ export class LigandsTabComponent implements AfterViewInit {
         authAsymId,
         authSeqId,
         authInsCode,
-        instanceId: this.symmetryDropdownSelected || undefined,
+        instanceId,
         atomInteractions: mvsAtomInteractions ?? 'builtin',
         // atomInteractions: mvsAtomInteractions ?? 'none',
         volumeStreaming: true,
         entityColors: this.entityColors(),
       },
     };
-  }
+  });
+  private readonly mvsSnapshotSpec$ = toObservable(this.mvsSnapshotSpec);
 
-  async triggerLigandInteractionsSideEffects(rawInteractions: InteractionFromAPI | undefined) {
-    const interactions = rawInteractions?.interactions;
-    if (!interactions) return;
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    if (!molstarSelection) return;
-
-    if (rawInteractions) await this.initOrRefreshLigandEnvViewer(ligand, rawInteractions);
-
-    const instanceId = this.symmetryDropdownSelected || undefined;
-    const mvsInteractions = interactionsToMolstar(ligand, molstarSelection, interactions, instanceId);
-
-    this.residToInstanceId = mvsInteractions.residToInstanceId;
-
-    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(mvsInteractions.interactionsMolstarSelections));
-
-    // TODO: Refactor use of residToInstanceId
-    // TODO: Fix mapping of instance_id vs API chain numbering for MVS and for residToInstanceId (e.g. 1e94: chain E in ASM-1 -> E, ASM-3 -> E_3 (should be E_2), ASM-5 -> E_5 (should be E_3)
-    // TODO: Fix weird table behavior when the user changes to a ligand with no interaction data
-  }
-
-  private readonly ligandEnvMutex = Mutex('ligandEnvMutex');
+  private readonly ligandEnvQueue = new SingleAsyncQueue();
   private readonly tableHoverMutex = Mutex('tableHoverMutex');
 
   constructor() {
-    this.ligandEnvMutex.run(async () => {
+    this.ligandEnvQueue.enqueue(async () => {
       // await this.scriptLoader.loadScript('https://d3js.org/d3.v5.min.js', true);
       await this.scriptLoader.loadScript('./assets/pdb-ligand-env-component-3.0.0-min.js', true);
     });
@@ -399,6 +337,54 @@ export class LigandsTabComponent implements AfterViewInit {
       const mvsHandler = MVSHandler(this._molstarComponent);
       this.mvsSnapshotSpec$.subscribe((spec) => mvsHandler.loadMVSSnapshotSpec(spec));
     });
+
+    // Fetch interaction data when ligand/chainId/residueId/instanceId changes
+    effect(() => {
+      const ligand = this.currentLigandDatum();
+      if (!ligand || ligand.type === 'modification') return; // Interaction data are not available for modifications
+
+      const chainId = this.currentChainId();
+      const residueId = this.currentResidueId();
+      const instanceId = this.selectedInstanceId();
+      const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance(); // Interaction data are only available for preferred assembly
+      if (inPrefAssemblyForInstance && chainId !== undefined && residueId !== undefined) {
+        this.fetchInteractionData(chainId, residueId, instanceId);
+      }
+    });
+
+    // Reset annotation filter for the table when ligand/chainId/residueId/instanceId changes
+    effect(async () => {
+      this.currentLigandDatum();
+      this.dropdown.selectedOption();
+      this.symmetryDropdown.selectedOption();
+
+      this.searchTermForm.setValue('');
+    });
+
+    // Refresh data to ligand env viewer when ligand/chainId/residueId/instanceId changes
+    effect(async () => {
+      const ligEnvContainer = this.ligandEnvContainer();
+      if (!ligEnvContainer) return;
+
+      const ligand = this.currentLigandDatum();
+      const entryId = this.entryId();
+      const chainId = this.currentChainId();
+      const residueId = this.currentResidueId();
+
+      if (ligand?.type === 'ligand' && entryId !== undefined && chainId !== undefined && residueId !== undefined) {
+        // Regular ligand -> show Ligand Env viewer
+        const interactionRawData = this.filteredInteractionsData();
+        await this.initOrRefreshLigandEnvViewer(ligEnvContainer, ligand, entryId, chainId, residueId, interactionRawData);
+      } else {
+        // Modification or no ligand -> hide Ligand Env viewer
+        await this.destroyLigandEnv(ligEnvContainer);
+      }
+    });
+  }
+
+  private fetchInteractionData(authAsymId: string, residueId: string, instanceId: string | undefined) {
+    const chainForInteractions = SymmetryOperatorMapping.getRenamedChain(authAsymId, instanceId, this.symmetryOperatorMapping());
+    this.globalStore.dispatch(EntryActions.getInteractions({ chainId: chainForInteractions, residueId: residueId }));
   }
 
   public readonly tutorialTourService = inject(EntryPageTutorialTourService);
@@ -410,165 +396,34 @@ export class LigandsTabComponent implements AfterViewInit {
     return rows.length > 0;
   });
 
-  /**
-   * For ligand env viewer to always initialise
-   */
-  private viewReady = signal(false);
-
-  private readonly mvsSnapshotSpec$ = new BehaviorSubject<SnapshotSpec | undefined>(undefined);
-
-  ngAfterViewInit(): void {
-    this.viewReady.set(true);
-
-    this.compCommunication.ligandSelection$.pipe(debounceTime(50), distinctUntilChanged()).subscribe(async (idx) => {
-      if (idx === undefined || idx === null) return;
-      const datum = this.ligandTableRows()[idx];
-      if (datum) {
-        this.currentLigandDatum.set(datum);
-        await this.triggerLigandUpdateSideEffects(datum);
-      }
-    });
-
-    this.interactionsObservable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((allInteractions) => {
-      const chainId = this.currentChainId();
-      const residueId = this.currentResidueId();
-      const symOpForInteractions =
-        this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
-      const chainForInteractions = `${chainId}${symOpForInteractions}`;
-      if (!chainId || !residueId) return;
-      const interactionsFromApi = allInteractions[chainForInteractions][residueId];
-      // only update if no search term
-      if (!this.searchTerm.value) {
-        this.triggerLigandInteractionsSideEffects(interactionsFromApi);
-      }
-      const interactions = interactionsFromApi.interactions;
-      this.interactionsRawData.set(interactionsFromApi);
-      this.interactionsRowData.set(interactions);
-    });
-
-    this.searchTerm.valueChanges
-      .pipe(
-        map((searchQuery: string | null) => {
-          const chainId = this.currentChainId();
-          const residueId = this.currentResidueId();
-          if (!chainId || !residueId) return undefined;
-          const allInteractions = this.interactions();
-          if (!allInteractions || Object.keys(allInteractions).length === 0) return undefined;
-          if (Object.keys(allInteractions).indexOf(chainId) === -1) return undefined;
-          if (Object.keys(allInteractions[chainId]).indexOf(residueId) === -1) return undefined;
-          const interactionsFromApiToFilter = allInteractions[chainId][residueId] ?? [];
-          const filteredInteractions = searchQuery
-            ? this.filterItemsBySearchQuery(searchQuery, interactionsFromApiToFilter.interactions)
-            : interactionsFromApiToFilter.interactions;
-
-          const interactionsFromApiFiltered: InteractionFromAPI = {
-            ...interactionsFromApiToFilter,
-            interactions: filteredInteractions,
-          };
-          // interactionsFromApi.interactions = filteredInteractions;
-          // return searchQuery ? this.filterItemsBySearchQuery(searchQuery, interactionsFromApi.interactions) : interactionsFromApi.interactions;
-          return interactionsFromApiFiltered;
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((interactionsFromApiFiltered) => {
-        if (this.noTermFiltering() === false) {
-          this.interactionsRawData.set(interactionsFromApiFiltered);
-          this.triggerLigandInteractionsSideEffects(interactionsFromApiFiltered);
-          this.interactionsRowData.set(interactionsFromApiFiltered?.interactions);
-        }
-        this.noTermFiltering.set(false);
-      });
-  }
-
   public toggleColorList(): void {
-    const colorList = this.legendsColor ?? [];
-    this.initialColorCount.update((prev) => (prev === 4 ? colorList.length : 4));
-  }
-
-  private async renderInMolstar(ligand: ProcessedLigandOrMod) {
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-
-    const chainId = molstarSelection[0].auth_asym_id;
-    const residueId = molstarSelection[0].auth_seq_id;
-
-    this.currentChainId.set(chainId);
-    this.currentResidueId.set(`${residueId}`);
-
-    this.noTermFiltering.set(true);
-    this.searchTerm.setValue('');
-    this.interactionsRawData.set(undefined);
-    this.interactionsRowData.set([]);
-
-    const inPrefAssemblyForInstance = this.inPrefAssemblyForInstance();
-    const symOpForInteractions = this.symmetryDropdownSelected && this.symmetryDropdownSelected !== 'ASM-1' ? '_' + this.symmetryDropdownSelected.split('-')[1] : '';
-    const chainForInteractions = `${chainId}${symOpForInteractions}`;
-    if (inPrefAssemblyForInstance) {
-      this.globalStore.dispatch(
-        EntryActions.getInteractions({
-          chainId: chainForInteractions ?? '',
-          residueId: `${residueId}`,
-        })
-      );
-    }
-    if (ligand.type === 'modification') {
-      this.interactionsRawData.set(undefined);
-      this.interactionsRowData.set(undefined);
-    }
-
-    this.mvsSnapshotSpec$.next(this.getMvsSnapshotSpec(undefined));
+    this.legendExpanded.update((prev) => !prev);
   }
 
   public async onDropdownSelect(event: string) {
-    this.dropdownSelected = event;
-
-    // all possible rendering functions are called for a dashboard
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-    this.updateSymmetryDropdownOptions(ligand);
-
-    // check if molstar config needs update and wait for it
-    await this.updateInPrefAssemblyForInstance(ligand);
-
-    // get interactions data, create ligand selection, zoom in ligand
-    this.renderInMolstar(ligand);
-    const interactionRawData = this.interactionsRawData();
-
-    // refresh data to ligand env viewer
-    await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
+    this.dropdown.select(event);
   }
 
   public async onSymmetryDropdownSelect(event: string) {
-    this.symmetryDropdownSelected = event;
-
-    const ligand = this.currentLigandDatum();
-    if (!ligand) return;
-    await this.renderInMolstar(ligand);
-    const interactionRawData = this.interactionsRawData();
-
-    // refresh data to ligand env viewer
-    await this.initOrRefreshLigandEnvViewer(ligand, interactionRawData);
+    this.symmetryDropdown.select(event);
   }
 
-  private async initOrRefreshLigandEnvViewer(ligand: ProcessedLigandOrMod, interactionsRawData?: InteractionFromAPI) {
+  private async initOrRefreshLigandEnvViewer(
+    ligandEnvContainer: ElementRef,
+    ligand: ProcessedLigandOrMod,
+    entryId: string,
+    chainId: string,
+    residueId: string,
+    interactionsRawData: InteractionFromAPI | undefined
+  ) {
     const ligandId = ligand.id;
     // ligand env viewer is only shown for ligands tab. data is retrieved from dropdown
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const resId = molstarSelection[0].auth_seq_id;
-    const chainId = molstarSelection[0].auth_asym_id!;
 
-    // this.resetLigEnvRenderer();
-    if (!this.viewReady()) {
-      await firstValueFrom(
-        toObservable(this.viewReady).pipe(
-          filter((ready) => ready),
-          take(1)
-        )
-      );
-    }
-    const imageContainer = this.ligandEnvContainer.nativeElement;
+    const imageContainer = ligandEnvContainer.nativeElement;
 
-    this.ligandEnvMutex.run(async () => {
+    const QUEUE_THROTTLE_MS = 1000; // Throttling here avoids repeated rendering when user quickly types something in the filter form
+
+    this.ligandEnvQueue.enqueueWithThrottle(QUEUE_THROTTLE_MS, async () => {
       const depiction = await firstValueFrom(this.entryApiService.fetchDepiction(ligandId).pipe(takeUntilDestroyed(this.destroyRef)));
 
       if (this.ligandEv) {
@@ -581,82 +436,58 @@ export class LigandsTabComponent implements AfterViewInit {
       ligandComp.menuOn = true;
       ligandComp.zoomControlsOn = true;
 
-      // this.renderer.setAttribute(ligandComp, 'pdb-id', this.entryId() ?? ''.toLowerCase());
       this.renderer.appendChild(imageContainer, ligandComp);
-      // ligandComp.display.initLigandInteraction = () => {
-      //   ligandComp.chainId = chainId;
-      // };
       this.renderer.setProperty(ligandComp, 'depiction', depiction);
       this.ligandEv = ligandComp;
-      this.ligandEv.pdbId = `${this.entryId()}`;
+      this.ligandEv.pdbId = entryId;
       this.ligandEv.chainId = chainId;
-      this.ligandEv.resId = resId;
-      this.ligandEv.display.pdbId = `${this.entryId()}`;
+      this.ligandEv.resId = residueId;
+      this.ligandEv.display.pdbId = entryId;
       this.ligandEv.display.chainId = chainId;
-      this.ligandEv.display.resId = resId;
-    });
-    if (interactionsRawData) {
-      this.ligandEnvMutex.run(async () => {
+      this.ligandEv.display.resId = residueId;
+
+      if (interactionsRawData && interactionsRawData.interactions.length > 0) {
+        // Calling `addLigandInteractions` with [] would freeze ligand env viewer!
         const dataToLigEnv: { [key: string]: InteractionFromAPI[] } = {};
         const copiedInteractions = JSON.parse(JSON.stringify(interactionsRawData));
-        dataToLigEnv[`${this.entryId()}`] = [copiedInteractions];
+        dataToLigEnv[entryId] = [copiedInteractions];
         try {
           await this.ligandEv.display.addLigandInteractions(dataToLigEnv, false);
         } catch (err) {
           console.error('Failed to add ligand interactions:', err);
-          return;
         }
-
-        this.ligandEv.display.centerScene();
-
-        // const links = this.ligandEv.display.links;
-        // links.selectAll('line').on('mouseenter', null).on('mouseleave', null); // clear previous listeners
-        // ... if there is ever a way to use Molstar to select the interactions
-        // .on('mouseenter', (ev: any, datum: any) => {
-        //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
-        //   this.ligandEv.display.linkMouseOverEventHandler(datum, datum.index, g);
-        // })
-        // .on('mouseleave', (ev: any, datum: any) => {
-        //   const g = document.querySelectorAll('.pdb-lig-env-svg-bond');
-        //   this.ligandEv.display.linkMouseOutEventHandler(datum, datum.index, g);
-        // })
-      });
-    }
+      }
+      this.ligandEv.display.centerScene();
+    });
   }
 
   public toggleSidebar() {
     this.isSidebarDisplayed.update((prev) => !prev);
   }
 
-  private async destroyLigandEnv() {
-    this.ligandEnvMutex.run(async () => {
+  private async destroyLigandEnv(ligandEnvContainer: ElementRef) {
+    this.ligandEnvQueue.enqueue(async () => {
       // to destroy ligand env we use removeChild and reset all variables related to it's loading status
-      if (this.ligandEnvContainer && this.ligandEnvContainer.nativeElement) {
-        const imageContainer = this.ligandEnvContainer.nativeElement;
+      const imageContainer = ligandEnvContainer.nativeElement;
+      if (imageContainer && this.ligandEv) {
         this.renderer.removeChild(imageContainer, this.ligandEv);
       }
-
-      if (this.ligandEv) {
-        // this.ligandEnvContainer.nativeElement.innerHTML = '';
-        this.ligandEv = undefined;
-      }
-
-      this.hasLigandEnv = false;
-      // unfortunately needed so destruction happens syncronously
-      await firstValueFrom(timer(100));
+      this.ligandEv = undefined;
     });
   }
 
-  private filterItemsBySearchQuery(searchQuery: string, items: any[]): any[] {
+  /** Return list of interactions which match `searchQuery`. Return all interactions if `searchQuery` is empty/undefined/null. */
+  private filterItemsBySearchQuery(searchQuery: string | null | undefined, items: Interaction[]): Interaction[] {
+    if (!searchQuery) return items;
     return items.filter((item) => {
       const searchQueryLower = searchQuery.toLocaleLowerCase();
       const residueName = item.end.chem_comp_id.toString() + '_' + item.end.author_residue_number.toString();
       const atomName = item.end.atom_names.join(',');
-      const interactionType = item.interaction_details.map((type: keyof typeof INTX_NAME_STANDARDIZER) => INTX_NAME_STANDARDIZER[type]).join(',');
+      const interactionType = item.interaction_details.map(standardizeInteractionType).join(',');
       const distance = item.distance;
       const ligandAtom = item.ligand_atoms.join(',');
       const rowString = residueName + atomName + interactionType + distance + ligandAtom;
-      return rowString.toLocaleLowerCase().indexOf(searchQueryLower) !== -1;
+      return rowString.toLocaleLowerCase().includes(searchQueryLower);
     });
   }
 
@@ -673,65 +504,56 @@ export class LigandsTabComponent implements AfterViewInit {
   }
 
   private async _handleCellMouseOver(event: CellMouseOverEvent<Interaction>) {
-    const int = event.data; // fully typed
+    const int = event.data;
     if (!int) return;
 
     const instance = this._molstarComponent?.getInstance() ?? null;
     if (!instance) return;
-    const molstarSelection = this.dropdownOptionsToMolstar[this.dropdownSelected];
-    const entityId = molstarSelection[0].label_entity_id;
-    const chainId = molstarSelection[0].auth_asym_id;
-    const residueId = molstarSelection[0].auth_seq_id;
-    const resIns = molstarSelection[0].pdbx_PDB_ins_code;
+    const molstarSelection = this.dropdown.selectedOption()?.data.molstarSelection;
+    if (!molstarSelection) return;
+    const ligandChainId = molstarSelection[0].auth_asym_id;
+    const ligandSeqId = molstarSelection[0].auth_seq_id;
+    const ligandInsCode = normalizeInsertionCode(molstarSelection[0].pdbx_PDB_ins_code);
 
-    const chainToEntityId = this.chainToEntityId();
-    if (!chainToEntityId) return;
-    const residEntityId = chainToEntityId[int.end.chain_id];
+    const ligandInstanceId = this.selectedInstanceId();
 
-    const instance_id = this.symmetryDropdownSelected ? this.symmetryDropdownSelected : undefined;
-
-    const residueChain = int.end.chain_id.split('_')[0];
-    const residueNum = int.end.author_residue_number;
-    const residueIns = normalizeInsertionCode(int.end.author_insertion_code);
-    const resIdentifier = `${residueChain}|${residueNum}|${residueIns}`;
+    const [residueChainId, residueInstanceId] = SymmetryOperatorMapping.getChainIdAndInstanceIdFromRenamedChain(int.end.chain_id, this.symmetryOperatorMapping());
+    const residueSeqId = int.end.author_residue_number;
+    const residueInsCode = normalizeInsertionCode(int.end.author_insertion_code);
 
     const atomSelections: QueryParamForHelpers[] = [
       {
-        label_entity_id: `${entityId}`,
-        auth_asym_id: chainId,
-        auth_seq_id: residueId,
-        pdbx_PDB_ins_code: normalizeInsertionCode(resIns),
+        auth_asym_id: ligandChainId,
+        auth_seq_id: ligandSeqId,
+        pdbx_PDB_ins_code: ligandInsCode,
         atoms: int.ligand_atoms,
-        instance_id,
+        instance_id: ligandInstanceId,
       },
       {
-        label_entity_id: `${residEntityId}`,
-        auth_asym_id: residueChain,
-        auth_seq_id: residueNum,
-        pdbx_PDB_ins_code: residueIns,
+        auth_asym_id: residueChainId,
+        auth_seq_id: residueSeqId,
+        pdbx_PDB_ins_code: residueInsCode,
         atoms: int.end.atom_names,
-        instance_id: this.residToInstanceId[resIdentifier],
+        instance_id: residueInstanceId,
       },
     ];
     await instance.visual.highlight({ data: atomSelections });
-    // await instance.visual.focus(atomSelections);
   }
 
   private async _handleCellMouseOut() {
     const instance = this._molstarComponent?.getInstance();
     if (!instance) return;
     await instance.visual.clearHighlight();
-    // if (this.ligandSelection) await instance.visual.focus(this.ligandSelection);
   }
 
   public downloadCSV(): void {
-    const mappedData = this.interactionsRowData()?.map((row) => {
+    const mappedData = this.filteredInteractionsRows()?.map((row) => {
       return {
         'Ligand Atoms': row.ligand_atoms.join(', '),
         'Interacting Molecule': this.getMoleculeName(row.end.chain_id),
         Residue: row.end.chem_comp_id + '_' + row.end.author_residue_number,
         Atoms: row.end.atom_names.join(','),
-        'Interaction Type': row.interaction_details.map((type) => INTX_NAME_STANDARDIZER[type as keyof typeof INTX_NAME_STANDARDIZER]).join(', '),
+        'Interaction Type': row.interaction_details.map(standardizeInteractionType).join(', '),
         'Distance (Å)': row.distance,
       };
     });
@@ -759,4 +581,14 @@ export class LigandsTabComponent implements AfterViewInit {
   public mapSynonyms(synonyms: any[]): string {
     return synonyms.map((synonym) => synonym.value).join(', ');
   }
+}
+
+function getInteractionLegendItems(colors: Record<string, string>, labels: Record<string, string>) {
+  return Object.entries(labels).map(([key, label]) => ({
+    /** Unique key */
+    key,
+    /** Interaction type name to display */
+    label,
+    color: colors[key] || '#000000', // default color if not found
+  }));
 }
