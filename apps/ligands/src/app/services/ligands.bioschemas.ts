@@ -37,7 +37,7 @@ export class LigandsBioschemasService {
         }
 
         const JSON = {
-          '@context': 'http://schema.org/',
+          '@context': 'https://schema.org/',
           '@type': 'MolecularEntity',
           identifier: `https://identifiers.org/pdb.ligand:${id}`,
           name: id,
