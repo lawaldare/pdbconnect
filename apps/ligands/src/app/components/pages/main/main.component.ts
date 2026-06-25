@@ -182,7 +182,7 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   private generateSchemaData(): void {
-    this.bioschemasService.buildBioschemasJSON(this.renderer);
+    this.bioschemasService.setUpRenderedForBioschemas(this.renderer);
   }
 
   public selectTab(event: MatTabChangeEvent) {

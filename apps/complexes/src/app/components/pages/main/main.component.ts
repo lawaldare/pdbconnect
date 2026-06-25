@@ -172,7 +172,7 @@ export class MainComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(() => {
-        this.bioschemasService.buildBioschemasJSON(this.renderer);
+        this.bioschemasService.setUpRenderedForBioschemas(this.renderer);
         this.complexMetaTagService.buildMetaTags();
         if (this.summaryData()) {
           this.seoService.update(

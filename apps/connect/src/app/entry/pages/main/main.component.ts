@@ -4,17 +4,16 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
 import { SearchAppComponent } from '@pdbc/search-app';
 
-import { combineLatest, EMPTY, filter, map, mergeMap, switchMap, tap } from 'rxjs';
+import { combineLatest, map } from 'rxjs';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ClarityConsentService, DataPrivacyBannerComponent, GoogleAnalyticsService, MaterialModule, ScrollPositionService, SurveyPopupComponent } from '@pdbc/core';
 import { CitationsTabComponent } from '../../components/citations-tab/citations-tab.component';
 import { mobileHeaderConfig, pdbeLogoConfig, pdbeSearchConfig, routeTabs, tourIds } from '../../entry-constant';
-import { EntryStatus, StatusCode } from '../../data-models/status.model';
+import { EntryStatus } from '../../data-models/status.model';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { EntryMainAlternativeComponent } from '../../components/entry-main-alternative/entry-main-alternative.component';
 import { Store } from '@ngrx/store';
 import { EntryStoreState } from '../../store/entry-store.model';
-import { EntryActions } from '../../store/entry.actions';
 import { EntrySelectors } from '../../store/entry.selectors';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { SummaryTabComponent } from '../../components/summary-tab/summary-tab.component';
@@ -218,7 +217,7 @@ export class EntryMainPageComponent implements OnInit {
     if (status.status_code === 'REL') {
       this.util.setPageView('SUCCESS');
       this.metaTagService.buildMetaTagsFromSummaryData(this.renderer, summary);
-      this.entryBioschemasService.buildBioschemasJSONFromData(this.renderer, entryId, summary, primaryPublication);
+      this.entryBioschemasService.setUpRenderedForBioschemas(this.renderer);
 
       const isWebGlEnabled = this.facade.checkWebglEnabled();
       if (isWebGlEnabled) this.facade.testNetworkSpeed();

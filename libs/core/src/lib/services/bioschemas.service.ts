@@ -14,20 +14,21 @@ export class BioschemasService {
    * @param data                  The data for the JSON-LD script
    * @returns                     Void
    */
-  public setJsonLd(renderer: Renderer2, data: any): void {
-    this.removeJsonLdScript(renderer);
+  public setJsonLd(renderer: Renderer2, data: any, className: string): void {
+    this.removeJsonLdScript(renderer, className);
     const script = renderer.createElement('script');
     script.type = 'application/ld+json';
     script.textContent = JSON.stringify(data);
-    script.setAttribute('class', 'structured-data');
+    script.setAttribute('class', className);
     renderer.appendChild(this.document.head, script);
   }
 
-  private removeJsonLdScript(renderer: Renderer2): void {
-    const script = this.document.querySelector('.structured-data');
-    if (script) {
+  private removeJsonLdScript(renderer: Renderer2, className: string): void {
+    const scripts = this.document.querySelectorAll(`.${className}`);
+
+    scripts.forEach((script) => {
       renderer.removeChild(this.document.head, script);
-    }
+    });
   }
 
   public insertSchema(schema: Record<string, any>): void {
