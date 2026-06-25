@@ -117,7 +117,8 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
 
   Object.entries(uniprotMappings).forEach(([uniprotId, uniprot]) => {
     for (const mapping of uniprot.mappings) {
-      if (mapping.entity_id !== entityId) return;
+      if (!mapping?.entity_id || !mapping?.chain_id || !mapping?.struct_asym_id) continue;
+      if (mapping.entity_id !== entityId) continue;
       // filter for preferredAssembly given that macromolecule already has filtered fields
       if (allowedAsyms.indexOf(mapping.chain_id) === -1) continue;
       if (allowedStructAsyms.indexOf(mapping.struct_asym_id) === -1) continue;
@@ -184,10 +185,11 @@ export function getUniProtMappingsForMacromolecule(macromolecule: Molecule, unip
         }
         // if we are looking just for end auth
         else if (end === null && start !== null) {
-          // we take the first segment with smaller label end than mapping label emd
-          // e.g we have: [0, 4], [10, 38], [50, 70] (label segments)
-          // and 5 as mapping label end, we should take 4
-          const seg = sortedSegments.find((seg) => seg.end.residue_number <= labelEnd);
+          // take the nearest observed segment ending at or before the mapping label end
+          // e.g. observed label segments: [0, 4], [10, 38], [50, 70]
+          // labelEnd = 5  -> take [0, 4]
+          // labelEnd = 60 -> take [10, 38]
+          const seg = sortedSegments.filter((seg) => seg.end.residue_number <= labelEnd).at(-1);
 
           if (seg) {
             end = `${seg.end.author_residue_number}${seg.end.author_insertion_code || ''}`;
