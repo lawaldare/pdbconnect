@@ -24,7 +24,7 @@ import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, switchMap } from 'rxjs';
 import { modelQualityTooltips, OUTLIER_TYPE_LABELS, VALIDATION_LEGENDS_AND_COLORS } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
@@ -328,12 +328,11 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         filter(([xray, experimentalDetails, macroMolecules]) => {
           return xray !== undefined && experimentalDetails !== undefined && macroMolecules !== undefined;
         }),
-        mergeMap(([xray, experimentalDetails, macroMolecules]) => {
+        switchMap(([xray, experimentalDetails, macroMolecules]) => {
           if (experimentalDetails && experimentalDetails.length > 1) {
             this.isHybrid.set(true);
           }
-          const processedExpValData$ = this.dataFacade.processData().pipe(take(1));
-          return forkJoin([processedExpValData$, of(xray), of(macroMolecules)]);
+          return this.dataFacade.processData().pipe(map((processedExpValData) => [processedExpValData, xray, macroMolecules] as const));
         }),
         takeUntilDestroyed(this.destroyRef)
       )
