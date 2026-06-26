@@ -19,12 +19,12 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Store } from '@ngrx/store';
-import { MaterialModule, UtilService } from '@pdbc/core';
+import { ContentNavigator, MaterialModule, UtilService } from '@pdbc/core';
 import { HelpIconWithTooltipComponent } from '@pdbc/help-icon-with-tooltip';
 import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
-import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, switchMap } from 'rxjs';
 import { modelQualityTooltips, OUTLIER_TYPE_LABELS, VALIDATION_LEGENDS_AND_COLORS } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
@@ -81,6 +81,7 @@ import { ValidationTablesFacade } from './validation-tables.facade';
     StrucQualityGradientsComponent,
     NgxSkeletonLoaderModule,
     MolstarComponent,
+    ContentNavigator,
   ],
   templateUrl: './experiments-validation.component.html',
   styleUrl: './experiments-validation.component.scss',
@@ -214,8 +215,82 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
   }
   public readonly configForMolstar = computed(() => EntryPageTabsCommonMolstarParams);
 
-  public readonly currentModelId$ = new BehaviorSubject<string>('1');
+  public currentModelId$ = new BehaviorSubject<string>('1');
   public readonly modelId = toSignal(this.currentModelId$);
+  protected readonly contentNavigatorLinks = computed(() => {
+    const data = this.currentData();
+
+    if (!data) {
+      return [];
+    }
+
+    const links = [
+      {
+        id: 'validation-information',
+        title: 'Validation information',
+      },
+    ];
+
+    if (this.pdbRedoData()) {
+      links.push({
+        id: 'pdb-redo',
+        title: 'PDB-REDO',
+      });
+    }
+
+    links.push(
+      {
+        id: 'timeline',
+        title: 'Timeline',
+      },
+      {
+        id: 'model-quality',
+        title: 'Model quality',
+      }
+    );
+
+    if (!this.isXray()) {
+      links.push({
+        id: 'sample-information',
+        title: 'Sample information',
+      });
+    }
+
+    links.push({
+      id: 'experimental-information',
+      title: 'Experimental information',
+    });
+
+    if (this.isXray()) {
+      links.push(
+        {
+          id: 'crystal-info',
+          title: 'Crystal information',
+        },
+        {
+          id: 'software',
+          title: 'Software',
+        },
+        {
+          id: 'data-quality',
+          title: 'Data quality',
+        },
+        {
+          id: 'refinement',
+          title: 'Refinement',
+        }
+      );
+    }
+
+    if (data.experimentalRawData?.length) {
+      links.push({
+        id: 'experimental-raw-data',
+        title: 'Experimental raw data',
+      });
+    }
+
+    return links;
+  });
 
   constructor() {
     effect(() => {
@@ -253,12 +328,11 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
         filter(([xray, experimentalDetails, macroMolecules]) => {
           return xray !== undefined && experimentalDetails !== undefined && macroMolecules !== undefined;
         }),
-        mergeMap(([xray, experimentalDetails, macroMolecules]) => {
+        switchMap(([xray, experimentalDetails, macroMolecules]) => {
           if (experimentalDetails && experimentalDetails.length > 1) {
             this.isHybrid.set(true);
           }
-          const processedExpValData$ = this.dataFacade.processData().pipe(take(1));
-          return forkJoin([processedExpValData$, of(xray), of(macroMolecules)]);
+          return this.dataFacade.processData().pipe(map((processedExpValData) => [processedExpValData, xray, macroMolecules] as const));
         }),
         takeUntilDestroyed(this.destroyRef)
       )

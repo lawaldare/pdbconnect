@@ -38,3 +38,4 @@ export * from './lib/services/ssr-errors';
 export * from './lib/survey.component';
 export * from './lib/utils/mutex';
 export * from './lib/utils/single-async-queue';
+export * from './lib/components/content-navigator/content-navigator';
