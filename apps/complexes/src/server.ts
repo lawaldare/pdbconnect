@@ -88,7 +88,24 @@ app.get('/**', (req, res, next) => {
 
       if (ssrErrors.length > 0) {
         console.error('SSR failures found:', ssrErrors);
-        res.setHeader('X-SSR-API-ERRORS', JSON.stringify(ssrErrors));
+
+        const safeHeaderValue = ssrErrors
+          .map((error) => {
+            const method = String(error.method ?? 'UNKNOWN');
+            const status = String(error.status ?? 'UNKNOWN');
+            const url = String(error.url ?? 'unknown-url');
+            const message = String(error.message ?? 'unknown-error');
+
+            return `${method} ${status} ${url} - ${message}`;
+          })
+          .join(' | ')
+          .replace(/[\r\n\t]/g, ' ')
+          .replace(/[^\x20-\x7e]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 4000);
+
+        res.setHeader('X-SSR-API-ERRORS', safeHeaderValue);
         ssrErrors.length = 0;
       }
 
