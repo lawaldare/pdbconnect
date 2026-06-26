@@ -1,0 +1,67 @@
+<h1>Validate your file</h1>
+<main>
+  <section class="upload-section">
+    @if(!isLoading()){
+
+    <div class="upload-section-drag-drop" #dropArea (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+      <img src="assets/icons/download.svg" alt="icon image" />
+
+      <p>
+        Drag and drop your file here <br />
+        in .cif, .bcif format
+      </p>
+      <span>or</span>
+
+      <!-- Hidden file input -->
+      <input #fileInput type="file" class="file-input" accept=".cif,.bcif" (change)="onFileChange($event)" hidden />
+
+      <button class="vf-button vf-button--primary" (click)="onBrowseClick()">Select a file</button>
+    </div>
+
+    <!-- Error message -->
+    @if(error()) {
+    <span class="error">{{ error() }}</span>
+    }
+
+    <p class="info">
+      The PDBe mmCIF Validator checks mmCIF/CIF files against the PDBx/mmCIF dictionary, ensuring compliance with required definitions and data constraints. <br />
+      It validates mandatory categories, data types, enumerations, relationships, and more, and provides a metadata completeness score (0–100%) based on experimental
+      method–specific requirements. Missing or invalid items are clearly reported to help you prepare high-quality, deposition-ready data.
+      <a href="https://github.com/PDBeurope/mmcif-validator" target="_blank">Learn more...</a>
+    </p>
+    } @else{
+    <div class="validator-loading">
+      <div class="loader">
+        <div class="spinner"></div>
+        <div class="text">
+          <h3>Validating Structure</h3>
+          <div class="dots">
+            <p>Analyzing structure data</p>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </section>
+
+  <section class="molstar-section">
+    <div class="text-over-molstar">
+      <h3>Attribution</h3>
+      <p>PDBe mmCIF Validator</p>
+      <p>Version 0.1.82</p>
+      <p>Real-time tool for validating mmCIF/CIF files against the PDBx/mmCIF dictionary.</p>
+      <p>Features:</p>
+      <ul>
+        <li>Real-time mmCIF validation</li>
+        <li>Detailed error reporting</li>
+        <li>Metadata completeness scoring</li>
+      </ul>
+      <p>Maintained by:</p>
+      <p>Deborah Harrus, Protein Data Bank in Europe (PDBe), EMBL-EBI</p>
+      <p>License: MIT</p>
+    </div>
+  </section>
+</main>

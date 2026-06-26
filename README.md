@@ -18,17 +18,20 @@ Performance benchmarking should be done for page releases with major changes (be
 
 Some examples of application locations:
 
-| Project          | Location          |
-| ---------------- | ----------------- |
-| PDBe Entry Pages | `apps/connect`    |
-| Complexes        | `apps/complexes`  |
-| Download         | `apps/download`   |
-| Ligands          | `apps/ligands`    |
-| Proteins         | `apps/proteins`   |
-| PISA             | `apps/pisa`       |
-| Playground       | `apps/playground` |
+| Project          | Location               |
+| ---------------- | ---------------------- |
+| PDBe Entry Pages | `apps/connect`         |
+| Complexes        | `apps/complexes`       |
+| Download         | `apps/download`        |
+| Ligands          | `apps/ligands`         |
+| Proteins         | `apps/proteins`        |
+| PISA             | `apps/pisa`            |
+| Playground       | `apps/playground`      |
+| MMCif Validator  | `apps/mmcif-validator` |
 
 > Note: the Playground app currently exists in the repository but is not actively used.
+
+> Note 2: MMCif Validator works as a WebAssembly applications. More details in the ADR folder below and [here](./docs/mmcif-validator.md)
 
 ## Architecture Decision Records
 
