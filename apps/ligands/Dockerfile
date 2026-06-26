@@ -18,4 +18,4 @@ EXPOSE 80
 
 
 # Run the Express SSR server directly
-CMD ["node", "--max-old-space-size=256", "/app/server/server.mjs"]
+CMD ["node", "--max-old-space-size=512", "/app/server/server.mjs"]
