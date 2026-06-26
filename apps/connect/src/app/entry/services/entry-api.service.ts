@@ -504,14 +504,13 @@ export class EntryApiService {
     // https://data.sbgrid.org/api/pdbe/1trn
     return this.http.get<SBGRIDExperimentRawData>(`https://data.sbgrid.org/api/pdbe/${entryId}`).pipe(
       switchMap((data) => {
-        if (data.datasets.length > 0) {
-          return [data]; // Emit the data as an observable
-        }
-        // Throw an error if no data is found
-        return throwError(() => ({
-          status: 400,
-          message: 'No data found for the given entry ID',
-        }));
+        return data?.datasets?.length
+          ? of(data)
+          : throwError(() => ({
+              status: 400,
+              message: 'No data found for the given entry ID',
+              data,
+            }));
       })
     );
   }
