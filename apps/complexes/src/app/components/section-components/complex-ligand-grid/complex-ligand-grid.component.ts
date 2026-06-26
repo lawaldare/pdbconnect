@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, DestroyRef, effect, ElementRef, inject, input, Renderer2, signal, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, DestroyRef, effect, ElementRef, inject, input, PLATFORM_ID, Renderer2, signal, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { GoogleAnalyticsService, MaterialModule, UtilService } from '@pdbc/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,6 +19,7 @@ import { cofactorTooltip, drugTooltip, reactantTooltip } from '../../../complex.
 export class ComplexLigandGridComponent implements AfterViewInit {
   public ligand = input.required<ComplexLigand>();
   public complexId = input.required<string>();
+  private platformId = inject(PLATFORM_ID);
 
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly utilService = inject(ComplexUtilService);
@@ -48,6 +49,9 @@ export class ComplexLigandGridComponent implements AfterViewInit {
   }
 
   private renderLigandImg(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.resetRenderer();
     const imageContainer = this.imageContainer.nativeElement;
     this.complexAPIService

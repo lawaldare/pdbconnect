@@ -6,10 +6,6 @@ import { environment } from '../../environments/environment';
 })
 export class LigandsAssetPathService {
   public setAbsolutePath(partLink: string): string {
-    return `${environment.baseUrl}pdbe/connect/${partLink}`;
-  }
-
-  public get setBasePath(): string {
-    return `/pdbe/connect/`;
+    return `${environment.baseUrl}pdbe-srv/pdbechem/chemicalCompound/${partLink}`;
   }
 }

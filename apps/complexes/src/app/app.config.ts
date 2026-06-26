@@ -1,15 +1,14 @@
 import { APP_INITIALIZER, ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { appRoutes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideEffects } from '@ngrx/effects';
 import { provideStore } from '@ngrx/store';
 import { ComplexEffects } from './store/complex.effects';
 import { complexReducer } from './store/complex.reducer';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { BaseHrefService } from '@pdbc/core';
+import { BaseHrefService, apiErrorInterceptor } from '@pdbc/core';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
 export function initializeApp(baseHrefService: BaseHrefService) {
   return () => baseHrefService.setBaseHref();
@@ -17,12 +16,10 @@ export function initializeApp(baseHrefService: BaseHrefService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),
-    provideHttpClient(),
-    provideAnimations(),
-    provideAnimationsAsync(),
+    provideHttpClient(withFetch(), withInterceptors([apiErrorInterceptor])),
     provideEffects([ComplexEffects]),
     provideStore({ complex: complexReducer }),
     provideStoreDevtools({
@@ -31,5 +28,6 @@ export const appConfig: ApplicationConfig = {
     }),
     { provide: APP_INITIALIZER, useFactory: initializeApp, deps: [BaseHrefService], multi: true },
     BaseHrefService,
+    provideClientHydration(withEventReplay()),
   ],
 };

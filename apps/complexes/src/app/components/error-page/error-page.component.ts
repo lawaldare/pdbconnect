@@ -1,34 +1,58 @@
 /* eslint-disable @angular-eslint/no-empty-lifecycle-method */
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { PdbeHeaderLogoMenuComponent } from '@pdbe-lib/header-logo-menu';
-import { ActivatedRoute } from '@angular/router';
-import { of, switchMap } from 'rxjs';
 import { PdbeHeaderSearchComponent } from '@pdbe-lib/header-search';
-import { headerComplexLogoMenuConfig, headerSearchComplexConfig } from '../../complex.constant';
+import { complexesHeaderLogoMenuConfig, headerSearchComplexConfig } from '../../complex.constant';
 
 @Component({
   selector: 'pdbc-error-page',
   standalone: true,
   imports: [CommonModule, PdbeHeaderLogoMenuComponent, PdbeHeaderSearchComponent],
-  templateUrl: './error-page.component.html',
-  styleUrl: './error-page.component.scss',
+  template: ` <pdbc-pdbe-header-logo-menu [headerConfig]="complexesHeaderLogoMenuConfig" />
+    <pdbc-pdbe-header-search [headerSearchConfig]="headerSearchConfig" />
+    <div class="container">
+      <h3>No results</h3>
+      <p class="complex">
+        We couldn’t find any matches for your search. <br />
+        This may happen if you used a UniProt or Rfam accession, complex name or organism name, which are not yet supported.
+      </p>
+      <p class="complex">Please try searching again using one of the following valid identifiers:</p>
+      <ul>
+        <li>PDBe complex ID (for example, PDB-CPX-140202)</li>
+        <li>PDB entry ID (for example, 7tpc)</li>
+        <li>Complex Portal ID (for example, CPX-7043).</li>
+      </ul>
+    </div>`,
+  styles: [
+    `
+      @import 'pdb_connect';
+
+      p {
+        color: #000;
+        font-weight: 400;
+        margin-bottom: 20px;
+        margin-top: 15px !important;
+      }
+
+      h3 {
+        color: #1a1c1a;
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 31.2px;
+      }
+
+      p.complex,
+      li {
+        color: #1a1c1a;
+        font-size: 19px;
+        font-weight: 400;
+        line-height: 26.6px;
+      }
+    `,
+  ],
 })
-export class ErrorPageComponent implements OnInit {
-  public readonly headerSearchLogoMenuConfig = { ...headerComplexLogoMenuConfig, isComplexPage: true };
+export class ErrorPageComponent {
+  public readonly complexesHeaderLogoMenuConfig = complexesHeaderLogoMenuConfig;
   public readonly headerSearchConfig = headerSearchComplexConfig;
-  private readonly route = inject(ActivatedRoute);
-
-  public isComplexPage = signal(false);
-
-  ngOnInit(): void {
-    this.route.queryParams
-      .pipe(
-        switchMap((query) => {
-          this.isComplexPage.set(query['from'] === 'complex');
-          return of(null);
-        })
-      )
-      .subscribe();
-  }
 }

@@ -1,0 +1,101 @@
+<section>
+  @if(domainTableRows().length){
+  <header>
+    @if(currentViewState() === 'detail'){
+    <nav>
+      <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+      <span (click)="goBackToList()">Go to Domains list </span>
+    </nav>
+    }
+    <section class="header">
+      <h2>{{currentViewState()==='list' ? `Domains (${domainTableRows().length})`: selectedDomain()?.accessionName ?? ''}}</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+
+  <!-- 1st Level Overlay -->
+  @if(currentViewState() === 'list'){ @for(row of domainTableRows(); track row.domain){
+  <div class="row" (click)="navigateToDetail(row)">
+    <div class="row__header">
+      <p class="row__header__name">
+        {{row?.accessionName}} @if (anyNonPrefAssembly(row)) {
+        <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
+        }
+      </p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+    <p class="row__content">{{row?.resource}} {{row?.additionalData?.accession}}</p>
+    <p class="row__content">Chain {{row?.segments?.join(', ')}}</p>
+  </div>
+  } }
+
+  <!-- 2nd Level Overlay -->
+  @if(currentViewState() === 'detail'){
+  <!-- <p class="sub-header">Chain {{selectedDomain()?.segments?.join(', ')}}</p> -->
+  <div class="chains">
+    @if(dropdown.options.length > 1){
+    <div class="dropdown-container">
+      <pdbc-entry-dropdown
+        [searchable]="false"
+        searchTitle="''"
+        [downloadable]="false"
+        [islink]="false"
+        [options]="dropdown.options"
+        [title]="dropdown.selectedName() ?? ''"
+        (optionClickedEvent)="onDropdownSelect($event)"
+      >
+      </pdbc-entry-dropdown>
+    </div>
+    }@else if(dropdown.options.length === 1){
+    <p class="title" [innerHTML]="dropdown.options[0].name"></p>
+    } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
+    <p class="title">Symmetry Operation Id</p>
+    <pdbc-entry-dropdown
+      [searchable]="false"
+      [searchTitle]="''"
+      [downloadable]="false"
+      [islink]="false"
+      [options]="symmetryDropdown.options"
+      [title]="symmetryDropdown.selectedName() ?? ''"
+      (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+    ></pdbc-entry-dropdown>
+    } @else if(symmetryDropdown.options.length === 1){
+    <p class="title">Symmetry Operation Id</p>
+    <p class="content" [innerHTML]="symmetryDropdown.options[0].name"></p>
+    }
+  </div>
+  <p class="title">Description</p>
+  <p class="content">{{selectedDomain()?.accessionName}}</p>
+  <p class="title">Source and domain accession</p>
+  <p class="content">
+    {{selectedDomain()?.resource}}
+    <a [href]="getDomainUrl(selectedDomain())" target="_blank">
+      {{selectedDomain()?.additionalData?.accession}}
+      <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+    </a>
+  </p>
+  <p class="title">Molecule name</p>
+  <p class="content">{{selectedDomain()?.moleculeNames?.join(', ')}}</p>
+  <p class="title">Domain name</p>
+  <p class="content">{{selectedDomain()?.domain}}</p>
+  <p class="title">Authors segments</p>
+  <p class="content">Chain @for(chain of selectedDomain()?.segments; track chain; let islast = $last) { <span>{{chain.trim()}}</span>{{ islast ? '' : ',' }} }</p>
+  <p class="title">Segments</p>
+  <p class="content">
+    Chain @for(chain of selectedDomain()?.additionalData?.segmentsResidNumbers; track chain; let islast = $last) { <span>{{chain.trim()}}</span>{{ islast ? '' : ','
+    }} }
+  </p>
+  } } @else {
+  <header>
+    <section class="header">
+      <h2>No Domains data available</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  }
+</section>

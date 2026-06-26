@@ -1,0 +1,104 @@
+section {
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    span {
+      color: #3b6fb6;
+      text-overflow: ellipsis;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 22.4px;
+      cursor: pointer;
+    }
+  }
+
+  .row {
+    padding: 8px;
+    padding-block: 4px;
+    margin-block: 4px;
+    border-left: 4px solid #d0d0ce; // color will be adjusted via inline style to match ligand color
+    border-bottom: 1px solid #d0d0ce;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f3f3f3;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &__name {
+        color: #1a1c1a;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 27.2px;
+      }
+    }
+
+    &__content {
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 27.2px;
+    }
+
+    &__annotation {
+      color: #1a1c1a;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 16.5px;
+      padding: 2px;
+      margin-right: 2px !important;
+    }
+  }
+
+  ::ng-deep .dropdown-container {
+    button {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  .chains {
+    margin: 12px 0;
+
+    .sym-op {
+      color: #1a1c1a;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 27.2px;
+    }
+  }
+
+  ::ng-deep .chains img {
+    width: 16px;
+    height: 16px;
+  }
+
+  p.title {
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 27.2px;
+  }
+
+  p.content {
+    color: #1a1c1a;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 27.2px;
+    margin-bottom: 12px !important;
+
+    &.formula {
+      max-width: fit-content;
+      padding: 4px 12px;
+      background: var(--Neutral-100, #f3f3f3);
+      font-weight: 500;
+      line-height: 23px;
+    }
+  }
+}

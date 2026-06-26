@@ -6,7 +6,7 @@ export const DEFAULT_SET_25 = [
   '#66a61e',
   '#e6ab02',
   '#a6761d',
-  '#666666',
+  // '#666666', // avoid gray
   '#e41a1c',
   '#377eb8',
   '#4daf4a',
@@ -15,7 +15,7 @@ export const DEFAULT_SET_25 = [
   '#ffff33',
   '#a65628',
   '#f781bf',
-  '#999999',
+  // '#999999', // avoid gray
   '#66c2a5',
   '#fc8d62',
   '#8da0cb',
@@ -23,12 +23,19 @@ export const DEFAULT_SET_25 = [
   '#a6d854',
   '#ffd92f',
   '#e5c494',
-  '#b3b3b3',
+  // '#b3b3b3', // avoid gray
 ];
-export const DEFAULT_SET_25_HEXNUM: number[] = DEFAULT_SET_25.map((hex) => parseInt(hex.slice(1), 16));
 
-export const COLORBREWER_SET2_COLORS = ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f', '#e5c494', '#b3b3b3'];
-export const COLORBREWER_SET2_COLORS_HEXNUM: number[] = COLORBREWER_SET2_COLORS.map((hex) => parseInt(hex.slice(1), 16));
+export const COLORBREWER_SET2_COLORS = [
+  '#66c2a5',
+  '#fc8d62',
+  '#8da0cb',
+  '#e78ac3',
+  '#a6d854',
+  '#ffd92f',
+  '#e5c494',
+  // '#b3b3b3', // avoid gray
+];
 
 export const ELEMENT_COLORS_HEX: { [key: string]: string } = {
   H: '#FFFFFF',

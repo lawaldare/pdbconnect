@@ -1,8 +1,10 @@
-import { Injectable, signal } from '@angular/core';
-import Clarity from '@microsoft/clarity';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, PLATFORM_ID, Injectable, signal } from '@angular/core';
+import * as Clarity from '@microsoft/clarity';
 
 @Injectable({ providedIn: 'root' })
 export class ClarityConsentService {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly cookieKey = this.getCookieKey;
   private clarityProjectId = signal('');
 
@@ -22,15 +24,15 @@ export class ClarityConsentService {
     this.sendClarityConsentSignal(true);
     this.initializeClarity();
     try {
-      Clarity.event('clarity-consent-accepted');
+      Clarity.default.event('clarity-consent-accepted');
       // eslint-disable-next-line no-empty
     } catch {}
   }
 
   private initializeClarity(): void {
-    if (typeof Clarity.init === 'function' && !(window as any).clarityInitialized) {
+    if (typeof Clarity.default.init === 'function' && !(window as any).clarityInitialized) {
       (window as any).clarityInitialized = true;
-      Clarity.init(this.clarityProjectId());
+      Clarity.default.init(this.clarityProjectId());
     }
   }
 
@@ -50,6 +52,9 @@ export class ClarityConsentService {
   }
 
   private watchForBannerClick(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const listener = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target?.id === 'data-protection-agree') {
@@ -61,15 +66,22 @@ export class ClarityConsentService {
   }
 
   private getCookie(name: string): string | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
   private get getCookieKey(): string {
+    if (!isPlatformBrowser(this.platformId)) {
+      return 'dataProtectionAgreedForLigandPages';
+    }
     const pathname = window.location.pathname;
     if (pathname.includes('complexes')) return 'dataProtectionAgreedForComplexPages';
     if (pathname.includes('chemicalCompound/show')) return 'dataProtectionAgreedForLigandPages';
     if (pathname.includes('mmcif-validator')) return 'dataProtectionAgreedForMMCIFValidator';
+    if (pathname.includes('pisa')) return 'dataProtectionAgreedForPISAPages';
     return 'dataProtectionAgreedForEntryPages';
   }
 }

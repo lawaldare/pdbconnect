@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, input } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.service';
-// import { MolstarPluginService } from '../';
+import { InitParams, MolstarPluginService, PDBeMolstarPlugin } from '../extension-for-pages/molstart-plugin.service';
 
 @Component({
   selector: 'lib-molstar-gallery',
@@ -10,22 +9,21 @@ import { MolstarPluginService } from '../extension-for-pages/molstart-plugin.ser
 })
 export class MolstarGalleryComponent implements AfterViewInit {
   public entryId = input.required<string>();
+  public pdbeUrl = input<string>();
 
   constructor(
     private store: Store,
     private el: ElementRef,
     private molstarPluginService: MolstarPluginService
   ) {}
-  public readonly views = ['front', 'right', 'top'];
+  public readonly views = ['front', 'right', 'top'] as const;
   public currentIndex = 0;
-  public pdbeMolstar: any;
-  // public originalCamera: any;
-  // public accession = toSignal(this.store.select(EntrySelectors.accession));
-  // public entryData = signal<EntryData>({} as EntryData);
+  public pdbeMolstar?: PDBeMolstarPlugin;
+
   public setView(index: number): void {
     this.currentIndex = index;
     const direction = this.views[index];
-    this.pdbeMolstar.visual.setViewDirection(direction, { durationMs: 500 });
+    this.pdbeMolstar?.visual.setViewDirection(direction, { durationMs: 500 });
   }
 
   public next(): void {
@@ -39,20 +37,25 @@ export class MolstarGalleryComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.initMolstar();
   }
+
   async initMolstar() {
-    const options = {
+    const options: Partial<InitParams> = {
       moleculeId: this.entryId(),
-      bgColor: { r: 255, g: 255, b: 255 },
+      bgColor: 'white',
       hideControls: true,
-      hideCanvasControls: ['expand', 'animation', 'controlToggle', 'controlInfo', 'selection', 'trajectory'],
+      hideCanvasControls: ['all'],
+      loadingOverlay: true,
+      pdbeLink: false,
+      pdbeUrl: this.pdbeUrl(),
       landscape: true,
     };
+
     const ele = this.el.nativeElement.querySelector('#my-viewer');
     if (ele) {
       await this.molstarPluginService.loadPlugin();
       const pluginInstance = this.molstarPluginService.createInstance();
       this.pdbeMolstar = pluginInstance;
-      this.pdbeMolstar.render(ele, options);
+      await this.pdbeMolstar.render(ele, options);
     }
   }
 }

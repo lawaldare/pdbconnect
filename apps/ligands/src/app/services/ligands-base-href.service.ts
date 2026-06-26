@@ -1,10 +1,15 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class LigandsBaseHrefService {
+  private readonly platformId = inject(PLATFORM_ID);
   public setBaseHref() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const hostname = document.location.hostname;
     const pathname = document.location.pathname;
 

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Injectable, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 
 export type PageView = 'LOADING' | 'SUCCESS' | 'ERROR' | 'OTHER';
 
@@ -8,6 +9,7 @@ export type PageView = 'LOADING' | 'SUCCESS' | 'ERROR' | 'OTHER';
   providedIn: 'root',
 })
 export class ComplexUtilService {
+  private readonly platformId = inject(PLATFORM_ID);
   private _errorStatusCode = signal<number>(404);
   public errorStatusCode = this._errorStatusCode.asReadonly();
 
@@ -64,10 +66,14 @@ export class ComplexUtilService {
   }
 
   public openLigandPage(ligandId: string) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const { origin, hostname } = window.location;
     const trimmedValue = ligandId.trim();
-    const origin = window.location.origin;
     const pathname = '/chemicalCompound/show/';
-    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe/connect';
+    const baseHref = window.location.hostname === 'localhost' ? '' : '/pdbe-srv/pdbechem';
     const href = origin + baseHref + pathname + trimmedValue;
     window.open(href, '_blank');
   }

@@ -1,4 +1,4 @@
-@import url('https://cdn.jsdelivr.net/npm/pdbe-molstar@3.7.2/build/pdbe-molstar-light.css');
+@import 'https://cdn.jsdelivr.net/npm/pdbe-molstar@3.12.0/build/pdbe-molstar-light.css';
 
 .gallery-nav {
   display: flex;
@@ -66,7 +66,9 @@
 
 .dot-indicators span:hover {
   background-color: #056643;
-  box-shadow: 0 0 0 5px #d0debb; /* Outer ring */
+  box-shadow: 0 0 0 5px #d0debb;
+
+  /* Outer ring */
 }
 
 .molstar-frozen {
@@ -80,27 +82,12 @@
   inset: 0;
   width: 100%;
   height: 400px;
+  pointer-events: none;
 }
 
 #my-viewer {
   position: fixed;
   inset: 20px;
-}
-
-#my-viewer-cover {
-  width: 100%;
-  height: 383px;
-  position: absolute;
-  z-index: 3;
-  background-color: transparent;
-  display: none;
-}
-
-.molstar-frozen #my-viewer-cover {
-  display: flex;
-  flex-direction: column;
-  justify-content: end;
-  align-items: center;
 }
 
 .button {

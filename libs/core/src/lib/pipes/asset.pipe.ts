@@ -1,11 +1,17 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Pipe, PipeTransform, PLATFORM_ID } from '@angular/core';
 
 @Pipe({
   name: 'asset',
   standalone: true, // optional if you’re using standalone components
 })
 export class AssetPipe implements PipeTransform {
-  transform(file: string): string {
+  private readonly platformId = inject(PLATFORM_ID);
+
+  transform(file: string): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const { hostname, pathname } = window.location;
 
     // Local dev
@@ -25,7 +31,7 @@ export class AssetPipe implements PipeTransform {
 
     // Ligand Pages (pdbechem)
     if (pathname.includes('/pdbe-srv/pdbechem/')) {
-      return `/pdbe/connect/assets/${file}`;
+      return `/pdbe-srv/pdbechem/chemicalCompound/assets/${file}`;
     }
 
     // Default fallback

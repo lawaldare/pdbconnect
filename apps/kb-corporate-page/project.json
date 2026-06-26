@@ -20,7 +20,13 @@
             "glob": "**/*",
             "input": "apps/kb-corporate-page/src/assets",
             "output": "assets"
-          }
+          },
+          {
+            "glob": "robots.txt",
+            "input": "apps/kb-corporate-page/src/assets",
+            "output": "/"
+          },
+          "apps/kb-corporate-page/src/sitemap.xml"
         ],
         "styles": [
           "./node_modules/leaflet/dist/leaflet.css",
@@ -32,6 +38,12 @@
         "scripts": [],
         "stylePreprocessorOptions": {
           "includePaths": ["libs/core/src/lib/styles"]
+        },
+        "server": "apps/kb-corporate-page/src/main.server.ts",
+        "externalDependencies": ["xhr2"],
+        "prerender": true,
+        "ssr": {
+          "entry": "apps/kb-corporate-page/src/server.ts"
         }
       },
       "configurations": {
@@ -60,7 +72,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe/pdbe-kb/",
+          "deployUrl": "/pdbe/pdbe-kb/"
         },
         "development": {
           "aot": true,
@@ -69,7 +82,8 @@
           "optimization": true,
           "sourceMap": true,
           "outputHashing": "all",
-          "baseHref": "$APP_BASE_HREF"
+          "baseHref": "/pdbe/pdbe-kb/",
+          "deployUrl": "/pdbe/pdbe-kb/"
         },
         "local": {
           "optimization": false,
@@ -80,12 +94,20 @@
       },
       "defaultConfiguration": "development"
     },
+
+    "generate-sitemap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node apps/kb-corporate-page/scripts/generate-sitemap.js"
+      }
+    },
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "options": {
         "buildTarget": "kb-corporate-page:build:local",
-        "port": 4100
+        "port": 4100,
+        "host": "localhost"
       },
       "configurations": {
         "production": {
@@ -93,9 +115,12 @@
         },
         "development": {
           "buildTarget": "kb-corporate-page:build:development"
+        },
+        "local": {
+          "buildTarget": "kb-corporate-page:build:local"
         }
       },
-      "defaultConfiguration": ""
+      "defaultConfiguration": "local"
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",

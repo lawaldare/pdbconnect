@@ -1,0 +1,250 @@
+@if(tabDataLoaded()){ @if(macromoleculeTableRows().length){
+<main [class.change-display]="!isSidebarDisplayed()">
+  @if(isSidebarDisplayed()){
+  <pdbc-interactive-tables tabName="LLM" id="llm-list-tour" />
+  }
+  <div class="tab-content">
+    <div id="text-mined-annotations-tour">
+      @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Text Annotations';
+      <button class="vf-button-ghost" (click)="toggleSidebar()">
+        <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+        <span>{{text}}</span>
+      </button>
+
+      <section class="info-banner">
+        <p>
+          This page contains residue level text-mined data from scientific publications using AI methods developed by the
+          <a href="https://huggingface.co/PDBEurope" target="_blank">PDBe team</a>.
+          <a href="https://www.nature.com/articles/s41597-024-03841-9" target="_blank">Learn more...</a> <br />
+          All data is sourced from our open and free-to-use <a href="https://www.ebi.ac.uk/pdbe/api/v2" target="_blank">PDBe API</a> <br />
+        </p>
+        <p style="margin-top: 6px !important">
+          <strong style="margin-right: 4px">Primary publication: </strong><span [innerHTML]="primaryPublication()?.title"></span>
+        </p>
+        <p>
+          @if(primaryPublication()?.doi && primaryPublication()?.pubmed_id){
+          <span class="row__right__pmid__info">
+            <i>{{ primaryPublication()?.journal_info?.pdb_abbreviation }}</i>
+            {{ primaryPublication()?.journal_info?.volume }} {{ primaryPublication()?.journal_info?.pages }} ({{ primaryPublication()!.journal_info.year }})
+          </span>
+          } @if(primaryPublication()?.pubmed_id){
+          <span class="row__right__authors__title">PMID: </span>
+          <a [href]="'https://europepmc.org/article/MED/' + primaryPublication()?.pubmed_id" target="_blank"
+            >{{ primaryPublication()?.pubmed_id }}
+            <i class="icon icon-link icon-common" style="margin-left: 5px"></i>
+          </a>
+          }
+        </p>
+      </section>
+    </div>
+
+    @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule) {
+    <h5>{{ getCleanMoleculeName(currentMacromoleculeDatum()!.additionalData.molecule) }}</h5>
+    } @if (inPrefAssembly() === false) {
+    <section class="info-banner">
+      <p>
+        <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
+        One or more of this macromolecule's chains are <b>not</b> included in the
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+          >preferred assembly/complex</a
+        >, which represents the most probable biological form identified by the PDBe team for this entry.
+      </p>
+    </section>
+    }
+    <section class="info">
+      @if(uniqueOrganismsWithStrains().length){
+      <div class="info-row">
+        <span class="micro-title"> Source organism{{ uniqueOrganismsWithStrains().length > 1 ? 's': '' }} </span>
+        <article>
+          @for (sourceOrganismWithStrain of uniqueOrganismsWithStrains(); track sourceOrganismWithStrain) {
+          <a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank">
+            <em>{{sourceOrganismWithStrain.name}}</em>
+            <i class="icon icon-common icon-search"></i>
+          </a>
+          @if (sourceOrganismWithStrain.strain) { (strain {{sourceOrganismWithStrain.strain}}) } }
+        </article>
+      </div>
+      } @if(uniprotProcessedMappings()?.length) { @let mappings = uniprotProcessedMappings()!; @let firstMapping = mappings[0];
+      <div class="info-row">
+        <span class="micro-title left">
+          UniProt mapping{{ mappings.length > 1 ? 's': '' }}
+          <lib-help-icon-with-tooltip [tooltipText]="entryMacromoleculeTooltips.uniprotMappings" />
+        </span>
+        <article class="uniprot-mapping">
+          @if (isUniprotMappingsBig() === false) {
+          <span
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+            {{firstMapping.uniprotSegments.join(', ')}}; coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})</span
+          >
+          } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length <= 2) {
+          <span
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+            {{firstMapping.uniprotSegments.join(', ')}}; coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})</span
+          >
+          <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+          } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length > 2) {
+          <span
+            >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+            {{firstMapping.uniprotSegments.slice(0,2).join(', ')}}...
+          </span>
+          <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+          } @else { @for(eachMapping of mappings; track eachMapping.uniprotId; let index = $index;) {
+          <div>
+            Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + eachMapping.uniprotId" target="_blank">{{eachMapping.uniprotId}}</a> (residues:
+            {{eachMapping.uniprotSegments.join(', ')}}; coverage: {{eachMapping.coverage}} identity: {{eachMapping.identity}})
+          </div>
+          }
+          <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">show less</span>
+          } @for(res of bestResidues(); track res.name;){
+          <span
+            >Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues: {{res.mappings[0].unp_start}} -
+            {{res.mappings[0].unp_end}})</span
+          >
+          }
+          <div class="residue-action-button" (click)="openDialog('uniprot')">View mapping{{ mappings.length > 1 ? 's': '' }} details</div>
+        </article>
+      </div>
+      }
+      <div class="info-row">
+        <span class="micro-title"> Annotated residues </span>
+        <article>{{ nAnnotatedResiduesForCurrentMacromolecule() }}</article>
+      </div>
+    </section>
+    }
+
+    <div id="ai-annotations-sequence-viewer-tour">
+      <div class="chains">
+        @if(dropdown.options.length > 1){
+        <div class="dropdown-container">
+          <pdbc-entry-dropdown
+            [searchable]="false"
+            searchTitle="''"
+            [downloadable]="false"
+            [islink]="false"
+            [options]="dropdown.options"
+            [title]="dropdown.selectedName() ?? ''"
+            (optionClickedEvent)="onDropdownSelect($event)"
+          >
+          </pdbc-entry-dropdown>
+        </div>
+        }@else if(dropdown.options.length === 1){
+        <span>{{getCleanSelectionName(dropdown.options)}}</span>
+        } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+        </span>
+        <pdbc-entry-dropdown
+          [searchable]="false"
+          [searchTitle]="''"
+          [downloadable]="false"
+          [islink]="false"
+          [options]="symmetryDropdown.options"
+          [title]="symmetryDropdown.selectedName() ?? ''"
+          (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+        ></pdbc-entry-dropdown>
+        } @else if (symmetryDropdown.options.length === 1) {
+        <span class="symm-op-txt">
+          Symmetry Op.
+          <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+          <span> {{ symmetryDropdown.options[0].name }}</span>
+        </span>
+        }
+      </div>
+      @if (dropdown.selectedOption() && !inPrefAssemblyForChain()) {
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
+          Chain {{ dropdown.selectedOption()!.data.authAsymId }} is <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+          As a result, the 3D viewer below is now displaying the full entry model file.
+        </p>
+      </section>
+      }
+      <div class="sequence-container">
+        <div class="title">
+          <span class="text">{{ sequenceDetails()?.title }}</span>
+          <button (click)="copySequence(sequenceDetails())">Copy sequence</button>
+        </div>
+        @let molType = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(seqViewerReady() && sequenceDetails() && molType) {
+        <lib-smart-seq-viewer
+          containerId="'smart-seq-viewer-llm'"
+          class="sequence"
+          [sequence]="macromoleculeSequence()!"
+          [entityId]="currentSelectionEntityId()!"
+          [chainId]="selectedChainLabelAsymId()!"
+          [backgroundDataInput]="backgroundAnnotation()!"
+          [circleAboveDataInput]="llmAnnotationForSeq()!"
+          [isNucleic]="molType.includes('nucleotide')"
+          [altSequences]="altSequences()!"
+          [nonObserved]="nonObserved()!"
+          [indexWithMultipleResidues]="indexWithMultipleResidues()!"
+        ></lib-smart-seq-viewer>
+        }
+      </div>
+      <p class="residue-info">
+        Residues are colour-coded according to the number of structural quality criteria for which they contain at least one outlier and the availability of
+        text-mined annotations.
+      </p>
+    </div>
+    <section class="chart-area" [class.collapsed]="!isSidebarDisplayed()">
+      <section class="table-wrapper">
+        <ag-grid-angular
+          class="ag-theme-quartz"
+          style="width: 100%; height: 100%"
+          [rowData]="filteredAnnotations()"
+          [columnDefs]="colDefs"
+          [gridOptions]="gridOptions"
+          [paginationPageSizeSelector]="paginationPageSizeSelector()"
+          overlayNoRowsTemplate="No annotations found"
+        />
+      </section>
+      <div class="container-3d">
+        <div class="molstar-parent">
+          @if (!configForMolstar() || slowNetwork() === undefined || checkedWebGl() === undefined) {
+          <div [style.width]="'100%'">
+            <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+          </div>
+          } @else if (configForMolstar() && isWebGlEnabled() && fastNetworkOrForceLoad()) {
+          <div class="molstar-container">
+            <div #popoutWrapper>
+              <lib-pdbe-molstar #molstarComponent [id]="'llm-molstar'" [molstarConfig]="configForMolstar()" [seqOnExpanded]="true"></lib-pdbe-molstar>
+            </div>
+          </div>
+          } @else if (!isWebGlEnabled()) {
+          <div class="molstar-not-loaded">
+            <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+            <div>
+              <h4 class="heading-4">3D viewer not supported in this browser</h4>
+              <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+              <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+                Learn how to enable WebGL
+                <i class="icon icon-link icon-common"></i>
+              </a>
+            </div>
+          </div>
+          } @else if (isWebGlEnabled() && !fastNetworkOrForceLoad()) {
+          <div class="molstar-not-loaded">
+            <img alt="3D viewer paused" src="assets/img/paused_3d.webp" />
+            <div>
+              <h4 class="heading-4">3D viewer paused due to slow connection</h4>
+              <p>Loading may take longer than usual.</p>
+            </div>
+            <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load 3D anyway</button>
+          </div>
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+}@else {
+<h5>
+  Residue-level annotations may be lacking due to issues such as absent or mismatched residue numbering in publication texts, restricted access to full-text articles,
+  or missing user-submitted data. Additionally, the annotation pipeline might have failed to extract relevant information or accurately map it to structural data.
+</h5>
+} }@else {
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

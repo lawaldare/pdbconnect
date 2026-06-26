@@ -67,8 +67,9 @@
     </div>
     <section class="chips">
       <div class="left">
-        Examples: @for(id of uiSearchConfig.examples; track id){
-        <span [ngClass]="chipBg" (click)="openID(id)">{{ id }}</span>
+        Examples: @for(id of examples(); track id){
+        <!-- <span [ngClass]="chipBg" (click)="openID(id)">{{ id }}</span> -->
+        <a [ngClass]="chipBg" [href]="id.url">{{ id.label }}</a>
         }
       </div>
       <!-- //TODO:To be implemented later! -->

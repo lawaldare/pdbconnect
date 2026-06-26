@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AfterViewInit, Component, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, computed, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HeaderSearchComponent } from '../header-search/header-search.component';
 import { HomeBookmarksComponent } from '../home-bookmarks/home-bookmarks.component';
 import { NavTabsComponent } from '../nav-tabs/nav-tabs.component';
@@ -8,6 +8,8 @@ import { PartnersMapComponent } from '../partners-map/partners-map.component';
 import { PartnersPlotsComponent } from '../partners-plots/partners-plots.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CorporatePagesApiService } from '../services/corporate-pages-api.service';
+import { SeoService } from '../services/seo.service';
+import { SEO_CONFIG } from '../corporate-page.constant';
 
 declare const $: any;
 
@@ -20,6 +22,9 @@ declare const $: any;
 export class PartnersPageComponent implements AfterViewInit {
   private readonly cpApiService = inject(CorporatePagesApiService);
   public readonly partnersData = toSignal(this.cpApiService.getPartnersDescriptionData(), { initialValue: {} });
+  private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
+
   public partnersCategories = computed(() => {
     const data = this.partnersData();
     return Object.keys(data);
@@ -32,8 +37,11 @@ export class PartnersPageComponent implements AfterViewInit {
   });
 
   ngAfterViewInit() {
-    $(document).foundation();
-    $(document).foundationExtendEBI();
+    if (isPlatformBrowser(this.platformId)) {
+      $(document).foundation();
+      $(document).foundationExtendEBI();
+    }
+    this.seo.update(SEO_CONFIG.partners);
   }
 
   scroll(el: HTMLElement) {

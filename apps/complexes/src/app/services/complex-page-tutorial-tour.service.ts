@@ -1,13 +1,16 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { driver } from 'driver.js';
 import { tourIds } from '../complex.constant';
 import { ComplexUtilService } from './complex-util.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ComplexPageTutorialTourService {
   public readonly complexUtilService = inject(ComplexUtilService);
+  private readonly platformId = inject(PLATFORM_ID);
+
   public showSummaryTourBanner = signal(true);
   public showStructuresTourBanner = signal(true);
   public showPISATourBanner = signal(true);
@@ -298,12 +301,20 @@ export class ComplexPageTutorialTourService {
     driverObj.drive();
   }
 
-  public getCookie(name: string): string | null {
+  public getCookie(name: string): any {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
   public setCookie(name: string, value: string, days: number): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     const expires = new Date();
     expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
     document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;

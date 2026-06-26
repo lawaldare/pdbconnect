@@ -1,16 +1,14 @@
 <section [ngStyle]="{ 'background-color': headerConfig.backgroundColor }">
   <div class="container">
     <div class="header-logo">
-      @if(headerConfig.isComplexPage){
-      <img [ngClass]="getHeaderLogoClass" [src]="headerLogoSrc | asset" alt="logo" />
-      } @else if(headerConfig.isLigandPage){
+      @if(headerConfig.newHeaderLogo){
+      <img [style.width]="headerConfig.logoWidth" [ngClass]="getHeaderLogoClass" [src]="headerLogoSrc | asset" alt="logo" />
+      } @else {
       <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0">
         <img [ngClass]="getHeaderLogoClass" [src]="headerLogoSrc | asset" alt="logo" />
       </a>
-      } @else {
-      <a href="https://www.ebi.ac.uk/pdbe/" target="_blank" style="padding: 0"><img [ngClass]="getHeaderLogoClass" [src]="headerLogoSrc | asset" alt="logo" /></a>
-      }
       <span class="header-title">{{ headerConfig.headerTitle }}</span>
+      }
     </div>
     <i class="icon icon-common icon-align-justify" (click)="showMobileMenu()"></i>
     <ul class="nav-links">

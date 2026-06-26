@@ -1,0 +1,340 @@
+<main [style.display]="!tabDataLoaded() || !macromoleculeTableRows().length ? 'none' : '' " [class.change-display]="!isSidebarDisplayed()">
+  @if(isSidebarDisplayed()){
+  <pdbc-interactive-tables tabName="Macromolecules" id="macromolecules-list-tour" />
+  }
+  <div class="tab-content">
+    <div id="macromolecule-details-tour">
+      @let icon = isSidebarDisplayed() ? 'left' : 'right'; @let text = isSidebarDisplayed() ? 'Open full-width' : 'Show Macromolecules';
+      <button class="vf-button-ghost" (click)="toggleSidebar()">
+        <img [src]="'assets/icons/two_arrows_' + icon + '.png'" alt="arrow icons" />
+        <span>{{text}}</span>
+      </button>
+
+      @if (currentMacromoleculeDatum()) { @if (currentMacromoleculeDatum()?.additionalData?.molecule) {
+      <h5>{{ getCleanMoleculeName(currentMacromoleculeDatum()!.additionalData.molecule) }}</h5>
+      } @if (inPrefAssembly() === false) {
+      <section class="info-banner">
+        <p>
+          <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
+          One or more of this macromolecule's chains are <b>not</b> included in the
+          <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+            >preferred assembly/complex</a
+          >, which represents the most probable biological form identified by the PDBe team for this entry.
+        </p>
+      </section>
+      }
+      <section class="info">
+        <div class="info-grouped left">
+          <div class="info-row">
+            <span class="micro-title left"> Chains </span>
+            <article style="word-break: break-word">
+              @let chainList = currentMacromoleculeDatum()!.additionalData!.molecule!.in_chains; @if (chainList.length > 30 && collapsedChains === true) {
+              <div style="word-break: break-word">
+                {{ chainList.slice(0, 30).join(', ') }}
+                <span class="residue-action-button" (click)="collapsedChains = !collapsedChains">&nbsp;show all {{ chainList.length }} chains</span>
+              </div>
+              } @else if (chainList.length > 30) {
+              <div style="word-break: break-word">
+                {{ chainList.join(', ') }}
+                <span class="residue-action-button" (click)="collapsedChains = !collapsedChains">&nbsp;show less</span>
+              </div>
+              } @else {
+              <div style="word-break: break-word">{{ chainList.join(', ') }}</div>
+              }
+            </article>
+          </div>
+          @let type = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(type){
+          <div class="info-row">
+            <span class="micro-title left"> Type </span>
+            <article>{{type | titlecase}}</article>
+          </div>
+          } @if(uniqueOrganismsWithStrains().length){
+          <div class="info-row">
+            <span class="micro-title left"> Source organism{{ uniqueOrganismsWithStrains().length > 1 ? 's': '' }} </span>
+            <article class="source-organism">
+              @for (sourceOrganismWithStrain of uniqueOrganismsWithStrains(); track sourceOrganismWithStrain) {
+              <a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank">
+                <em>{{sourceOrganismWithStrain.name}}</em>
+                <i class="icon icon-common icon-search"></i>
+              </a>
+              @if (sourceOrganismWithStrain.strain) { (strain {{sourceOrganismWithStrain.strain}}) } }
+            </article>
+          </div>
+          } @if(uniqueExpSystems().length > 0) {
+          <div class="info-row">
+            <span class="micro-title left"> Expression system{{ uniqueExpSystems().length > 1 ? 's': '' }} </span>
+            @for (expressionSystem of uniqueExpSystems(); track expressionSystem) {
+            <article>
+              <em>{{expressionSystem}}</em>
+            </article>
+            }
+          </div>
+          } @if(uniprotProcessedMappings()?.length) { @let mappings = uniprotProcessedMappings()!; @let firstMapping = mappings[0];
+          <div class="info-row">
+            <span class="micro-title left">
+              UniProt mapping{{ mappings.length > 1 ? 's': '' }}
+              <lib-help-icon-with-tooltip [tooltipText]="entryMacromoleculeTooltips.uniprotMappings" />
+            </span>
+            <article class="uniprot-mapping">
+              @if (isUniprotMappingsBig() === false) {
+              <span
+                >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+                {{firstMapping.uniprotSegments.join(', ')}}; coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})</span
+              >
+              } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length <= 2) {
+              <span
+                >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+                {{firstMapping.uniprotSegments.join(', ')}}; coverage: {{firstMapping.coverage}} identity: {{firstMapping.identity}})</span
+              >
+              <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+              } @else if (isUniprotMappingsClosed === true && firstMapping.uniprotSegments.length > 2) {
+              <span
+                >Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + firstMapping.uniprotId" target="_blank">{{firstMapping.uniprotId}}</a> (residues:
+                {{firstMapping.uniprotSegments.slice(0,2).join(', ')}}...
+              </span>
+              <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">&nbsp;show all</span>
+              } @else { @for(eachMapping of mappings; track eachMapping.uniprotId; let index = $index;) {
+              <div>
+                Canonical <a [href]="'https://www.uniprot.org/uniprotkb/' + eachMapping.uniprotId" target="_blank">{{eachMapping.uniprotId}}</a> (residues:
+                {{eachMapping.uniprotSegments.join(', ')}}; coverage: {{eachMapping.coverage}} identity: {{eachMapping.identity}})
+              </div>
+              }
+              <span class="residue-action-button" (click)="isUniprotMappingsClosed = !isUniprotMappingsClosed">show less</span>
+              } @for(res of bestResidues(); track res.name;){
+              <div>
+                Best match <a [href]="'https://www.uniprot.org/uniprotkb/' + res.uniprot" target="_blank">{{res.uniprot}}</a> (residues: {{res.mappings[0].unp_start}}
+                — {{res.mappings[0].unp_end}})
+              </div>
+              }
+              <div class="residue-action-button" (click)="openDialog('uniprot')">View residue mapping{{ mappings.length > 1 ? 's': '' }}</div>
+            </article>
+          </div>
+          }
+          <div class="info-row">
+            <span class="micro-title left"> Length </span>
+            <article>{{currentMacromoleculeDatum()!.length}} {{ getLengthType(currentMacromoleculeDatum()!) }}</article>
+          </div>
+          <div class="info-row">
+            <span class="micro-title left"> Theoretical weight</span>
+            @if(currentMacromoleculeDatum()!.additionalData.molecule.weight !== undefined) {
+            <article>{{ getRoundedWeight() }} KDa</article>
+            }
+          </div>
+        </div>
+        <div class="info-grouped right">
+          @if(currentMacromoleculeDatum()?.genes?.length){
+          <div class="info-row">
+            <span class="micro-title right"> Gene names </span>
+            <article>
+              @for (gene of currentMacromoleculeDatum()!.genes; track gene; let islast = $last) {
+              <a [href]="utilService.baseUrl() +   'entry/search/index?gene_name:' + gene" target="_blank">{{ gene }}{{ islast ? '' : ',' }}</a> }
+              <br />
+            </article>
+          </div>
+          } @if(isThereGoMappings().length){
+          <div class="info-row dialog">
+            <span class="micro-title right">GO terms</span>
+            <article>
+              @if(goMappings()?.['Molecular_function']?.length){
+              <span class="article-title">Molecular function</span>
+              <a [href]="utilService.baseUrl() + 'entry/search/index?biological_function:' + goMappings()['Molecular_function'][0].name" target="_blank"
+                >{{goMappings()['Molecular_function'][0].name}}</a
+              >
+              } @if(goMappings()?.['Biological_process']?.length){
+              <span class="article-title">Biological process</span>
+              <a [href]="utilService.baseUrl() + 'entry/search/index?biological_process:' + goMappings()['Biological_process'][0].name" target="_blank"
+                >{{goMappings()['Biological_process'][0].name}}</a
+              >
+              } @if(goMappings()?.['Cellular_component']?.length){
+              <span class="article-title">Cellular component</span>
+              <a [href]="utilService.baseUrl() + 'entry/search/index?biological_cell_component:' + goMappings()['Cellular_component'][0].name" target="_blank"
+                >{{goMappings()['Cellular_component'][0].name}}</a
+              >
+              } @if(isCategoryMoreThanOne()){
+              <span role="button" (click)="openDialog('go')">View all {{isThereGoMappings().length}} GO terms</span>
+              }
+            </article>
+          </div>
+          } @if(ecMappings().length){
+          <div class="info-row dialog">
+            <span class="micro-title right">EC numbers</span>
+            <article><span role="button" (click)="openDialog('ec')">View {{ecMappings().length}} EC numbers</span></article>
+          </div>
+          }
+        </div>
+      </section>
+      }
+    </div>
+    <div id="annotations-viewer-tour">
+      <div class="stats-link-bar" id="deeper-analysis-tour">
+        @if(dashboardStatLinks['Macromolecules'].length > 0 && selectionUniprotId() !== 'None') {
+        <span
+          ><img src="assets/icons/pdbe-kb_logo.webp" alt="icon" style="width: 16px; height: 16px; margin-right: 2px" />View more about this {{ selectionTypeText
+          }}:</span
+        >
+        @for (displayLink of dashboardStatLinks['Macromolecules']; track displayLink; let islast = $last) {
+        <a
+          [href]="displayLink.link + selectionUniprotId() + displayLink.linkSuffix"
+          target="_blank"
+          (click)="gAS.logPageEvents('ep_go_to_kb', {
+        kb_website: 'proteins',
+        device_type: isMobile ? 'mobile' : 'desktop',
+      })"
+        >
+          {{ getStatValue(displayLink.id) }} {{ displayLink.displayName }}
+        </a>
+        {{ islast ? '' : '|' }} } }
+      </div>
+      <div id="interactive-sequence-viewer-tour">
+        <div class="chains">
+          <div class="dropdown-container">
+            @if(dropdown.options.length > 1){
+            <pdbc-entry-dropdown
+              [searchable]="false"
+              [searchTitle]="''"
+              [downloadable]="false"
+              [islink]="false"
+              [options]="dropdown.options"
+              [title]="dropdown.selectedName() ?? ''"
+              (optionClickedEvent)="onDropdownSelect($event)"
+            ></pdbc-entry-dropdown>
+            } @else if (dropdown.options.length === 1) {
+            <span>{{ getCleanSelectionName(dropdown.options) }}</span>
+            } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
+            <span class="symm-op-txt">
+              Symmetry Op.
+              <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+            </span>
+            <pdbc-entry-dropdown
+              [searchable]="false"
+              [searchTitle]="''"
+              [downloadable]="false"
+              [islink]="false"
+              [options]="symmetryDropdown.options"
+              [title]="symmetryDropdown.selectedName() ?? ''"
+              (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+            ></pdbc-entry-dropdown>
+            } @else if (symmetryDropdown.options.length === 1) {
+            <span class="symm-op-txt">
+              Symmetry Op.
+              <lib-help-icon-with-tooltip [tooltipText]="symmOperatorTooltip" />
+              <span> {{ symmetryDropdown.options[0].name }}</span>
+            </span>
+            }
+          </div>
+          @if (dropdown.selectedOption() && !inPrefAssemblyForChain()) {
+          <section class="info-banner">
+            <p>
+              <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" />
+              Chain {{ dropdown.selectedOption()?.data?.authAsymId }} is <b>not</b> included in the
+              <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10692154/#:~:text=To%20address%20this,PDBe%E2%80%99s%20search%20results" target="_blank"
+                >preferred assembly/complex</a
+              >, which represents the most probable biological form identified by the PDBe team for this entry.<br />
+              As a result, the 3D viewer below is now displaying the full entry model file.
+            </p>
+          </section>
+          }
+        </div>
+        @let molType = currentMacromoleculeDatum()?.additionalData?.molecule?.molecule_type; @if(seqViewerReady() && sequenceDetails() && molType) {
+        <div class="sequence-container">
+          <div class="title">
+            <span class="text">{{ sequenceDetails()?.title }}</span>
+            <button (click)="copySequence(sequenceDetails())">Copy sequence</button>
+          </div>
+          <lib-smart-seq-viewer
+            containerId="'smart-seq-viewer-macromolecules'"
+            class="sequence"
+            [sequence]="macromoleculeSequence()!"
+            [entityId]="currentSelectionEntityId()!"
+            [chainId]="currentSelectionChainId()!"
+            [backgroundDataInput]="backgroundAnnotation()!"
+            [isNucleic]="molType.includes('nucleotide')"
+            [altSequences]="altSequences()!"
+            [nonObserved]="nonObserved()!"
+            [indexWithMultipleResidues]="indexWithMultipleResidues()!"
+          ></lib-smart-seq-viewer>
+        </div>
+        }
+      </div>
+
+      <div id="map-data-btn">
+        @if (slowNetwork() === undefined) {
+        <div [style.width]="'100%'">
+          <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+        </div>
+        }
+        <section [style.display]="slowNetwork() === false || fastNetworkOrForceLoad() ? '' : 'none' " class="chart-area" [class.collapsed]="!isSidebarDisplayed()">
+          <section [style.display]="!hasProtvista ? 'none' : '' " class="protvista-container" [class.collapsed]="!isSidebarDisplayed()">
+            @if (macromolSequence() && currentSelectionChainId() && loadingStatus() === 'any-tracks-loaded') {
+            <lib-pv-angular-wrapper
+              containerId="macromolecules-pv"
+              [sequence]="macromolSequence()!"
+              [data]="protvistaData()!"
+              [entryId]="entryId()!"
+              [entityId]="currentSelectionEntityId()!"
+              [chainId]="currentSelectionChainId()!"
+              [tooltips]="protvistaTooltips()"
+              [externalEvents]="true"
+              customTrackControls="sticky"
+              (addCustomTrackEvent)="openedAddCustomTrack()"
+            ></lib-pv-angular-wrapper>
+            }
+          </section>
+          <section class="molstar-topol-container" [class.collapsed]="!isSidebarDisplayed()">
+            @if (!configForMolstar() || checkedWebGl() === undefined) {
+            <div [style.width]="'100%'">
+              <ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px', }"></ngx-skeleton-loader>
+            </div>
+            } @else if (configForMolstar() && isWebGlEnabled()) {
+            <div class="molstar-container" [class.collapsed]="!isSidebarDisplayed()">
+              <div #popoutWrapper>
+                <lib-pdbe-molstar
+                  #molstarComponent
+                  [id]="'macromolecules-molstar'"
+                  [molstarConfig]="configForMolstar()"
+                  [height]="molstarHeight"
+                  [seqOnExpanded]="true"
+                ></lib-pdbe-molstar>
+              </div>
+            </div>
+            } @else if (!isWebGlEnabled()) {
+            <div class="molstar-not-loaded">
+              <img alt="WebGL not supported" src="assets/img/no_webgl.webp" />
+              <div>
+                <h4 class="heading-4">3D viewer not supported in this browser</h4>
+                <p>Your browser doesn’t support WebGL, which is required for the 3D structure.</p>
+                <a target="_blank" href="https://get.webgl.org/webgl2/enable.html">
+                  Learn how to enable WebGL
+                  <i class="icon icon-link icon-common"></i>
+                </a>
+              </div>
+            </div>
+            }
+            <section [style.display]="!hasTopologyViewer ? 'none' : '' " class="topology-viewer-container">
+              <div class="topology-container" #topologyViewerContainer></div>
+            </section>
+            <section [style.display]="!hasRNAViewer ? 'none' : '' " class="rna-viewer-container">
+              <div class="rna-container" #rnaViewerContainer style="float: left"></div>
+            </section>
+          </section>
+        </section>
+        @if (slowNetwork() === true && !fastNetworkOrForceLoad()) {
+        <div class="molstar-not-loaded outside">
+          <img alt="Visualisations paused" src="assets/img/paused_3d.webp" />
+          <div>
+            <h4 class="heading-4">All viewers paused due to large structure or slow connection</h4>
+            <p>This page includes multiple viewers (annotations, 3D structure, topology viewer).</p>
+            <p>Loading may take longer than usual.</p>
+          </div>
+          <button class="vf-button vf-button--search-pdbe" (click)="toggleMolstar()">Load viewers anyway</button>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</main>
+@if(tabDataLoaded() && macromoleculeTableRows().length === 0 ){
+<h5>No Macromolecules data available</h5>
+} @if(!tabDataLoaded()) {
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

@@ -1,0 +1,108 @@
+<section>
+  @if(ligandTableRows().length){
+  <header>
+    @if(currentViewState() === 'detail'){
+    <nav>
+      <img src="/assets/images/mobile/blue-arrow-left.svg" alt="arrow left" />
+      <span (click)="goBackToList()">Go to Ligands list </span>
+    </nav>
+    }
+    <section class="header">
+      <h2>{{currentViewState() === 'list' ? `Ligands (${ligandTableRows().length})` : selectedLigand()?.id ?? '?'}}</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-arrow-{{expanded() ? 'down':'up'}}.svg" alt="arrow up" (click)="toggleBottomsheetHeight()" />
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+
+  <!-- 1st Level Overlay -->
+  @if(currentViewState() === 'list'){ @for(row of ligandTableRows(); track row.id){
+  <div class="row" (click)="navigateToDetail(row)" [style]="row.molstarColorHex ? `border-left-color: ${row.molstarColorHex};` : undefined">
+    <div class="row__header">
+      <p class="row__header__name">
+        {{row.id}} @if (anyNonPrefAssembly(row)) { <img src="assets/icons/warning-icon.svg" style="margin-left: 4px; width: 16px; height: 16px" /> }
+      </p>
+      <img src="/assets/images/mobile/arrow-right.svg" alt="right arrow icon" />
+    </div>
+    <p class="row__content">{{row.codeAndName.name | truncate:40}}</p>
+    @if(row.type !== 'modification' && row.annotations.length){ @for(annotation of row.annotations; track annotation){
+    <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
+    } } @if(row.type !== 'modification' && row.annotations.length === 0){
+    <span class="row__annotation unannotated">Unannotated</span>
+    } @if(row.type === 'modification'){
+    <span class="row__annotation modification">Modification</span>
+    }
+    <p class="row__content" style="font-size: 15px"><b>&times; {{ row.codeAndName.prefAssemblyCount }} </b> in preferred complex</p>
+    <p class="row__content" style="font-size: 15px"><b>&times; {{ row.codeAndName.entryInstancesCount }} </b> in model file</p>
+  </div>
+  } }
+
+  <!-- 2nd Level Overlay -->
+  @if(currentViewState() === 'detail'){ @if(selectedLigand()?.type !== 'modification' && selectedLigand()?.annotations?.length){ @for(annotation of
+  selectedLigand()?.annotations; track annotation){
+  <span class="row__annotation" [ngClass]="annotation">{{annotation | titlecase}}</span>
+  } } @if(selectedLigand()?.type !== 'modification' && selectedLigand()?.annotations?.length === 0){
+  <span class="row__annotation unannotated">Unannotated</span>
+  } @if(selectedLigand()?.type === 'modification'){
+  <span class="row__annotation modification">Modification</span>
+  }
+  <div class="chains">
+    @if(dropdown.options.length > 1){
+    <div class="dropdown-container">
+      <pdbc-entry-dropdown
+        [searchable]="false"
+        searchTitle="''"
+        [downloadable]="false"
+        [islink]="false"
+        [options]="dropdown.options"
+        [title]="dropdown.selectedOption()?.name ?? ''"
+        (optionClickedEvent)="onDropdownSelect($event)"
+      >
+      </pdbc-entry-dropdown>
+    </div>
+    }@else if(dropdown.options.length === 1){
+    <p [innerHTML]="dropdown.options[0].name"></p>
+    } @if (symmetryDropdown.selectedOption() && symmetryDropdown.options.length > 1) {
+    <p class="title">Symmetry Operation Id</p>
+    <pdbc-entry-dropdown
+      [searchable]="false"
+      [searchTitle]="''"
+      [downloadable]="false"
+      [islink]="false"
+      [options]="symmetryDropdown.options"
+      [title]="symmetryDropdown.selectedOption()?.name ?? 'All'"
+      (optionClickedEvent)="onSymmetryDropdownSelect($event)"
+    ></pdbc-entry-dropdown>
+    } @else if(symmetryDropdown.options.length === 1){
+    <p class="title">Symmetry Operation Id</p>
+    <p class="content" [innerHTML]="symmetryDropdown.options[0].name"></p>
+    }
+  </div>
+  <p class="title">Ligand name</p>
+  <p class="content">{{selectedLigand()?.codeAndName?.name ?? '' | truncate:40}}</p>
+  @let boundDetails = ligandBoundDetails(); @if(boundDetails?.[0]?.synonyms?.length){
+  <p class="title">Synonyms</p>
+  <p class="content" libTruncateText [truncateText]="mapSynonyms(boundDetails?.[0]?.synonyms ?? [])" [limit]="53"></p>
+  } @if(boundDetails?.[0]?.formula){
+  <p class="title">Formula</p>
+  <p class="content formula">{{ boundDetails?.[0]?.formula }}</p>
+  }
+  <p class="title">Instances</p>
+  <p class="content">
+    {{ selectedLigand()?.codeAndName?.prefAssemblyCount }} in preferred assembly/complex<br />
+    {{ selectedLigand()?.codeAndName?.entryInstancesCount }} in asymmetric unit
+  </p>
+  <p class="title">Molecular weight</p>
+  <p class="content">{{molecularWeight() ?? '?'}} Da</p>
+  }} @else {
+  <header>
+    <section class="header">
+      <h2>No Ligands data available</h2>
+      <div class="controls">
+        <img src="/assets/images/mobile/mb-close.svg" alt="close icon" (click)="closeBottomSheet()" />
+      </div>
+    </section>
+  </header>
+  }
+</section>

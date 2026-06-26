@@ -148,7 +148,9 @@ export class InterfacesTabComponent implements OnInit {
       });
 
       const mvs = MVS.MVSData.createMultistate([snapshot]);
-      const plugin = this.molstar?.getInstance().plugin;
+      const pluginInstance = this.molstar?.getInstance();
+      if (!pluginInstance) return;
+      const plugin = pluginInstance.plugin;
       await MVS.loadMVS(plugin, mvs);
     }, 500);
   }

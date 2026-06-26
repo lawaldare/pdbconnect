@@ -58,52 +58,6 @@ export class UploadPageFacade {
     }
     return orthoCode;
   });
-
-  public analysisOld = computed(() => {
-    const structures = this.structures();
-    const chains = new Set<string>();
-    const ligands = new Set<string>();
-    for (const s of structures) {
-      const model = s.cell?.obj?.data?.state?.models?.[0] || s.cell?.obj?.data?.models?.[0] || s.cell?.obj?.data;
-      if (!model) continue;
-
-      const entities = model.entities ?? model.sourceData?.data?.entities ?? model.data?.entities ?? null;
-
-      if (!entities) continue;
-
-      if (entities.data?._columns && (entities.type?.__array || entities.subtype?.__array)) {
-        const typeArray = entities.type?._array ?? entities.subtype?.__array ?? entities.subtype?.valueKind?.__array ?? [];
-        const idArray = entities.data?.id?._array ?? [];
-        const rowCount = entities.data?._rowCount ?? typeArray.length;
-        for (let i = 0; i < rowCount; i++) {
-          const t = typeArray[i]?.toLowerCase?.() ?? '';
-          const id = idArray[i] ?? `${i + 1}`;
-          if (t.includes('polymer') || t.includes('polypeptide')) chains.add(id);
-          else if (t && !t.includes('water')) ligands.add(id);
-        }
-      } else if (Array.isArray(entities)) {
-        for (const e of entities) {
-          const type = e?.type ?? e?.data?.type?.value ?? e?.subtype?.value ?? '';
-          const id = e?.id ?? e?.entryId ?? e?.entry ?? 'unknown';
-          if (typeof type === 'string') {
-            if (type.includes('polymer')) chains.add(id);
-            if (type.includes('non-polymer') || type.includes('ligand')) ligands.add(id);
-          }
-        }
-      } else if (typeof entities === 'object') {
-        for (const [key, raw] of Object.entries(entities as Record<string, any>)) {
-          if (typeof raw !== 'object' || raw === null) continue;
-          const type = raw?.type ?? raw?.data?.type?.value ?? raw?.subtype?.value ?? '';
-          const id = raw?.id ?? raw?.entryId ?? key;
-          if (typeof type === 'string') {
-            if (type.includes('polymer')) chains.add(id);
-            if (type.includes('non-polymer') || type.includes('ligand')) ligands.add(id);
-          }
-        }
-      }
-    }
-    return `${chains.size} amino acid chains and ${ligands.size} ligands in ASU`;
-  });
   public analysis = computed(() => {
     const model: any = this.model();
     if (!model) return '0 amino acid chains and 0 ligands in ASU';

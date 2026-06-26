@@ -1,4 +1,4 @@
-import { Component, inject, input, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, inject, input, Input, OnChanges, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -30,10 +30,20 @@ export class PdbeHeaderSearchComponent implements OnInit {
   public readonly dlService = inject(DataLayerService);
   public readonly googleAnalyticsService = inject(GoogleAnalyticsService);
   private readonly utilService = inject(UtilService);
+  public examples = signal<{ label: string; url: string }[]>([]);
 
   ngOnInit() {
     this.buttonTheme = this.headerSearchConfig.type === ThemeType.PDBE ? 'pdbe' : 'pdbe-kb';
     this.chipBg = this.headerSearchConfig.type === ThemeType.PDBE ? 'pdbe-chip-bg' : 'pdbe-kb-chip-bg';
+
+    const updatedExamples = (this.headerSearchConfig.examples ?? []).map((example) => {
+      return {
+        label: this.getExampleLabel(example),
+        url: this.utilService.getRedirectUrlForExamples(this.getExampleValue(example), this.headerSearchConfig.projectId),
+      };
+    });
+
+    this.examples.set(updatedExamples);
 
     this.form.controls.searchTerm.valueChanges
       .pipe(

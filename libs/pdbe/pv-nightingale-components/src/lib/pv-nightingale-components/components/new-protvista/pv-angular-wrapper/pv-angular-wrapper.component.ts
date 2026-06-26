@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, input, OnDestroy, output, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, input, OnDestroy, output, PLATFORM_ID, ViewChild } from '@angular/core';
 import { ScriptLoaderService } from '@pdbc/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, debounceTime, distinctUntilChanged, map, Subscription } from 'rxjs';
@@ -24,6 +24,7 @@ const PAUL_TOL_COLORBLIND_SCALE: string[] = ['#332288', '#117733', '#44AA99', '#
 })
 export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
   private scriptLoader = inject(ScriptLoaderService);
+  private readonly platformId = inject(PLATFORM_ID);
   @ViewChild('containerElement', { read: ElementRef }) public containerElement!: ElementRef;
 
   // External inputs (read-only)
@@ -214,6 +215,11 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
     //   return;
     // }
 
+    // 🧠 THE ULTIMATE SHIELD: Stop all initialization on the Node SSR server container
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     await this.loadComponents();
     this.hasLoadedNightingale = true; // make explicit
 
@@ -337,6 +343,9 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
   }
 
   private async loadComponents() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     if (this.hasLoadedNightingale) return;
 
     const { patchTrackCanvas } = await import('./patch-track-canvas');
@@ -369,6 +378,9 @@ export class ProtvistaWrapperComponent implements AfterViewInit, OnDestroy {
 
     // dynamically load components if not in customElements
     for (const componentName of componentsToLoadList) {
+      if (!isPlatformBrowser(this.platformId)) {
+        return;
+      }
       if (customElements.get(componentName) === undefined) {
         const version = componentName.includes('sequence-heatmap') ? '5.6.2' : '5.6.0';
         await this.scriptLoader.loadScript(`https://cdn.jsdelivr.net/npm/@nightingale-elements/${componentName}@${version}/+esm`, true);

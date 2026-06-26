@@ -1,0 +1,39 @@
+@if(overviewDataLoaded()){
+<section class="structure-overview">
+  <div class="info">
+    <p class="info__title">Method</p>
+    <p class="info__content">{{experimentalMethod()}}</p>
+  </div>
+  <div class="info">
+    <p class="info__title">Resolution</p>
+    <p class="info__content">
+      @if (resolutionValues() ?? [].length > 0) { @for (resolutionValue of resolutionValues(); track resolutionValue) { @if (resolutionValue !== undefined) {
+      <span>{{ resolutionValue }}Å</span>
+      } } }
+    </p>
+  </div>
+  <div class="info">
+    <p class="info__title">Organisms</p>
+    <p class="info__content">
+      @for (sourceOrganismWithStrain of organismScientificNamesWithStrains(); track sourceOrganismWithStrain; let islast = $last) {
+      <span>
+        <a [href]="generateOrganismSearchUrl(sourceOrganismWithStrain.name)" target="_blank"> {{ sourceOrganismWithStrain.name }} </a>
+      </span>
+      @if( sourceOrganismWithStrain.strain) { (strain {{sourceOrganismWithStrain.strain}}) } {{ islast ? '' : ',' }} } @if
+      (organismScientificNamesWithStrains().length === 0) {
+      <span>Not available</span>
+      }
+    </p>
+  </div>
+  <div class="info">
+    <p class="info__title">Entry content</p>
+    <p class="info__content">
+      @for(filter of miniFilters(); track filter.description){
+      <span style="display: block">{{filter.description}}</span>
+      }
+    </p>
+  </div>
+</section>
+} @else {
+<ngx-skeleton-loader count="1" [theme]="{ 'border-radius': '0', height: '400px' }"></ngx-skeleton-loader>
+}

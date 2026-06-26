@@ -1,11 +1,13 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { SurveyConfig } from '../models/survey-config';
 import { firstValueFrom } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class SurveyService {
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   public showSurvey = signal(false);
   public config = signal<SurveyConfig | null>(null);
@@ -23,6 +25,9 @@ export class SurveyService {
   }
 
   private getConsentCookieKey(): string {
+    if (!isPlatformBrowser(this.platformId)) {
+      return 'dataProtectionAgreedForLigandPages';
+    }
     const path = window.location.pathname;
 
     if (path.includes('complexes')) return 'dataProtectionAgreedForComplexPages';
@@ -38,6 +43,9 @@ export class SurveyService {
   }
 
   private watchForBannerClick(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const listener = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target?.id === 'data-protection-agree') {
@@ -57,6 +65,10 @@ export class SurveyService {
   }
 
   init(config: SurveyConfig) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     this.config.set(config);
 
     if (!this.consentGranted) {
@@ -107,7 +119,8 @@ export class SurveyService {
     this.answers.update((a) => ({ ...a, [questionId]: value }));
   }
 
-  async submit() {
+  async submit(answersOverride?: Record<string, any>) {
+    const payload = answersOverride ?? this.answers();
     const cfg = this.config();
     if (!cfg) return;
 
@@ -118,7 +131,7 @@ export class SurveyService {
     // 2. skipped but user answered anyway
     const questions = cfg?.questions ?? [];
     for (const q of questions) {
-      const value = this.answers()[q.id];
+      const value = payload[q.id];
 
       // If skip = true and user didn’t answer, omit
       if (q.skip && (value === undefined || value === null || value === '')) {
@@ -173,11 +186,17 @@ export class SurveyService {
   }
 
   private getCookie(name: string): string | null {
+    if (!isPlatformBrowser(this.platformId)) {
+      return null;
+    }
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
   private setCookie(name: string, value: string, days: number) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const expiry = new Date(Date.now() + days * 86400000).toUTCString();
     document.cookie = `${name}=${value}; expires=${expiry}; path=/`;
   }

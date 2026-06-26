@@ -1,4 +1,4 @@
-@import 'libs/core/src/lib/styles/pdb_connect.scss';
+@import '../../../../../core/src/lib/styles/pdb_connect';
 
 section {
   .container {
@@ -33,7 +33,7 @@ section {
 
       .pdbe-kb-header-logo-img {
         width: 233.4px;
-        height: 47px;
+        height: 42px;
       }
 
       span {
