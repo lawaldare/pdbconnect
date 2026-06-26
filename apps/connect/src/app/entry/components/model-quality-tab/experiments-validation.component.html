@@ -1,8 +1,5 @@
 <div class="experiments-validation">
   <section class="left-side">
-    <!-- content navigation start -->
-    <lib-content-navigator [navLinks]="contentNavigatorLinks" />
-    <!-- content naigation end -->
     @if (currentData() && processedData() && isHybrid()) {
     <div class="filter-btns-container">
       @for (expValdata of processedData(); track expValdata) {
@@ -16,6 +13,9 @@
       }
     </div>
     }
+    <!-- content navigation start -->
+    <lib-content-navigator [navLinks]="contentNavigatorLinks()" />
+    <!-- content naigation end -->
     <section class="exp-validation-info" id="model-quality-data-side-tour">
       @if (currentData()) {
       <h4 class="heading-4 title" id="test-tour-tour">
@@ -194,7 +194,7 @@
       @if(!this.isXray()){
       <section class="sample-info">
         <div class="info-row-header">
-          <h5>Sample information</h5>
+          <h5 id="sample-information">Sample information</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.sampleInfoTooltip" />
         </div>
         @if (currentData()!.sampleInfo) { @if (currentData()!.sampleInfo!.authorDesc) {
@@ -340,6 +340,7 @@
           [gridOptions]="tableFacade.gridOptions"
         />
         } } } @else {
+        <p>Hi!</p>
         <ag-grid-angular
           style="height: fit-content"
           class="ag-theme-quartz table-exp-val"
@@ -359,7 +360,7 @@
       @if(isXray()){
       <section class="crystal-info">
         <div class="info-row-header">
-          <h5 id="crystal-info">Crystal Info</h5>
+          <h5 id="crystal-info">Crystal information</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.crystalInfoTooltip" />
         </div>
         <ag-grid-angular
@@ -451,7 +452,7 @@
       } @if (currentData()?.experimentalRawData?.length) {
       <section class="exp-raw-data-info">
         <div class="info-row-header">
-          <h5>Experimental raw data</h5>
+          <h5 id="experimental-raw-data">Experimental raw data</h5>
           <lib-help-icon-with-tooltip [tooltipText]="modelQualityTooltips.expRawDataTooltip" />
         </div>
         @for (table of currentData()?.experimentalRawData; track table) {

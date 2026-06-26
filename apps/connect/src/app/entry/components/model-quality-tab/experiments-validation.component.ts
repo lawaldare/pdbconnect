@@ -25,7 +25,7 @@ import { MolstarComponent } from '@pdbe-lib/molstar-for-apps';
 import { AgGridAngular } from 'ag-grid-angular';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { BehaviorSubject, combineLatest, filter, forkJoin, mergeMap, of, take } from 'rxjs';
-import { modelQualityTooltips, MQTContentNavigationLinks, OUTLIER_TYPE_LABELS, VALIDATION_LEGENDS_AND_COLORS } from '../../entry-constant';
+import { modelQualityTooltips, OUTLIER_TYPE_LABELS, VALIDATION_LEGENDS_AND_COLORS } from '../../entry-constant';
 import { whenSignalFirstTrue } from '../../helpers/misc';
 import { EntryPageTabsCommonMolstarParams } from '../../helpers/molstar-helpers';
 import { initializeModelIdTracking } from '../../helpers/molstar-nmr-model-tracking';
@@ -217,7 +217,80 @@ export class ExperimentsValidationComponent implements OnInit, AfterViewInit {
 
   public currentModelId$ = new BehaviorSubject<string>('1');
   public readonly modelId = toSignal(this.currentModelId$);
-  protected readonly contentNavigatorLinks = MQTContentNavigationLinks;
+  protected readonly contentNavigatorLinks = computed(() => {
+    const data = this.currentData();
+
+    if (!data) {
+      return [];
+    }
+
+    const links = [
+      {
+        id: 'validation-information',
+        title: 'Validation information',
+      },
+    ];
+
+    if (this.pdbRedoData()) {
+      links.push({
+        id: 'pdb-redo',
+        title: 'PDB-REDO',
+      });
+    }
+
+    links.push(
+      {
+        id: 'timeline',
+        title: 'Timeline',
+      },
+      {
+        id: 'model-quality',
+        title: 'Model quality',
+      }
+    );
+
+    if (!this.isXray()) {
+      links.push({
+        id: 'sample-information',
+        title: 'Sample information',
+      });
+    }
+
+    links.push({
+      id: 'experimental-information',
+      title: 'Experimental information',
+    });
+
+    if (this.isXray()) {
+      links.push(
+        {
+          id: 'crystal-info',
+          title: 'Crystal information',
+        },
+        {
+          id: 'software',
+          title: 'Software',
+        },
+        {
+          id: 'data-quality',
+          title: 'Data quality',
+        },
+        {
+          id: 'refinement',
+          title: 'Refinement',
+        }
+      );
+    }
+
+    if (data.experimentalRawData?.length) {
+      links.push({
+        id: 'experimental-raw-data',
+        title: 'Experimental raw data',
+      });
+    }
+
+    return links;
+  });
 
   constructor() {
     effect(() => {
