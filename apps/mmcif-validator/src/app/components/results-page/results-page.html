@@ -1,0 +1,106 @@
+@let filledCount = result.metadata_completeness.filled_count; @let totalCount = result.metadata_completeness.total_count;
+
+<section class="summary">
+  <div class="left">
+    <h2>Validation Summary</h2>
+    <div class="validity-state" [ngClass]="result.valid ? 'valid' : 'invalid'">
+      <img src="assets/icons/{{result.valid ? 'valid' : 'invalid'}}.svg" alt="validity state icon" />
+      <span>{{result.valid ? 'Valid' : 'Invalid'}}</span>
+    </div>
+    <div class="error-pill">
+      <img src="assets/icons/error-icon.svg" alt="error icon" />
+      <span>{{numberOfErrors()}} Errors</span>
+    </div>
+    <div class="warning-pill">
+      <img src="assets/icons/warning-icon.svg" alt="warning icon" />
+      <span>{{numberOfWarnings()}} Warnings</span>
+    </div>
+    <div class="stroke"></div>
+    <p>Completeness: <span>{{result.metadata_completeness.percentage}}%</span><span class="f-14">({{filledCount}}/{{totalCount}})</span></p>
+  </div>
+  <div class="right">
+    <button class="vf-button vf-button--secondary-pdbe" (click)="revalidate()">Revalidate</button>
+    <button class="vf-button vf-button--secondary-pdbe" (click)="loadAnotherFile()">Load another file</button>
+  </div>
+</section>
+<main>
+  <aside>
+    <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" [selectedIndex]="selectedTab()" (selectedTabChange)="selectTab($event)" #tabs>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span>Errors</span>
+        </ng-template>
+        <ng-template matTabContent>
+          <section class="errors">
+            <h3>Issues</h3>
+            <section class="filters">
+              <div class="box" (click)="onFilter('all')" [class.selected-filter]="selectedFilter() === 'all'">All({{totalErrorsAndWarnings()}})</div>
+              <div class="box" (click)="onFilter('errors')" [class.selected-filter]="selectedFilter() === 'errors'">Errors({{numberOfErrors()}})</div>
+              <div class="box" (click)="onFilter('warnings')" [class.selected-filter]="selectedFilter() === 'warnings'">Warnings({{numberOfWarnings()}})</div>
+            </section>
+            <section class="lists">
+              @for(list of filteredLists; track $index){
+              <section class="list-card" (click)="onIssueClick(list)" [class.selected-issue]="selectedIssue()?.line === list.line">
+                <img src="assets/icons/{{list.severity === 'error' ? 'error' : 'warning'}}-icon.svg" alt="" class="card-icon" />
+                <div class="card-content">
+                  <p class="title"><span class="line">Line {{list.line}}</span><span class="line-content">{{list.item}}</span></p>
+                  <p class="description">{{list.message}}</p>
+                </div>
+              </section>
+              }
+            </section>
+          </section>
+        </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <span>Completeness</span>
+        </ng-template>
+        <ng-template matTabContent>
+          <section class="completeness">
+            <h3>Metadata Completeness</h3>
+            <div class="summary">
+              <div class="summary-row">
+                <p class="label">Score:</p>
+                <p class="value score">{{result.metadata_completeness.percentage}}%</p>
+              </div>
+              <div class="summary-row">
+                <p class="label">Method:</p>
+                <p class="value">{{result.metadata_completeness.method_detected || 'N/A'}}</p>
+              </div>
+              <div class="summary-row">
+                <p class="label">Filled:</p>
+                <p class="value">{{filledCount}}/{{totalCount}}</p>
+              </div>
+              <div class="summary-row">
+                <p class="label">Missing items:</p>
+                <p class="value missing-item">{{result.metadata_completeness.missing_items.length}}</p>
+              </div>
+            </div>
+            <h4>Missing Categories({{result.metadata_completeness.missing_categories.length}})</h4>
+            <mat-accordion class="mmcif-validator">
+              @for(item of missingCategories; track $index){
+              <mat-expansion-panel class="assembly-panel" (opened)="onOpenAccordionPanel('Assembly')">
+                <mat-expansion-panel-header>
+                  <mat-panel-title> {{item.category}} </mat-panel-title>
+                  <span class="panel-sub-header">{{item.items.length}} items</span>
+                </mat-expansion-panel-header>
+                @for(missingItem of item.items; track missingItem){
+                <div class="category-list">
+                  <span></span>
+                  <p>{{missingItem}}</p>
+                </div>
+                }
+              </mat-expansion-panel>
+              }
+            </mat-accordion>
+          </section>
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+  </aside>
+
+  <section class="results">
+    <cif-editor [content]="cifFileText" [errors]="validationErrors" [selectedIssue]="selectedIssue()"> </cif-editor>
+  </section>
+</main>

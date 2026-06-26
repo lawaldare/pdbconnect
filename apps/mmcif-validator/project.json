@@ -1,0 +1,131 @@
+{
+  "name": "mmcif-validator",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/mmcif-validator/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/mmcif-validator",
+        "browser": "apps/mmcif-validator/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/mmcif-validator/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/mmcif-validator/public"
+          },
+          {
+            "glob": "**/*",
+            "input": "apps/mmcif-validator/src/assets",
+            "output": "assets"
+          },
+          {
+            "glob": "**/*",
+            "input": "node_modules/monaco-editor",
+            "output": "/assets/monaco"
+          }
+        ],
+        "styles": ["@angular/material/prebuilt-themes/indigo-pink.css", "apps/mmcif-validator/src/styles.scss"],
+        "scripts": [],
+        "stylePreprocessorOptions": {
+          "includePaths": ["libs/core/src/lib/styles"]
+        }
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/mmcif-validator/src/environments/environment.ts",
+              "with": "apps/mmcif-validator/src/environments/environment.prod.ts"
+            }
+          ],
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "3mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "200kb",
+              "maximumError": "400kb"
+            }
+          ],
+          "aot": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "development": {
+          "aot": true,
+          "extractLicenses": true,
+          "namedChunks": false,
+          "optimization": true,
+          "sourceMap": true,
+          "outputHashing": "all",
+          "baseHref": "$APP_BASE_HREF"
+        },
+        "local": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "options": {
+        "buildTarget": "mmcif-validator:build:local",
+        "port": 5000
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "mmcif-validator:build:production"
+        },
+        "development": {
+          "buildTarget": "mmcif-validator:build:development"
+        }
+      },
+      "defaultConfiguration": ""
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "mmcif-validator:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/mmcif-validator/jest.config.ts",
+        "tsConfig": "apps/mmcif-validator/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "mmcif-validator:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/mmcif-validator/browser",
+        "spa": true
+      }
+    }
+  }
+}
