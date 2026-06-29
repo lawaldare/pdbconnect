@@ -170,6 +170,7 @@ export class LigandsMainPageComponent implements OnInit {
     this.globalStore.dispatch(LigandActions.setDownloadOptions());
     this.globalStore.dispatch(LigandActions.getRelatedLigands());
     this.globalStore.dispatch(LigandActions.getSupercomponents());
+    this.globalStore.dispatch(LigandActions.getMdpositInchikeys());
   }
 
   private getAnnotations(structures: LigandStructure[]): void {
@@ -182,7 +183,7 @@ export class LigandsMainPageComponent implements OnInit {
   }
 
   private generateSchemaData(): void {
-    this.bioschemasService.buildBioschemasJSON(this.renderer);
+    this.bioschemasService.setUpRenderedForBioschemas(this.renderer);
   }
 
   public selectTab(event: MatTabChangeEvent) {

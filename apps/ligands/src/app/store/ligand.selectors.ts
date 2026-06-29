@@ -21,4 +21,5 @@ export const LigandSelectors = {
   numberOfLigandInstances: createSelector(selectLigandStoreState, (state: LigandStoreState) => state.numberOfLigandInstances),
   numberOfPDBStructures: createSelector(selectLigandStoreState, (state: LigandStoreState) => state.numberOfPDBStructures),
   numberOfProteins: createSelector(selectLigandStoreState, (state: LigandStoreState) => state.numberOfProteins),
+  mdpositInchikeys: createSelector(selectLigandStoreState, (state: LigandStoreState) => state.mdpositInchikeys),
 };

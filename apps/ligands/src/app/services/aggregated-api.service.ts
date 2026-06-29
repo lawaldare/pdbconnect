@@ -210,4 +210,13 @@ export class AggregatedApiService {
     const latestReleaseUrl = `https://www.ebi.ac.uk/pdbe/search/pdb/select?q=q_document_type:latest_chemistry&fl=new_revised_ligand,pdb_id,uniprot_accession,pubmed_id&rows=10000`;
     return this.http.get<any>(latestReleaseUrl);
   }
+
+  public getMdpositInchikeys(): Observable<string[]> {
+    const url = `https://mdposit.mddbr.eu/api/rest/v1/pointers/inchikeys`;
+    return this.http.get<any>(url).pipe(
+      map((data: any) => {
+        return Object.keys(data);
+      })
+    );
+  }
 }

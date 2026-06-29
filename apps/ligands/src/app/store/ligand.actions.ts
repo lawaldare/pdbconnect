@@ -33,5 +33,8 @@ export const LigandActions = createActionGroup({
     'Save Number of Distinct Proteins': props<{ numberOfProteins: number }>(),
     'Save Number of Distinct PDB Structures': props<{ numberOfPDBStructures: number }>(),
     'Save Number of Ligand Instances': props<{ numberOfLigandInstances: number }>(),
+    'Get MdpositInchikeys': emptyProps(),
+    'Get MdpositInchikeys Success': props<{ mdpositInchikeys: string[] }>(),
+    'Get MdpositInchikeys Failure': emptyProps(),
   },
 });
