@@ -12,6 +12,37 @@ thead {
   }
 }
 
+.mat-accordion.mmcif-validator {
+  .mat-expansion-panel {
+    border: 2px solid rgb(0 0 0 / 10%);
+    margin-right: 16px;
+    margin-bottom: 12px;
+    border-radius: 8px !important;
+    cursor: pointer;
+
+    .mat-expansion-panel-header {
+      padding: 14px 16px !important;
+      justify-content: space-between !important;
+
+      .mat-content {
+        display: block !important;
+      }
+
+      &.mat-expanded {
+        background: unset !important;
+      }
+    }
+  }
+
+  .mat-expansion-panel:not(.mat-expanded) .mat-expansion-panel-header:not([aria-disabled='true']):hover {
+    background: unset !important;
+  }
+
+  .mat-expansion-panel-spacing {
+    margin: 0 16px 12px 0 !important;
+  }
+}
+
 .mat-mdc-dialog-panel.entry-Dialog {
   max-width: 100% !important;
   width: 100% !important;

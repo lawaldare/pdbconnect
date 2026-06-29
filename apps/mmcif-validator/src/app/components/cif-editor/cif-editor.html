@@ -1,0 +1,66 @@
+<div class="editor-shell">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <h2>CIF Editor</h2>
+      <span class="line">{{ lineCount }} lines</span>
+      <span class="action">Click on CIF items for help</span>
+    </div>
+
+    <div class="toolbar-right">
+      <button class="vf-button vf-button--primary" (click)="downloadCif()">
+        <img src="assets/images/download-icon.svg" alt="download icon" />
+        <span>Download</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="content" [class.with-help]="helpItem()">
+    <div class="editor-pane">
+      <ngx-monaco-editor class="monaco-host" [options]="editorOptions" [ngModel]="content()" (onInit)="onEditorInit($event)"> </ngx-monaco-editor>
+    </div>
+
+    @if(helpItem()){
+    <aside class="side-panel">
+      <div class="header">
+        <h3>CIF Help</h3>
+        <img src="assets/icons/close-icon.svg" alt="close icon" (click)="closeHelp()" />
+      </div>
+      <div class="information">
+        <div class="row">
+          <p class="item-name">Item Name</p>
+          <p class="item-value c-green">{{ helpItem()?.name }}</p>
+        </div>
+        <div class="row">
+          <p class="item-name">Category</p>
+          <p class="item-value">{{ helpItem()?.category }}</p>
+        </div>
+        <div class="row">
+          <p class="item-name">Data Type</p>
+          <p class="item-value">{{ helpItem()?.type }}</p>
+        </div>
+        <div class="row">
+          <p class="item-name">Description</p>
+          <p class="item-value">{{ helpItem()?.description }}</p>
+        </div>
+      </div>
+      <div class="resources">
+        <h4>External Resources</h4>
+        <button class="vf-button vf-button--secondary-pdbe" (click)="viewMMCIFDictionary()">
+          <div class="left">
+            <img src="assets/icons/dictionary-icon.svg" alt="dictionary icon" />
+            <span>View in mmCIF Dictionary</span>
+          </div>
+          <img src="assets/icons/external-link-icon.svg" alt="external link icon" />
+        </button>
+        <button class="vf-button vf-button--secondary-pdbe" (click)="openDictionaryExplorer()">
+          <div class="left">
+            <img src="assets/icons/external-link-icon.svg" alt="external link icon" />
+            <span>Open Dictionary Explorer</span>
+          </div>
+          <img src="assets/icons/external-link-icon.svg" alt="external link icon" />
+        </button>
+      </div>
+    </aside>
+    }
+  </div>
+</div>

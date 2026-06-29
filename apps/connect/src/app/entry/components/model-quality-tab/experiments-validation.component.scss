@@ -67,6 +67,8 @@
       }
 
       .legend {
+        max-width: unset !important;
+
         &-wrapper {
           display: flex;
           align-items: center;

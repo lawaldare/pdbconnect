@@ -82,11 +82,7 @@ export class ValidationDataProcessingFacade {
       experimentRawDataSBGrid: createSelectorStream(EntrySelectors.experimentRawDataSBGrid, undefined).pipe(
         map((data) => (this.util.isNotEmptyObject(data) ? data : undefined))
       ),
-    }).pipe(
-      retry({ count: 3, delay: 1000 }),
-      mergeMap((data: any) => of(this.processExperimentalValidationData(data))),
-      takeUntilDestroyed(this.destroyRef)
-    );
+    }).pipe(map((data: any) => this.processExperimentalValidationData(data)));
   }
 
   private processExperimentalValidationData(data: any): ProcessedExperimentalDetails[] {
@@ -254,18 +250,28 @@ export class ValidationDataProcessingFacade {
       }
 
       // parse experimental raw data (see docs in component.ts)
+      console.log('data.experimentalRawPDB');
+      console.log(data.experimentalRawPDB);
       if (data.experimentalRawPDB.length) {
         processed.experimentalRawData = this.createExperimentRawDataPDB(data.experimentalRawPDB);
       }
+      console.log('data.experimentalRawBMRB');
+      console.log(data.experimentalRawBMRB);
       if (data.experimentalRawBMRB.length) {
         processed.experimentalRawData = this.createExperimentRawDataBMRB(data.experimentalRawBMRB);
       }
+      console.log('data.experimentRawDataIRRMC');
+      console.log(data.experimentRawDataIRRMC);
       if (data.experimentRawDataIRRMC) {
         processed.experimentalRawData = this.createExperimentRawDataIRRMC(data.experimentRawDataIRRMC);
       }
+      console.log('data.experimentRawDataEMPIAR');
+      console.log(data.experimentRawDataEMPIAR);
       if (data.experimentRawDataEMPIAR.length) {
         processed.experimentalRawData = this.createExperimentRawDataEMPIAR(data.experimentRawDataEMPIAR);
       }
+      console.log('data.experimentRawDataSBGrid');
+      console.log(data.experimentRawDataSBGrid);
       if (data.experimentRawDataSBGrid) {
         processed.experimentalRawData = this.createExperimentRawDataSBGrid(data.experimentRawDataSBGrid);
       }

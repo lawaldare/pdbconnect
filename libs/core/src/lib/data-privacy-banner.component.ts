@@ -1,7 +1,12 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, inject, input, PLATFORM_ID, OnInit, signal } from '@angular/core';
 
-type PageID = 'dataProtectionAgreedForComplexPages' | 'dataProtectionAgreedForEntryPages' | 'dataProtectionAgreedForLigandPages' | 'dataProtectionAgreedForPISAPages';
+type PageID =
+  | 'dataProtectionAgreedForComplexPages'
+  | 'dataProtectionAgreedForEntryPages'
+  | 'dataProtectionAgreedForLigandPages'
+  | 'dataProtectionAgreedForMMCIFValidator'
+  | 'dataProtectionAgreedForPISAPages';
 @Component({
   selector: 'lib-data-privacy-banner',
   standalone: true,
