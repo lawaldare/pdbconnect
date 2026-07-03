@@ -69,12 +69,11 @@ const ensurePythonFilesLoaded = async () => {
   const rulePythonFiles = ['__init__', 'engine', 'imported_cross_checks', 'operators', 'utils'];
 
   for (const file of rulePythonFiles) {
-    const content = await loadTextFile(`/py/mmcif_validator/rules/${file}.txt`);
-
+    const content = await loadTextFile(publicUrl(`/py/mmcif_validator/rules/${file}.txt`));
     pyodide.FS.writeFile(`/app/mmcif_validator/rules/${file}.py`, content, { encoding: 'utf8' });
   }
 
-  const ruleGroups = await loadTextFile('/py/mmcif_validator/rules/rule_groups.json');
+  const ruleGroups = await loadTextFile(publicUrl('/py/mmcif_validator/rules/rule_groups.json'));
 
   pyodide.FS.writeFile('/app/mmcif_validator/rules/rule_groups.json', ruleGroups, { encoding: 'utf8' });
 
@@ -94,8 +93,7 @@ const ensurePythonFilesLoaded = async () => {
   ];
 
   for (const file of ruleJsonFiles) {
-    const content = await loadTextFile(`/py/mmcif_validator/rules/data/${file}`);
-
+    const content = await loadTextFile(publicUrl(`/py/mmcif_validator/rules/data/${file}`));
     pyodide.FS.writeFile(`/app/mmcif_validator/rules/data/${file}`, content, { encoding: 'utf8' });
   }
 
