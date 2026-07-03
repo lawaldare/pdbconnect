@@ -37,6 +37,7 @@ const ensurePythonFilesLoaded = async () => {
 
   pyodide.FS.mkdirTree('/app/mmcif_validator/completeness');
   pyodide.FS.mkdirTree('/work');
+  pyodide.FS.mkdirTree('/app/mmcif_validator/rules/data');
 
   const pythonFiles = ['validate_mmcif', 'validator', 'cif_parser', 'dict_parser', 'mmcif_types', 'protocol', 'download', 'metadata_completeness'];
 
@@ -65,6 +66,39 @@ const ensurePythonFilesLoaded = async () => {
     });
   }
 
+  const rulePythonFiles = ['__init__', 'engine', 'imported_cross_checks', 'operators', 'utils'];
+
+  for (const file of rulePythonFiles) {
+    const content = await loadTextFile(`/py/mmcif_validator/rules/${file}.txt`);
+
+    pyodide.FS.writeFile(`/app/mmcif_validator/rules/${file}.py`, content, { encoding: 'utf8' });
+  }
+
+  const ruleGroups = await loadTextFile('/py/mmcif_validator/rules/rule_groups.json');
+
+  pyodide.FS.writeFile('/app/mmcif_validator/rules/rule_groups.json', ruleGroups, { encoding: 'utf8' });
+
+  const ruleJsonFiles = [
+    'cross_checks_conditional_category_item.json',
+    'cross_checks_conditional_enumeration.json',
+    'cross_checks_conditional_regex.json',
+    'cross_checks_conditional_required.json',
+    'cross_checks_cross_reference_full.json',
+    'cross_checks_dictionary_enum.json',
+    'cross_checks_linked_presence_and_comparison.json',
+    'cross_checks_pairwise_comparison.json',
+    'cross_checks_pairwise_date_order.json',
+    'cross_checks_procedural_validators.json',
+    'cross_checks_required_if_any_present.json',
+    'cross_checks_uniqueness.json',
+  ];
+
+  for (const file of ruleJsonFiles) {
+    const content = await loadTextFile(`/py/mmcif_validator/rules/data/${file}`);
+
+    pyodide.FS.writeFile(`/app/mmcif_validator/rules/data/${file}`, content, { encoding: 'utf8' });
+  }
+
   const bridgeCode = await loadTextFile(publicUrl(`py/validator_bridge.txt`));
   pyodide.FS.writeFile('/app/validator_bridge.py', bridgeCode, {
     encoding: 'utf8',
@@ -79,6 +113,7 @@ const ensurePythonFilesLoaded = async () => {
       import sys
       sys.path.append('/app')
       sys.path.append('/app/mmcif_validator')
+      sys.path.append('/app/mmcif_validator/rules')
 `);
 
   filesLoaded = true;
